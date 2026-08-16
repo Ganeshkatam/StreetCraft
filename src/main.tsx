@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './styles.css';
@@ -37,6 +37,10 @@ function AppLayout() {
   const { usage } = useUsage(session.activeBusinessId);
 
   const isAppView = location.pathname.startsWith('/app');
+  const isAuthView =
+    location.pathname === '/login' ||
+    location.pathname === '/signup' ||
+    location.pathname === '/forgot-password';
 
   const handleLaunchOpportunity = (opp: DynamicOpportunity) => {
     setCampaignPreset(opp);
@@ -50,15 +54,17 @@ function AppLayout() {
 
   return (
     <div className="app-container">
-      <Navigation
-        session={session}
-        usage={usage}
-        onOpenUpgrade={() => setUpgradeModalOpen(true)}
-        onSignOut={async () => {
-          await signOut();
-          navigate('/');
-        }}
-      />
+      {!isAuthView && (
+        <Navigation
+          session={session}
+          usage={usage}
+          onOpenUpgrade={() => setUpgradeModalOpen(true)}
+          onSignOut={async () => {
+            await signOut();
+            navigate('/');
+          }}
+        />
+      )}
 
       {!isAppView ? (
         <main>
@@ -99,7 +105,7 @@ function AppLayout() {
         </main>
       ) : (
         <div className="workspace-layout">
-          {/* Modern Workspace Sidebar */}
+          {/* Workspace Sidebar */}
           <aside className="sidebar">
             <div className="sidebar-nav">
               <button
@@ -199,7 +205,7 @@ function AppLayout() {
         </div>
       )}
 
-      <Footer />
+      {!isAuthView && <Footer />}
 
       <UpgradeModal
         isOpen={upgradeModalOpen}
