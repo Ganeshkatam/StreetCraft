@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { CampaignType, FullCampaignPack } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
@@ -6,11 +7,11 @@ import { ChannelCard } from '../components/ChannelCard';
 import { CheckCircle2 } from 'lucide-react';
 
 interface FreeToolPageProps {
-  navigate: (route: string) => void;
   onOpenAuthWithClaim?: (claimToken: string) => void;
 }
 
-export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuthWithClaim }) => {
+export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
@@ -223,7 +224,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
                     if (claimToken && onOpenAuthWithClaim) {
                       onOpenAuthWithClaim(claimToken);
                     } else {
-                      navigate('login');
+                      navigate('/login');
                     }
                   }}
                 >

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBusiness } from '../../hooks/useBusiness';
 import { useCampaign } from '../../hooks/useCampaign';
 import { useUsage } from '../../hooks/useUsage';
@@ -6,21 +7,20 @@ import { api } from '../../lib/api';
 import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent } from '../../engine/briefing/opportunityEngine';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../components/UsageMeter';
-import { Plus, Store, Calendar } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface DashboardPageProps {
   businessId: string;
-  navigate: (route: string) => void;
   onLaunchPreset: (opportunity: DynamicOpportunity) => void;
   onOpenUpgrade: () => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   businessId,
-  navigate,
   onLaunchPreset,
   onOpenUpgrade,
 }) => {
+  const navigate = useNavigate();
   const { profile } = useBusiness(businessId);
   const { campaigns } = useCampaign(businessId);
   const { usage } = useUsage(businessId);
@@ -57,10 +57,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button className="btn-secondary" onClick={() => navigate('app/campaigns')}>
+          <button className="btn-secondary" onClick={() => navigate('/app/campaigns')}>
             Vault ({campaigns.length})
           </button>
-          <button className="btn-primary" onClick={() => navigate('app/create')}>
+          <button className="btn-primary" onClick={() => navigate('/app/create')}>
             <Plus size={14} /> Create promotion
           </button>
         </div>
@@ -135,7 +135,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>
                 Active Campaign Vault
               </h3>
-              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => navigate('app/campaigns')}>
+              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => navigate('/app/campaigns')}>
                 View all in vault ({campaigns.length}) &rarr;
               </button>
             </div>
@@ -174,7 +174,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
                       <span>{item.campaign.schedule.timingLabel || 'Active'}</span>
-                      <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => navigate('app/campaigns')}>
+                      <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => navigate('/app/campaigns')}>
                         Proofs &rarr;
                       </button>
                     </div>
@@ -193,7 +193,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase' }}>
                 STORE CONTEXT
               </span>
-              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => navigate('app/business')}>
+              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => navigate('/app/business')}>
                 Edit Memory &rarr;
               </button>
             </div>

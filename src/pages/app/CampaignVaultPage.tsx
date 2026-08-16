@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCampaign } from '../../hooks/useCampaign';
 import { CampaignStatus } from '../../types/campaign';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
@@ -7,10 +8,10 @@ import { ChevronDown, ChevronUp, Edit3, Plus } from 'lucide-react';
 
 interface CampaignVaultPageProps {
   businessId: string;
-  navigate: (route: string) => void;
 }
 
-export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId, navigate }) => {
+export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId }) => {
+  const navigate = useNavigate();
   const { campaigns, loading, updateStatus } = useCampaign(businessId);
   const [filter, setFilter] = useState<'ALL' | 'PUBLISHED' | 'COMPLETED' | 'ARCHIVED'>('ALL');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
             All generated proofs, multi-channel outputs, and recorded walk-in results.
           </p>
         </div>
-        <button className="btn-primary" onClick={() => navigate('app/create')}>
+        <button className="btn-primary" onClick={() => navigate('/app/create')}>
           <Plus size={15} /> New Campaign
         </button>
       </div>
@@ -79,7 +80,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
               ? 'You have not created any campaign packs yet. Create your first promotion to build your vault.'
               : `No campaigns with status ${filter.toLowerCase()} found.`}
           </p>
-          <button className="btn-primary" onClick={() => navigate('app/create')}>
+          <button className="btn-primary" onClick={() => navigate('/app/create')}>
             Create First Campaign &rarr;
           </button>
         </div>

@@ -1,10 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface FooterProps {
-  navigate: (route: string) => void;
-}
+export const Footer: React.FC = () => {
+  const navigate = useNavigate();
 
-export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   return (
     <footer className="editorial-footer">
       <div className="footer-container">
@@ -23,17 +22,17 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
         <div className="footer-links-group">
           <div>
             <div className="footer-col-title">Platform</div>
-            <button className="footer-link" onClick={() => navigate('home')}>How it works</button>
-            <button className="footer-link" onClick={() => navigate('free-tool')}>Free campaign tool</button>
-            <button className="footer-link" onClick={() => navigate('pricing')}>Plans & pricing</button>
+            <button className="footer-link" onClick={() => navigate('/')}>How it works</button>
+            <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
+            <button className="footer-link" onClick={() => navigate('/pricing')}>Plans & pricing</button>
           </div>
 
           <div>
             <div className="footer-col-title">Workspace</div>
-            <button className="footer-link" onClick={() => navigate('app/dashboard')}>Today</button>
-            <button className="footer-link" onClick={() => navigate('app/create')}>Create campaign</button>
-            <button className="footer-link" onClick={() => navigate('app/campaigns')}>Campaign vault</button>
-            <button className="footer-link" onClick={() => navigate('app/business')}>Store memory</button>
+            <button className="footer-link" onClick={() => navigate('/app/dashboard')}>Today</button>
+            <button className="footer-link" onClick={() => navigate('/app/create')}>Create campaign</button>
+            <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaign vault</button>
+            <button className="footer-link" onClick={() => navigate('/app/business')}>Store memory</button>
           </div>
         </div>
       </div>

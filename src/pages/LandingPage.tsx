@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowRight, Store, Layers, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Store, Layers, Zap } from 'lucide-react';
 import { ChannelCard } from '../components/ChannelCard';
 
-interface LandingPageProps {
-  navigate: (route: string) => void;
-  onOpenAuth: () => void;
-}
-
-export const LandingPage: React.FC<LandingPageProps> = ({ navigate, onOpenAuth }) => {
+export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'google' | 'instagram' | 'whatsapp' | 'poster'>('google');
 
   const sampleProofs = {
@@ -56,10 +53,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate, onOpenAuth }
         </p>
 
         <div className="hero-cta-group">
-          <button className="btn-primary" style={{ padding: '12px 28px', fontSize: '14.5px' }} onClick={() => navigate('free-tool')}>
+          <button className="btn-primary" style={{ padding: '12px 28px', fontSize: '14.5px' }} onClick={() => navigate('/free-tool')}>
             Try free tool &rarr;
           </button>
-          <button className="btn-secondary" style={{ padding: '12px 24px', fontSize: '14.5px' }} onClick={onOpenAuth}>
+          <button className="btn-secondary" style={{ padding: '12px 24px', fontSize: '14.5px' }} onClick={() => navigate('/login')}>
             Sign in
           </button>
         </div>

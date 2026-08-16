@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { ArrowRight, ShieldCheck, Mail, Lock, Store, User, Sparkles, KeyRound } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Mail, Lock, Store, User, KeyRound } from 'lucide-react';
 
 interface LoginPageProps {
-  navigate: (route: string) => void;
   claimToken?: string | null;
   onSuccess?: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSuccess }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) => {
+  const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
       }
 
       if (onSuccess) onSuccess();
-      navigate('app/dashboard');
+      navigate('/app/dashboard');
     } catch (err) {
       setErrorMsg((err as Error).message);
     } finally {

@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBusiness } from '../../hooks/useBusiness';
 import { useUsage } from '../../hooks/useUsage';
 import { api } from '../../lib/api';
 import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface CreateCampaignPageProps {
   businessId: string;
   initialPreset?: DynamicOpportunity | null;
-  navigate: (route: string) => void;
   onOpenUpgrade: () => void;
 }
 
 export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
   businessId,
   initialPreset,
-  navigate,
   onOpenUpgrade,
 }) => {
+  const navigate = useNavigate();
   const { profile } = useBusiness(businessId);
   const { usage, refreshUsage } = useUsage(businessId);
 
@@ -384,7 +384,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 {generatedPack.campaign.offer.title || generatedPack.campaign.offer.description}
               </h3>
             </div>
-            <button className="btn-secondary" onClick={() => navigate('app/campaigns')}>
+            <button className="btn-secondary" onClick={() => navigate('/app/campaigns')}>
               Open Vault &rarr;
             </button>
           </div>
@@ -418,7 +418,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-            <button className="btn-primary" onClick={() => navigate('app/campaigns')}>
+            <button className="btn-primary" onClick={() => navigate('/app/campaigns')}>
               Open Campaign Vault &rarr;
             </button>
           </div>

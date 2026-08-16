@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { DatabasePlan } from '../types/billing';
 import { Check } from 'lucide-react';
 
 interface PricingPageProps {
-  navigate: (route: string) => void;
   onOpenUpgrade?: () => void;
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrade }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [, setLoading] = useState(true);
 
@@ -81,7 +82,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
                   if (onOpenUpgrade) {
                     onOpenUpgrade();
                   } else {
-                    navigate('app/dashboard');
+                    navigate('/app/dashboard');
                   }
                 }}
               >
