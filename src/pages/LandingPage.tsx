@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Layers, Zap } from 'lucide-react';
+import { ArrowRight, Store, Layers, Zap, Clock, ShieldCheck, Check } from 'lucide-react';
 import { ChannelCard } from '../components/ChannelCard';
 
 export const LandingPage: React.FC = () => {
@@ -39,44 +39,85 @@ export const LandingPage: React.FC = () => {
   return (
     <div>
       {/* Editorial Hero Section */}
-      <section className="hero-section">
+      <section className="hero-section" style={{ padding: '64px 24px 72px' }}>
         <span className="hero-eyebrow">
-          LOCAL BUSINESS MARKETING INSTRUMENT
+          STREETCRAFT &bull; LOCAL BUSINESS MARKETING INSTRUMENT
         </span>
 
-        <h1 className="hero-headline">
-          Turn one local moment into a reason to visit.
+        <h1 className="hero-headline" style={{ maxWidth: '880px', fontSize: '46px', lineHeight: '1.15', marginBottom: '20px' }}>
+          Turn a quiet Tuesday into a reason to visit.
         </h1>
 
-        <p className="hero-description">
-          Your Tuesday afternoon is quiet. Your customers don't have to know that. StreetCraft turns your slow hours and counter specials into coordinated campaign proofs across Google, Instagram, WhatsApp, and in-store.
+        <p className="hero-description" style={{ maxWidth: '640px', fontSize: '16.5px', lineHeight: '1.65', marginBottom: '32px' }}>
+          Your afternoon is slow. Your regulars are two blocks away. StreetCraft turns counter specials and neighborhood moments into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
         </p>
 
         <div className="hero-cta-group">
           <button className="btn-primary" style={{ padding: '12px 28px', fontSize: '14.5px' }} onClick={() => navigate('/free-tool')}>
-            Try free tool &rarr;
+            Try free campaign tool &rarr;
           </button>
           <button className="btn-secondary" style={{ padding: '12px 24px', fontSize: '14.5px' }} onClick={() => navigate('/login')}>
-            Sign in
+            Sign in to store
           </button>
         </div>
       </section>
 
-      {/* Interactive Multi-Channel Proof Engine */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto 80px', padding: '0 var(--space-6)' }}>
+      {/* The Local Marketing Contrast */}
+      <section style={{ maxWidth: '1040px', margin: '0 auto 72px', padding: '0 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-danger)', fontWeight: 600, textTransform: 'uppercase' }}>
+              THE DELIVERY APPS
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
+              30% commission on regulars
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5' }}>
+              Delivery aggregators charge steep margins on customers who live within walking distance of your counter.
+            </p>
+          </div>
+
+          <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
+              THE MARKETING AGENCIES
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
+              ₹40,000/mo retainers
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5' }}>
+              Social agencies post generic stock graphics that look disconnected from your real counter specials.
+            </p>
+          </div>
+
+          <div className="card" style={{ border: '2px solid var(--color-primary)', background: 'var(--color-surface)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, textTransform: 'uppercase' }}>
+              STREETCRAFT
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
+              100% of walk-in sales
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5' }}>
+              Drop coordinated local campaigns in 60 seconds. Drive direct counter walk-ins with zero commissions.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Multi-Channel Proof Suite */}
+      <section style={{ maxWidth: '1040px', margin: '0 auto 80px', padding: '0 24px' }}>
         <div className="card" style={{ padding: '36px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <span className="section-eyebrow">CAMPAIGN PROOF &bull; PROMOTION 004</span>
+              <span className="section-eyebrow">COORDINATED PROOFS &bull; REAL PROMOTION EXAMPLE</span>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)' }}>
                 The Roasted Bean &bull; Indiranagar, Bengaluru
               </h3>
               <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
-                Targeting: Weekday 3–6 PM Slow Hours &bull; Offer: 20% Off Pour-Overs
+                Targeting: Weekday 3:00–6:00 PM &bull; Offer: 20% Off Pour-Overs
               </p>
             </div>
 
-            {/* Platform Selector Buttons */}
+            {/* Platform Selector Tabs */}
             <div style={{ display: 'flex', gap: '6px', background: 'var(--color-surface-raised)', padding: '4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
               {[
                 { id: 'google', label: 'Google Business' },
@@ -139,36 +180,57 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Feature Compositions */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '1100px', margin: '0 auto 80px', padding: '0 var(--space-6)' }}>
-        <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Store size={18} color="var(--color-primary)" />
-            <h3 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--color-ink)' }}>Store Memory Engine</h3>
-          </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-            Persistent store context, micro-neighborhood landmarks, signature items, and slow-hour windows are injected into every promotion.
-          </p>
+      {/* The 3-Step Store Rhythm */}
+      <section style={{ maxWidth: '1040px', margin: '0 auto 96px', padding: '0 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <span className="section-eyebrow">HOW IT WORKS</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)' }}>
+            The 3-Step Store Rhythm
+          </h2>
         </div>
 
-        <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Layers size={18} color="var(--color-primary)" />
-            <h3 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--color-ink)' }}>Multi-Channel in 1 Click</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          <div className="card">
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+              01
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+              Store Memory
+            </h3>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
+              StreetCraft remembers your neighborhood landmarks, signature items, and slow 3–6 PM windows so you never have to re-explain your store context.
+            </p>
           </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-            Generates compliant character-limited copy for Google Business, Instagram Reels, WhatsApp Broadcasts, and table tent cards simultaneously.
-          </p>
+
+          <div className="card">
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+              02
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+              Coordinated Proofs
+            </h3>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
+              Generates compliant, character-limited copy for Google Maps Updates, Instagram Reels & Stories, WhatsApp Broadcasts, and printable QR cards simultaneously.
+            </p>
+          </div>
+
+          <div className="card">
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+              03
+            </span>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+              Direct Walk-ins
+            </h3>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
+              Customers flash the message at your counter or scan the table tent card. No aggregator fees, no third-party cuts.
+            </p>
+          </div>
         </div>
 
-        <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Zap size={18} color="var(--color-primary)" />
-            <h3 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--color-ink)' }}>Daily Opportunity Radar</h3>
-          </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-            Timezone-aware briefing engine monitors your slow time-slots, upcoming festivals, and weekend rushes to recommend high-impact drops.
-          </p>
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          <button className="btn-primary" style={{ padding: '12px 28px', fontSize: '14.5px' }} onClick={() => navigate('/free-tool')}>
+            Start your first promotion &rarr;
+          </button>
         </div>
       </section>
     </div>
