@@ -194,7 +194,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 STORE CONTEXT
               </span>
               <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => navigate('/app/business')}>
-                Edit Memory &rarr;
+                Edit Preferences &rarr;
               </button>
             </div>
 

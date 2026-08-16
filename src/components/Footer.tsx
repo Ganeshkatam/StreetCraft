@@ -1,40 +1,79 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from './Logo';
 
 export const Footer: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="editorial-footer">
-      <div className="footer-container">
-        <div className="footer-brand">
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>STREETCRAFT</span>
-          </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
-            The local-business marketing instrument. Turn one store moment into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
-          </p>
-          <div style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-subtle)' }}>
-            &copy; {new Date().getFullYear()} StreetCraft. Built for independent neighborhood stores.
-          </div>
-        </div>
+    <footer className="editorial-footer" style={{ borderTop: '1px solid var(--color-border)', background: 'var(--color-surface)', padding: '64px 32px 40px', marginTop: 'auto' }}>
+      <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
 
-        <div className="footer-links-group">
+        {/* Top Tier: Brand Narrative & 4 Structured Link Columns */}
+        <div className="footer-top-grid">
+
+          {/* Brand Column */}
+          <div>
+            <div style={{ marginBottom: '16px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+              <Logo size="md" />
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.65', margin: 0, maxWidth: '340px' }}>
+              The local storefront marketing instrument. Turn quiet afternoons, signature dishes, and neighborhood occasions into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
+            </p>
+          </div>
+
+          {/* Col 1: Platform */}
           <div>
             <div className="footer-col-title">Platform</div>
-            <button className="footer-link" onClick={() => navigate('/')}>How it works</button>
-            <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
-            <button className="footer-link" onClick={() => navigate('/pricing')}>Plans & pricing</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button className="footer-link" onClick={() => navigate('/how-it-works')}>How it works</button>
+              <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
+              <button className="footer-link" onClick={() => navigate('/pricing')}>Plans &amp; pricing</button>
+              <button className="footer-link" onClick={() => navigate('/how-it-works')}>4-Channel pipeline</button>
+            </div>
           </div>
 
+          {/* Col 2: Channel Outputs */}
+          <div>
+            <div className="footer-col-title">Touchpoints</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <span className="footer-link" style={{ cursor: 'default' }}>Google Business</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Instagram Reels &amp; Stories</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>WhatsApp VIP Broadcast</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Printable Counter Cards</span>
+            </div>
+          </div>
+
+          {/* Col 3: Store Categories */}
+          <div>
+            <div className="footer-col-title">Storefronts</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <span className="footer-link" style={{ cursor: 'default' }}>Cafes &amp; Bakeries</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Artisanal Bistros</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Heritage Sweets</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Neighborhood Retail</span>
+            </div>
+          </div>
+
+          {/* Col 4: Workspace */}
           <div>
             <div className="footer-col-title">Workspace</div>
-            <button className="footer-link" onClick={() => navigate('/app/dashboard')}>Today</button>
-            <button className="footer-link" onClick={() => navigate('/app/create')}>Create campaign</button>
-            <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaign vault</button>
-            <button className="footer-link" onClick={() => navigate('/app/business')}>Store memory</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button className="footer-link" onClick={() => navigate('/app/dashboard')}>Today's briefing</button>
+              <button className="footer-link" onClick={() => navigate('/app/create')}>Compose campaign</button>
+              <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaign vault</button>
+              <button className="footer-link" onClick={() => navigate('/app/business')}>Store preferences</button>
+              <button className="footer-link" onClick={() => navigate('/login')}>Sign in to store</button>
+            </div>
           </div>
+
         </div>
+
+        {/* Bottom Bar / Colophon */}
+        <div style={{ paddingTop: '24px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}>
+          &copy; {new Date().getFullYear()} StreetCraft. Built for independent neighborhood stores.
+        </div>
+
       </div>
     </footer>
   );

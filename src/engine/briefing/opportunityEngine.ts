@@ -205,7 +205,7 @@ export function generateDynamicBriefing(
 
   const subtitle =
     opportunities.length > 0
-      ? `Identified ${opportunities.length} data-backed marketing ${opportunities.length === 1 ? 'opportunity' : 'opportunities'} based on your live store memory and schedule.`
+      ? `Identified ${opportunities.length} data-backed marketing ${opportunities.length === 1 ? 'opportunity' : 'opportunities'} based on your live store preferences and schedule.`
       : 'Your marketing calendar is fully active and scheduled. All target time windows have active coverage.';
 
   return {

@@ -14,7 +14,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('annual');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [founderAllocation, setFounderAllocation] = useState<{ total_slots: number; claimed_slots: number } | null>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   const pricingFaqs = [
     {
       q: 'How does the monthly campaign pack limit work?',
-      a: 'Each campaign pack generates 4 synchronized channel outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
+      a: 'Each campaign pack generates 4 coordinated channel outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
     },
     {
       q: 'Are there any hidden fees or sales commissions?',
@@ -50,7 +50,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
     },
     {
       q: 'Can I start for free without a credit card?',
-      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete 4-channel campaign packs every month, Store Memory, and the Daily Opportunity Radar. No payment card is required.`,
+      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete 4-channel campaign packs every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
     },
     {
       q: 'Can I upgrade or cancel my plan at any time?',
@@ -59,7 +59,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   ];
 
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '56px 24px 96px' }}>
+    <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
@@ -72,9 +72,31 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--color-surface)', padding: '6px', borderRadius: '32px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
+      {/* Sticky Billing Toggle Bar */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 'var(--layout-header-height, 68px)',
+          zIndex: 40,
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '16px 0 20px',
+          marginBottom: '36px',
+          background: 'linear-gradient(to bottom, var(--color-page) 75%, transparent)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: 'var(--color-surface)',
+            padding: '6px',
+            borderRadius: '32px',
+            border: '1px solid var(--color-border)',
+            boxShadow: 'var(--shadow-paper)',
+          }}
+        >
           {(['monthly', 'quarterly', 'annual'] as const).map((cycle) => (
             <button
               key={cycle}
@@ -96,7 +118,17 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             >
               {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
               {cycle === 'annual' && (
-                <span style={{ fontSize: '11px', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.02em' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    background: 'var(--color-primary-subtle)',
+                    color: 'var(--color-primary)',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    letterSpacing: '0.02em',
+                  }}
+                >
                   2 MONTHS FREE
                 </span>
               )}
@@ -115,20 +147,20 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
         const proPlan = plans.find((p) => p.id === 'PRO');
         
         return (
-          <div style={{ marginBottom: '64px', background: 'var(--color-surface)', border: '2px solid var(--color-ink)', borderRadius: 'var(--radius-sm)', padding: '48px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ marginBottom: '48px', background: 'var(--color-surface)', border: '2px solid var(--color-ink)', borderRadius: 'var(--radius-sm)', padding: '36px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <span className="section-eyebrow" style={{ color: 'var(--color-ink)', fontWeight: 700, letterSpacing: '0.1em' }}>FIRST 100 MEMBERS</span>
             
             {isSoldOut ? (
-              <div style={{ padding: '32px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', marginTop: '24px', width: '100%', maxWidth: '600px' }}>
+              <div style={{ padding: '32px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', marginTop: '20px', width: '100%', maxWidth: '600px' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink-muted)' }}>Founder allocation has ended.</h3>
                 <p style={{ marginTop: '8px', color: 'var(--color-ink-soft)' }}>All {founderAllocation.total_slots} places have been claimed.</p>
               </div>
             ) : (
-              <>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', margin: '16px 0 8px', color: 'var(--color-ink)' }}>Founder pricing is now open.</h2>
-                <div style={{ fontSize: '17px', color: 'var(--color-ink-muted)', marginBottom: '40px' }}>Founder offer — available once per account for the first 100 members.</div>
+              <div style={{ width: '100%' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', margin: '12px 0 6px', color: 'var(--color-ink)' }}>Founder pricing is now open.</h2>
+                <div style={{ fontSize: '16px', color: 'var(--color-ink-muted)', marginBottom: '28px' }}>Founder offer — available once per account for the first 100 members.</div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '32px', width: '100%', maxWidth: '880px', textAlign: 'left', background: 'var(--color-surface-raised)', padding: '32px', borderRadius: 'var(--radius-xs)', alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '28px', width: '100%', textAlign: 'left', background: 'var(--color-surface-raised)', padding: '28px 32px', borderRadius: 'var(--radius-xs)', alignItems: 'center' }}>
                   
                   {/* Pricing Box */}
                   <div>
@@ -141,28 +173,28 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                   </div>
                   
                   {/* Features Box */}
-                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', borderLeft: '1px solid var(--color-border)', paddingLeft: '32px' }}>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--color-ink)' }}>
-                       <CheckCircle2 size={20} color="var(--color-ink)" />
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
+                       <CheckCircle2 size={18} color="var(--color-ink)" />
                        <span style={{ fontWeight: 600 }}>{founderPlan.monthly_pack_limit} campaign packs</span>
                      </div>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--color-ink)' }}>
-                       <CheckCircle2 size={20} color="var(--color-ink)" />
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
+                       <CheckCircle2 size={18} color="var(--color-ink)" />
                        <span style={{ fontWeight: 600 }}>{founderPlan.business_limit} businesses</span>
                      </div>
                   </div>
   
                   {/* CTA Box */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--color-border)', paddingLeft: '32px' }}>
-                    <button className="btn-primary" style={{ width: '100%', padding: '16px', fontSize: '15px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => navigate('/login')}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
+                    <button className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '14.5px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => navigate('/login')}>
                       Become a Founder
                     </button>
-                    <div style={{ marginTop: '16px', fontSize: '14px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                    <div style={{ marginTop: '12px', fontSize: '13.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
                       {placesRemaining} of {founderAllocation.total_slots} remaining
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         );
@@ -172,6 +204,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '24px', marginBottom: '64px' }}>
         {plans
           .filter(p => p.id !== 'FOUNDER' && !(billingCycle !== 'monthly' && p.monthly_inr === 0))
+          .sort((a, b) => {
+            const order: Record<string, number> = { FREE: 0, PRO: 1, GROWTH: 2 };
+            return (order[a.id] ?? 99) - (order[b.id] ?? 99);
+          })
           .map((p) => {
           const isPro = p.id === 'PRO';
 

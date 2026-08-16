@@ -619,6 +619,26 @@ button {
   max-width: 420px;
 }
 
+.footer-top-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.2fr) repeat(4, minmax(150px, 1fr));
+  gap: var(--space-7);
+  margin-bottom: var(--space-7);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .footer-top-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .footer-links-group {
   display: flex;
   gap: var(--space-8);
@@ -636,14 +656,26 @@ button {
 
 .footer-link {
   display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
   font-size: var(--type-body-small-size);
   color: var(--color-ink-muted);
-  margin-bottom: var(--space-2);
+  cursor: pointer;
   transition: var(--motion-fast);
+  text-decoration: none;
 }
 
 .footer-link:hover {
   color: var(--color-ink);
+}
+
+span.footer-link {
+  cursor: default;
 }
 
 /* Workspace Responsive Grids */

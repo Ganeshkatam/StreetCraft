@@ -63,7 +63,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         {successNotice ? (
           <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', margin: '20px 0' }}>
             <h4 style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-display)', fontSize: '20px', marginBottom: '8px' }}>
-              Subscription Synchronized
+              Subscription Activated
             </h4>
             <p style={{ color: 'var(--color-ink)', fontSize: '14px' }}>{successNotice}</p>
           </div>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { UserSession } from '../types/business';
 import { UsageSummary } from '../types/billing';
+import { Logo } from './Logo';
 import { ArrowRight, LogOut, ChevronDown, Plus, Store } from 'lucide-react';
 
 interface NavigationProps {
@@ -28,6 +29,17 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [accountLimit, setAccountLimit] = useState(2);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (sectionId: string) => {
+    if (location.pathname !== '/') {
+      navigate(`/#${sectionId}`);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   useEffect(() => {
     if (session.isAuthenticated) {
@@ -56,9 +68,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             className="brand-wrapper"
             onClick={() => navigate(session.isAuthenticated ? '/app/dashboard' : '/')}
           >
-            <span className="brand-wordmark">
-              STREETCRAFT
-            </span>
+            <Logo size="sm" />
           </div>
 
           {isAppView && session.isAuthenticated && (
@@ -131,8 +141,8 @@ export const Navigation: React.FC<NavigationProps> = ({
           {!isAppView ? (
             <>
               <button
-                className={`nav-item ${currentPath === '/' ? 'active' : ''}`}
-                onClick={() => navigate('/')}
+                className={`nav-item ${currentPath === '/how-it-works' ? 'active' : ''}`}
+                onClick={() => navigate('/how-it-works')}
               >
                 How it works
               </button>
@@ -173,7 +183,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 className={`nav-item ${currentPath === '/app/business' ? 'active' : ''}`}
                 onClick={() => navigate('/app/business')}
               >
-                Store Memory
+                Store Preferences
               </button>
             </>
           )}

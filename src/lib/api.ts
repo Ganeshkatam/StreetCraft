@@ -1,6 +1,6 @@
 /**
  * StreetCraft Realtime Database-Backed API & Supabase Gateway
- * Enforces Data Integrity (zero mock state) & Realtime Synchronization.
+ * Enforces Data Integrity (zero mock state) & Realtime Database Updates.
  */
 
 import { supabase, isSupabaseConfigured } from './supabase';
@@ -257,7 +257,7 @@ class RealtimeApiClient {
     return data || [];
   }
 
-  // 3. BUSINESS PROFILE & MEMORY
+  // 3. BUSINESS PROFILE & PREFERENCES
   public async getBusinessProfile(businessId: UUID): Promise<BusinessProfile> {
     if (!businessId) {
       return this._getEmptyProfile('');

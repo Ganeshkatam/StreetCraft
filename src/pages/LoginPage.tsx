@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { Logo } from '../components/Logo';
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
 interface LoginPageProps {
@@ -130,10 +131,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
   return (
     <div style={{ maxWidth: '920px', margin: '0 auto', padding: '0 24px 80px', minHeight: 'calc(100vh - 80px)' }}>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '24px 0 16px', borderBottom: '1px solid var(--color-border)', marginBottom: '48px' }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '0.02em', color: 'var(--color-ink)' }}>
-          STREETCRAFT
-        </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0 16px', borderBottom: '1px solid var(--color-border)', marginBottom: '48px' }}>
+        <div style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <Logo size="sm" />
+        </div>
         <button
           className="btn-ghost"
           style={{ fontSize: '13px', color: 'var(--color-ink-muted)', padding: '4px 0' }}
@@ -156,7 +157,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
             Welcome back.
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', lineHeight: '1.5', marginBottom: '28px' }}>
-            Sign in to access your store memory and active campaigns.
+            Sign in to access your store preferences and active campaigns.
           </p>
 
           <form onSubmit={handleLogin}>

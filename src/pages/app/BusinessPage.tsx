@@ -22,7 +22,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
   if (loading || !formData) {
     return (
       <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--color-ink-muted)' }}>
-        Loading store memory...
+        Loading store preferences...
       </div>
     );
   }
@@ -42,16 +42,16 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
   return (
     <div>
       <div className="section-header">
-        <span className="section-eyebrow">PERSISTENT CONTEXT &bull; REALTIME MEMORY</span>
-        <h1 className="section-title">Store Profile & Memory</h1>
+        <span className="section-eyebrow">PERSISTENT CONTEXT &bull; STORE PREFERENCES</span>
+        <h1 className="section-title">Store Profile & Preferences</h1>
         <p className="section-subtitle">
-          StreetCraft injects these exact parameters into every campaign proof. Updates synchronize directly to PostgreSQL.
+          StreetCraft injects these exact parameters into every campaign proof. Updates save directly to PostgreSQL.
         </p>
       </div>
 
       {savedSuccess && (
         <div style={{ padding: '14px 18px', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontSize: '13.5px', fontWeight: 600 }}>
-          <CheckCircle2 size={16} /> Store Memory updated and synchronized to database.
+          <CheckCircle2 size={16} /> Store Preferences updated and saved to database.
         </div>
       )}
 
@@ -231,14 +231,14 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
             <button type="submit" className="btn-primary" disabled={isSaving}>
-              <Save size={14} /> {isSaving ? 'Saving...' : 'Save Store Memory'}
+              <Save size={14} /> {isSaving ? 'Saving...' : 'Save Store Preferences'}
             </button>
           </div>
         </form>
 
-        {/* Right Column: Live Memory Preview */}
+        {/* Right Column: Live Preferences Preview */}
         <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
-          <span className="section-eyebrow">MEMORY CARD</span>
+          <span className="section-eyebrow">PREFERENCES CARD</span>
           <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginTop: '4px' }}>
             {formData.name || 'Your Store'}
           </h4>

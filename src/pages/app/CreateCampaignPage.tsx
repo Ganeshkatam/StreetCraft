@@ -109,7 +109,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
         <span className="section-eyebrow">CAMPAIGN COMPOSER &bull; STEP {step} OF 4</span>
         <h1 className="section-title">Compose Multi-Channel Campaign</h1>
         <p className="section-subtitle">
-          Turn your counter special into synchronized proofs across Google, Instagram, WhatsApp, and in-store QR poster.
+          Turn your counter special into coordinated proofs across Google, Instagram, WhatsApp, and in-store QR poster.
         </p>
       </div>
 
@@ -368,7 +368,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--color-ink-subtle)', lineHeight: '1.5' }}>
-              Clicking generate will simultaneously create synchronized Google, Instagram, WhatsApp, and in-store poster copy.
+              Clicking generate will simultaneously create coordinated Google, Instagram, WhatsApp, and in-store poster copy.
             </div>
           </div>
         </div>

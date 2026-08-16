@@ -20,7 +20,7 @@ export interface PlanEntitlements {
   campaignPacks: number;
   channels: ('GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER')[];
   dailyBriefing: boolean;
-  businessMemory: boolean;
+  businessPreferences: boolean;
   exportOptions: ('CLIPBOARD' | 'CSV' | 'TEXT')[];
   teamSeats: number;
 }

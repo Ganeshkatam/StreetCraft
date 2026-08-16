@@ -14,6 +14,7 @@ import { Footer } from './components/Footer';
 import { UpgradeModal } from './components/UpgradeModal';
 
 import { LandingPage } from './pages/LandingPage';
+import { HowItWorksPage } from './pages/HowItWorksPage';
 import { FreeToolPage } from './pages/FreeToolPage';
 import { PricingPage } from './pages/PricingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -70,6 +71,7 @@ function AppLayout() {
         <main>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route
               path="/free-tool"
               element={<FreeToolPage onOpenAuthWithClaim={handleOpenAuthWithClaim} />}
@@ -136,7 +138,7 @@ function AppLayout() {
                 className={`sidebar-link ${location.pathname === '/app/business' ? 'active' : ''}`}
                 onClick={() => navigate('/app/business')}
               >
-                <Store size={16} /> Store Memory
+                <Store size={16} /> Store Preferences
               </button>
             </div>
 
