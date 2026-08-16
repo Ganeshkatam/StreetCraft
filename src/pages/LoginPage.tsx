@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { ArrowRight, ArrowLeft, Check, Newspaper, Image, MessageSquare, KeyRound, Store } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
 interface LoginPageProps {
   claimToken?: string | null;
@@ -75,7 +75,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
     try {
       const session = await signUp(signupEmail, signupPassword, ownerName, storeName);
       
-      // Update the business profile with the answers collected in steps 1 and 2
       if (session.activeBusinessId) {
         await api.updateBusinessProfile(session.activeBusinessId, {
           businessId: session.activeBusinessId,
@@ -115,175 +114,103 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
     setForgotSubmitted(true);
   };
 
-  const fillDemoCredentials = () => {
-    setLoginEmail('demo@roastedbean.in');
-    setLoginPassword('streetcraft2026');
-  };
-
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px 80px', minHeight: 'calc(100vh - var(--layout-header-height) - 100px)' }}>
+    <div style={{ maxWidth: '880px', margin: '0 auto', padding: '0 24px 80px', minHeight: 'calc(100vh - 80px)' }}>
       
-      {/* Top Quiet Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: '20px', borderBottom: '1px solid var(--color-border)', marginBottom: '40px' }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)' }}>
+      {/* Quiet Single App Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '24px 0 16px', borderBottom: '1px solid var(--color-border)', marginBottom: '56px' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '0.02em', color: 'var(--color-ink)' }}>
           STREETCRAFT
         </span>
         <button
           className="btn-ghost"
-          style={{ fontSize: '13px', color: 'var(--color-ink-muted)' }}
+          style={{ fontSize: '13px', color: 'var(--color-ink-muted)', padding: '4px 0' }}
           onClick={() => navigate('/')}
         >
-          &larr; Back to StreetCraft
+          &larr; Back
         </button>
       </div>
 
       {errorMsg && (
-        <div style={{ padding: '12px 16px', background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', color: 'var(--color-danger)', fontSize: '13px', marginBottom: '24px', maxWidth: '600px' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', color: 'var(--color-danger)', fontSize: '13px', marginBottom: '24px', maxWidth: '440px', margin: '0 auto 24px' }}>
           {errorMsg}
         </div>
       )}
 
-      {claimToken && (
-        <div style={{ padding: '12px 16px', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', borderRadius: 'var(--radius-xs)', color: 'var(--color-primary)', fontSize: '13px', marginBottom: '24px', maxWidth: '720px' }}>
-          <strong>Your campaign proof is ready:</strong> Sign in or complete store setup to link it to your permanent store memory.
-        </div>
-      )}
-
       {/* =========================================================================
-          VIEW 1: SIGN IN MODE (Two-Column Authentic App Workspace)
+          VIEW 1: SIGN IN MODE (Quiet, Dignified Entrance)
          ========================================================================= */}
       {mode === 'login' && (
-        <div className="workspace-grid-2col" style={{ alignItems: 'start', gap: '56px' }}>
-          
-          {/* Left: Sign In Form */}
-          <div style={{ maxWidth: '440px' }}>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', lineHeight: '1.2', marginBottom: '8px' }}>
-              Good to see you again.
-            </h1>
-            <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', lineHeight: '1.5', marginBottom: '32px' }}>
-              Your campaigns, offers and business context are waiting.
-            </p>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', lineHeight: '1.2', marginBottom: '8px' }}>
+            Welcome back.
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', lineHeight: '1.5', marginBottom: '32px' }}>
+            Pick up where you left off.
+          </p>
 
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="owner@roastedbean.in"
-                  required
-                />
-              </div>
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '13px' }}>Email</label>
+              <input
+                type="email"
+                className="form-input"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="owner@roastedbean.in"
+                required
+              />
+            </div>
 
-              <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Password</label>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }}
-                    onClick={() => { setMode('forgot'); setErrorMsg(null); }}
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                <input
-                  type="password"
-                  className="form-input"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div className="form-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label className="form-label" style={{ margin: 0, fontSize: '13px' }}>Password</label>
                 <button
                   type="button"
                   className="btn-ghost"
-                  style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                  onClick={fillDemoCredentials}
+                  style={{ fontSize: '12px', padding: 0, color: 'var(--color-ink-muted)' }}
+                  onClick={() => { setMode('forgot'); setErrorMsg(null); }}
                 >
-                  <KeyRound size={13} /> Fill demo account
+                  Forgot password?
                 </button>
-                <span style={{ fontSize: '11px', color: 'var(--color-ink-subtle)' }}>1-click login</span>
               </div>
-
-              <button
-                type="submit"
-                className="btn-primary"
-                style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: '14px' }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Entering workspace...' : 'Continue'} <ArrowRight size={14} />
-              </button>
-            </form>
-
-            <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--color-border)', fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
-              New to StreetCraft?{' '}
-              <button
-                type="button"
-                className="btn-ghost"
-                style={{ padding: '0 4px', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}
-                onClick={() => { setMode('signup'); setErrorMsg(null); }}
-              >
-                Set up your store &rarr;
-              </button>
-            </div>
-          </div>
-
-          {/* Right: Live StreetCraft Campaign Preview Context */}
-          <div className="card" style={{ background: 'var(--color-surface)', padding: '28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
-              <div>
-                <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  WEEKDAY AFTERNOON
-                </span>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginTop: '2px' }}>
-                  The Roasted Bean &bull; Indiranagar
-                </h3>
-              </div>
-              <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontFamily: 'var(--font-mono)' }}>PROOFS READY</span>
+              <input
+                type="password"
+                className="form-input"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
             </div>
 
-            <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', marginBottom: '20px', lineHeight: '1.5' }}>
-              A quiet afternoon is an opportunity worth using. StreetCraft synchronizes your counter offer across every local channel.
-            </p>
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '11px 16px', fontSize: '14px', marginTop: '8px' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Entering...' : 'Continue'} <ArrowRight size={14} />
+            </button>
+          </form>
 
-            {/* Stacked Live Proof Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {/* Google Business Proof */}
-              <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', padding: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginBottom: '6px' }}>
-                  <Newspaper size={13} /> GOOGLE SEARCH & MAPS
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                  Beat the 3:30 PM Slump &bull; 20% off pour-overs & bakes
-                </div>
-              </div>
-
-              {/* Instagram Proof */}
-              <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', padding: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', marginBottom: '6px' }}>
-                  <Image size={13} /> INSTAGRAM REEL & STORY
-                </div>
-                <div style={{ fontSize: '13px', color: 'var(--color-ink)', fontStyle: 'italic' }}>
-                  "POV: Finding the quietest single-origin coffee corner in Indiranagar at 3:30 PM"
-                </div>
-              </div>
-
-              {/* WhatsApp Broadcast */}
-              <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', padding: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginBottom: '6px' }}>
-                  <MessageSquare size={13} /> WHATSAPP BROADCAST
-                </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--color-ink-soft)' }}>
-                  Drop by between 3–6 PM today. Flash this message at the counter to redeem.
-                </div>
-              </div>
+          {claimToken && (
+            <div style={{ marginTop: '28px', padding: '14px 16px', background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', fontSize: '12.5px', color: 'var(--color-ink)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10.5px', color: 'var(--color-primary)', display: 'block', marginBottom: '2px', textTransform: 'uppercase' }}>UNCLAIMED CAMPAIGN</span>
+              Your generated promotion is waiting to be linked to your store.
             </div>
+          )}
+
+          <div style={{ marginTop: '36px', paddingTop: '20px', borderTop: '1px solid var(--color-border)', fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
+            New to StreetCraft?{' '}
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ padding: '0 4px', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}
+              onClick={() => { setMode('signup'); setErrorMsg(null); }}
+            >
+              Set up your business &rarr;
+            </button>
           </div>
         </div>
       )}
@@ -292,11 +219,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           VIEW 2: SIGN UP MODE (In-App Store Setup Room)
          ========================================================================= */}
       {mode === 'signup' && !setupComplete && (
-        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           
           <div style={{ marginBottom: '32px' }}>
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              ONBOARDING WORKSPACE
+              STORE ONBOARDING
             </span>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', marginTop: '4px' }}>
               Let's set up your corner of StreetCraft.
@@ -307,7 +234,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           <div style={{ display: 'flex', gap: '20px', marginBottom: '32px', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px' }}>
             {[
               { num: 1, label: '01 Your business' },
-              { num: 2, label: '02 Your rhythm' },
+              { num: 2, label: '02 Your customers' },
               { num: 3, label: '03 Your account' },
             ].map((s) => (
               <span
@@ -328,8 +255,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
           {/* STEP 1: Business Identity */}
           {signupStep === 1 && (
-            <div className="card">
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '20px' }}>
+            <div className="card" style={{ padding: '28px' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--color-ink)', marginBottom: '20px' }}>
                 YOUR BUSINESS
               </h3>
 
@@ -393,9 +320,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
           {/* STEP 2: Store Rhythm & Customers */}
           {signupStep === 2 && (
-            <div className="card">
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '20px' }}>
-                YOUR CUSTOMERS & SLOW HOURS
+            <div className="card" style={{ padding: '28px' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--color-ink)', marginBottom: '20px' }}>
+                YOUR CUSTOMERS & RHYTHM
               </h3>
 
               <div className="form-group">
@@ -455,8 +382,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
           {/* STEP 3: Store Account & Password */}
           {signupStep === 3 && (
-            <form onSubmit={handleCompleteRegistration} className="card">
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '20px' }}>
+            <form onSubmit={handleCompleteRegistration} className="card" style={{ padding: '28px' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--color-ink)', marginBottom: '20px' }}>
                 YOUR STORE ACCOUNT
               </h3>
 
@@ -509,7 +436,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   className="btn-primary"
                   disabled={isSubmitting || !signupEmail || !signupPassword || !ownerName}
                 >
-                  {isSubmitting ? 'Creating store...' : 'Open Store Workspace'} &rarr;
+                  {isSubmitting ? 'Setting up...' : 'Open Store Workspace'} &rarr;
                 </button>
               </div>
             </form>
@@ -522,17 +449,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           VIEW 3: ONBOARDING COMPLETE (Instant Transition into Product)
          ========================================================================= */}
       {mode === 'signup' && setupComplete && (
-        <div style={{ maxWidth: '540px', margin: '40px auto', textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <Check size={24} color="var(--color-primary)" />
+        <div style={{ maxWidth: '480px', margin: '40px auto', textAlign: 'center' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <Check size={20} color="var(--color-primary)" />
           </div>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)', marginBottom: '8px' }}>
             Your business is ready.
           </h2>
 
-          <div style={{ padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', margin: '20px 0 28px', textAlign: 'left' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)' }}>
+          <div style={{ padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', margin: '20px 0 24px', textAlign: 'left' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '17px', color: 'var(--color-ink)' }}>
               {storeName.toUpperCase()}
             </div>
             <div style={{ fontSize: '13px', color: 'var(--color-primary)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
@@ -543,7 +470,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
             </div>
           </div>
 
-          <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', marginBottom: '28px', lineHeight: '1.5' }}>
+          <p style={{ fontSize: '14.5px', color: 'var(--color-ink-muted)', marginBottom: '28px', lineHeight: '1.5' }}>
             Now let's find something worth putting in front of your customers.
           </p>
 
@@ -561,7 +488,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           VIEW 4: FORGOT PASSWORD
          ========================================================================= */}
       {mode === 'forgot' && (
-        <div style={{ maxWidth: '440px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '30px', color: 'var(--color-ink)', marginBottom: '8px' }}>
             Let's get you back in.
           </h1>
@@ -585,9 +512,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
               </button>
             </div>
           ) : (
-            <form onSubmit={handleForgotSubmit} className="card" style={{ padding: '28px' }}>
+            <form onSubmit={handleForgotSubmit}>
               <div className="form-group">
-                <label className="form-label">Store Email</label>
+                <label className="form-label" style={{ fontSize: '13px' }}>Store Email</label>
                 <input
                   type="email"
                   className="form-input"
@@ -606,7 +533,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                 Send reset link &rarr;
               </button>
 
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <button
                   type="button"
                   className="btn-ghost"
