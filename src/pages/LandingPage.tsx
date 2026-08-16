@@ -1,124 +1,156 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
+import { FullCampaignPack, CampaignType } from '../types/campaign';
+import { BusinessProfile } from '../types/business';
+import { DatabasePlan } from '../types/billing';
 import { ChannelCard } from '../components/ChannelCard';
-import { ArrowRight, Store, Layers, Clock, ShieldCheck, Check, Database, MapPin, Sparkles, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Store, Layers, Sparkles, Database, CheckCircle2, Clock, MapPin, Calendar, HelpCircle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'google' | 'instagram' | 'whatsapp' | 'poster'>('google');
-  const [activeScenario, setActiveScenario] = useState<'afternoon' | 'weekend' | 'festival'>('afternoon');
+
+  // Real-time Database State
+  const [plans, setPlans] = useState<DatabasePlan[]>([]);
+  const [festivals, setFestivals] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  // Real-time Campaign Engine State
+  const [selectedCategory, setSelectedCategory] = useState('Specialty Cafe & Bakery');
+  const [storeName, setStoreName] = useState('The Roasted Bean');
+  const [neighborhood, setNeighborhood] = useState('Indiranagar');
+  const [city, setCity] = useState('Bengaluru');
+  const [landmarks, setLandmarks] = useState('Near 12th Main & Defence Colony Park');
+  const [campaignType, setCampaignType] = useState<CampaignType>('WEEKDAY_BOOST');
+  const [offerTitle, setOfferTitle] = useState('20% off single-origin pour-overs & fresh bakes');
+  const [timingLabel, setTimingLabel] = useState('Monday–Thursday, 3:00 PM – 6:00 PM');
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [livePack, setLivePack] = useState<FullCampaignPack | null>(null);
+  const [claimToken, setClaimToken] = useState<string | null>(null);
+  const [activeChannel, setActiveChannel] = useState<'GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER'>('GOOGLE_BUSINESS');
+
+  // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const scenarioData = {
-    afternoon: {
-      tag: 'SCENARIO 01 &bull; SLOW HOURS',
-      title: 'Weekday Afternoon Slump (3:00 PM – 6:00 PM)',
-      store: 'The Roasted Bean &bull; Indiranagar, Bengaluru',
-      problem: '12 empty tables between lunch and dinner. Baristas and staff are on shift regardless.',
-      solution: 'Drop an "Afternoon Focus Hours" campaign with a 20% discount on single-origin pour-overs paired with warm pastries.',
-      proofs: {
-        google: {
-          headline: 'Beat the 3:30 PM Slump in Indiranagar | The Roasted Bean',
-          body: 'Need an afternoon energy boost? Enjoy 20% off all single-origin pour-overs paired with warm sourdough pastries between 3:00 PM and 6:00 PM (Mon–Thu) at 12th Main, Indiranagar.',
-          ctaType: 'Visit Us',
-          offerSummary: '20% Off Pour-Overs & Pastries (3–6 PM)',
+  // Time & Day Radar
+  const [currentTimeStr, setCurrentTimeStr] = useState('');
+  const [currentDayStr, setCurrentDayStr] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTimeStr(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
+      setCurrentDayStr(now.toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch Real-time Database Assets (Plans & Festival Calendar)
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([
+      api.getPlans(),
+      api.getFestivalCalendar(),
+    ]).then(([plansData, festivalData]) => {
+      if (isMounted) {
+        setPlans(plansData);
+        setFestivals(festivalData || []);
+        setLoadingData(false);
+      }
+    }).catch(() => {
+      if (isMounted) setLoadingData(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Initial Real-time Generation
+  const executeRealtimeGeneration = async (
+    customType?: CampaignType,
+    customOffer?: string,
+    customStore?: string,
+    customNeighborhood?: string
+  ) => {
+    setIsGenerating(true);
+    try {
+      const targetStore = customStore || storeName;
+      const targetArea = customNeighborhood || neighborhood;
+      const targetType = customType || campaignType;
+      const targetOffer = customOffer || offerTitle;
+
+      const liveProfile: BusinessProfile = {
+        businessId: 'live_preview',
+        name: targetStore,
+        category: selectedCategory,
+        neighborhood: targetArea,
+        city,
+        landmarks,
+        targetCustomer: 'Working professionals, freelancers, and neighborhood residents',
+        styleVoice: 'Warm, contemporary, artisanal yet unpretentious',
+        signatureItems: 'Single-origin pour-overs, artisanal sourdough bakes',
+        primaryGoal: 'Increase foot traffic and walk-ins',
+        peakHours: '8:00 AM – 11:30 AM',
+        slowHours: timingLabel,
+        defaultOffer: targetOffer,
+        avgTicketINR: 350,
+        targetMonthlyCustomers: 40,
+        phoneWhatsApp: '',
+        updatedAt: new Date().toISOString(),
+      };
+
+      const result = await api.generateAnonymousCampaign(
+        {
+          type: targetType,
+          objective: 'MORE_WALK_INS',
+          audience: 'Local neighborhood residents and nearby office workers',
+          offer: {
+            title: targetOffer,
+            description: targetOffer,
+            value: 'Special Promotional Perk',
+            terms: 'Flash message at counter to redeem.',
+          },
+          schedule: {
+            startsAt: new Date().toISOString(),
+            endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
+            timingLabel,
+          },
         },
-        instagram: {
-          reelHook: 'POV: Finding the quietest coffee corner in Indiranagar at 3:30 PM',
-          storyFrames: [
-            '3:30 PM slump hitting hard?',
-            'Fresh single-origin roast just brewed at 12th Main',
-            '20% off pour-overs + sourdough bakes today (3–6 PM)',
-          ],
-          caption: 'The afternoon slump is real, but so is our fresh single-origin brew. Drop by between 3–6 PM for 20% off your pour-over when paired with any artisanal bake. Table by the window is ready for you.',
-          localTags: ['#IndiranagarEats', '#BangaloreCafes', '#IndiranagarCoffee', '#BangaloreFoodies', '#BengaluruAfternoon'],
-        },
-        whatsapp: {
-          broadcastMessage: `*Afternoon Perk at The Roasted Bean, Indiranagar*\n\nHey neighbor! Beat the 3:30 PM slump with *20% off* all single-origin pour-overs and artisanal sourdough bakes today between *3:00 PM – 6:00 PM*.\n\n📍 12th Main, Indiranagar (near Defence Colony Playground)\n⚡ Flash this message at counter to redeem!`,
-          cta: 'Show message at counter',
-        },
-        poster: {
-          headline: 'AFTERNOON FOCUS HOURS',
-          subheading: '20% Off Specialty Pour-Overs & Bakes',
-          body: 'Recharge your afternoon with freshly roasted single-origin coffees and warm sourdough pastries.',
-          cta: 'Scan to view today’s single-origin origins',
-        },
-      },
-    },
-    weekend: {
-      tag: 'SCENARIO 02 &bull; HIGH-DEMAND RUSH',
-      title: 'Weekend Brunch Rush & Table Bookings',
-      store: 'Artisan Table &bull; Bandra West, Mumbai',
-      problem: 'Weekend rush is unpredictable with uneven footfalls across Saturday and Sunday mornings.',
-      solution: 'Drop a curated Chef’s Weekend Tasting drop on Thursday evening to secure advance brunch reservations.',
-      proofs: {
-        google: {
-          headline: 'Weekend Artisan Brunch Menu at Bandra West | Artisan Table',
-          body: 'Reserve your weekend table for our limited Chef’s Tasting Brunch. Fresh brioche French toast, artisanal flat whites, and slow-fermented savory tartines at Pali Hill, Bandra West.',
-          ctaType: 'Book Table',
-          offerSummary: 'Weekend Tasting Menu (Sat & Sun 9 AM–2 PM)',
-        },
-        instagram: {
-          reelHook: 'What our Saturday morning bakery prep looks like in Bandra',
-          storyFrames: [
-            'Weekend dough is fermenting...',
-            'Chef’s Saturday brunch tasting drops this weekend',
-            'Tables fill quickly &bull; Link in bio to reserve',
-          ],
-          caption: 'Weekends are meant for slow mornings and fresh brioche. Join us this Saturday and Sunday for our limited seasonal brunch menu. Link in bio to reserve your spot.',
-          localTags: ['#BandraEats', '#MumbaiFoodies', '#BandraBrunch', '#MumbaiCafes', '#PaliHillBandra'],
-        },
-        whatsapp: {
-          broadcastMessage: `*Weekend Brunch Reservations at Artisan Table, Bandra*\n\nHey foodie! Our limited Chef’s Weekend Tasting Menu is ready for this Saturday & Sunday (9:00 AM – 2:00 PM).\n\n📍 Pali Hill, Bandra West\n⚡ Reserve your table early to avoid the rush.`,
-          cta: 'Reply to reserve your table',
-        },
-        poster: {
-          headline: 'WEEKEND ARTISAN BRUNCH',
-          subheading: 'Chef’s Limited Seasonal Tasting',
-          body: 'Fresh artisanal bakes, hand-brewed specialty coffees, and unhurried brunch dishes.',
-          cta: 'Scan to reserve your weekend table',
-        },
-      },
-    },
-    festival: {
-      tag: 'SCENARIO 03 &bull; SEASONAL EVENT',
-      title: 'Festival Celebration & Gift Box Drops',
-      store: 'Heritage Sweets & Savouries &bull; T. Nagar, Chennai',
-      problem: 'Festive demand is huge, but customers often buy generic packaged sweets from supermarket shelves.',
-      solution: 'Drop a pre-order campaign for handcrafted festive gift hampers with a time-limited booking window.',
-      proofs: {
-        google: {
-          headline: 'Handcrafted Festive Hampers in T. Nagar | Heritage Sweets',
-          body: 'Celebrate this festive season with authentic pure ghee sweets and artisanal savory hampers. Pre-order by Friday for guaranteed festival eve delivery or counter pickup at Usman Road, T. Nagar.',
-          ctaType: 'Pre-order Now',
-          offerSummary: 'Festive Sweet Hampers with Custom Packaging',
-        },
-        instagram: {
-          reelHook: 'Behind the scenes: Crafting pure ghee Mysore Pak in T. Nagar',
-          storyFrames: [
-            'Fresh festive batch in making...',
-            'Limited handcrafted festival gift boxes',
-            'Pre-orders close this Friday',
-          ],
-          caption: 'Celebrate traditions with authentic taste. Our pure ghee sweets and artisanal festive hampers are crafted in small daily batches. Pre-order today to reserve your gift box.',
-          localTags: ['#ChennaiFoodies', '#TNagarChennai', '#FestiveSweets', '#ChennaiEats', '#MadrasFood'],
-        },
-        whatsapp: {
-          broadcastMessage: `*Festive Hampers Pre-order at Heritage Sweets, T. Nagar*\n\nCelebrate with authentic handcrafted sweets! Pre-order your festive gift boxes before Friday for guaranteed counter pickup.\n\n📍 Usman Road, T. Nagar\n⚡ Click link below to view hamper catalog.`,
-          cta: 'View Hamper Catalog & Pre-order',
-        },
-        poster: {
-          headline: 'FESTIVE HANDCRAFTED HAMPERS',
-          subheading: 'Authentic Pure Ghee Sweets & Savouries',
-          body: 'Pre-order your bespoke gift hampers today for guaranteed festive counter pickup.',
-          cta: 'Scan to view the festive catalog',
-        },
-      },
-    },
+        liveProfile
+      );
+
+      setLivePack(result.pack);
+      setClaimToken(result.claimToken);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const currentScenario = scenarioData[activeScenario];
-  const activeProof = currentScenario.proofs[activeTab];
+  // Run real-time generation on mount
+  useEffect(() => {
+    executeRealtimeGeneration();
+  }, []);
+
+  const handlePresetSelect = (preset: {
+    category: string;
+    store: string;
+    neighborhood: string;
+    type: CampaignType;
+    offer: string;
+    timing: string;
+  }) => {
+    setSelectedCategory(preset.category);
+    setStoreName(preset.store);
+    setNeighborhood(preset.neighborhood);
+    setCampaignType(preset.type);
+    setOfferTitle(preset.offer);
+    setTimingLabel(preset.timing);
+    executeRealtimeGeneration(preset.type, preset.offer, preset.store, preset.neighborhood);
+  };
 
   const faqs = [
     {
@@ -146,10 +178,22 @@ export const LandingPage: React.FC = () => {
   return (
     <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 24px 100px' }}>
       
+      {/* Real-time Time & Context Ticker */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', marginTop: '24px', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-ink)' }}>
+          <Clock size={14} color="var(--color-primary)" />
+          <span><strong>Local Window:</strong> {currentDayStr} &bull; {currentTimeStr}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>
+          <span>DATABASE: LIVE</span>
+          <span>4 CHANNELS: SYNCHRONIZED</span>
+        </div>
+      </div>
+
       {/* Editorial Hero Section */}
-      <section style={{ padding: '64px 0 56px', textAlign: 'center' }}>
+      <section style={{ padding: '56px 0 48px', textAlign: 'center' }}>
         <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.14em', textTransform: 'uppercase', display: 'block', marginBottom: '14px', fontWeight: 600 }}>
-          STREETCRAFT &bull; LOCAL BUSINESS MARKETING INSTRUMENT
+          STREETCRAFT &bull; REALTIME LOCAL MARKETING INSTRUMENT
         </span>
 
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--color-ink)', lineHeight: '1.15', maxWidth: '860px', margin: '0 auto 20px', letterSpacing: '-0.02em' }}>
@@ -157,7 +201,7 @@ export const LandingPage: React.FC = () => {
         </h1>
 
         <p style={{ fontSize: '16.5px', color: 'var(--color-ink-muted)', lineHeight: '1.65', maxWidth: '660px', margin: '0 auto 32px' }}>
-          Your afternoon is slow. Your regulars are two blocks away. StreetCraft turns counter specials and neighborhood moments into coordinated campaign proofs across Google, Instagram, WhatsApp, and in-store displays.
+          Your slow hours are predictable. Your regulars are two blocks away. StreetCraft turns counter specials and neighborhood moments into real-time campaign proofs across Google, Instagram, WhatsApp, and your counter.
         </p>
 
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -170,146 +214,145 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* The Local Marketing Reality Table */}
+      {/* Real-time Interactive Campaign Engine Demo */}
       <section style={{ margin: '0 auto 80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="section-eyebrow">THE LOCAL MARKETING REALITY</span>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)' }}>
-            Why Neighborhood Stores Need Their Own Marketing Instrument
-          </h2>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-danger)', fontWeight: 600, textTransform: 'uppercase' }}>
-              FOOD DELIVERY APPS
-            </span>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
-              30% commission on regulars
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '14px' }}>
-              Delivery aggregators lock your customers behind algorithms and take 25–30% of every order, eroding your food and beverage margins.
-            </p>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-danger)' }}>
-              Outcome: High volume, low profit.
-            </div>
-          </div>
-
-          <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-              MARKETING AGENCIES
-            </span>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
-              ₹40,000/month retainers
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '14px' }}>
-              Agencies produce generic stock graphics with multi-day approval delays that fail to respond to immediate slow hours or excess bakery prep.
-            </p>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
-              Outcome: Disconnected content, slow execution.
-            </div>
-          </div>
-
-          <div className="card" style={{ border: '2px solid var(--color-primary)', background: 'var(--color-surface)' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, textTransform: 'uppercase' }}>
-              STREETCRAFT
-            </span>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', margin: '8px 0 6px' }}>
-              100% of walk-in sales kept
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '14px' }}>
-              Generate synchronized 4-channel campaign drops in 60 seconds. Direct customers to your counter with zero commissions and zero retainers.
-            </p>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>
-              Outcome: Direct foot traffic, full margins.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Scenario Walkthrough */}
-      <section style={{ margin: '0 auto 88px' }}>
         <div className="card" style={{ padding: '36px' }}>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <span className="section-eyebrow">INTERACTIVE DEMONSTRATION &bull; REAL STORE SCENARIOS</span>
+              <span className="section-eyebrow">LIVE ENGINE &bull; REALTIME GENERATION DEMO</span>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--color-ink)', marginTop: '2px' }}>
-                See How StreetCraft Handles Real Store Moments
+                Test the Multi-Channel Engine in Real Time
               </h2>
+              <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
+                Select a business scenario or customize parameters to run the live campaign generator.
+              </p>
             </div>
 
-            {/* Scenario Buttons */}
+            {/* Quick Scenario Preset Selectors */}
             <div style={{ display: 'flex', gap: '8px', background: 'var(--color-surface-raised)', padding: '4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', flexWrap: 'wrap' }}>
               {[
-                { id: 'afternoon', label: '1. Weekday Afternoon' },
-                { id: 'weekend', label: '2. Weekend Brunch' },
-                { id: 'festival', label: '3. Festival Pre-orders' },
-              ].map((sc) => (
+                {
+                  label: 'Indiranagar Cafe (Slow 3–6 PM)',
+                  category: 'Specialty Cafe & Bakery',
+                  store: 'The Roasted Bean',
+                  neighborhood: 'Indiranagar',
+                  type: 'WEEKDAY_BOOST' as CampaignType,
+                  offer: '20% off single-origin pour-overs & fresh sourdough bakes',
+                  timing: 'Monday–Thursday, 3:00 PM – 6:00 PM',
+                },
+                {
+                  label: 'Bandra Bistro (Weekend Brunch)',
+                  category: 'Artisanal Bistro & Dining',
+                  store: 'Artisan Table',
+                  neighborhood: 'Bandra West',
+                  type: 'WEEKEND_MAGNET' as CampaignType,
+                  offer: 'Limited Chef’s Weekend Tasting Menu & flat white pairing',
+                  timing: 'Saturday & Sunday, 9:00 AM – 2:00 PM',
+                },
+                {
+                  label: 'Chennai Sweets (Festival Hampers)',
+                  category: 'Heritage Sweets & Savouries',
+                  store: 'Heritage Sweets',
+                  neighborhood: 'T. Nagar',
+                  type: 'FESTIVAL_SPECIAL' as CampaignType,
+                  offer: 'Handcrafted pure ghee festive gift hampers with advance booking',
+                  timing: 'Festival Week Special Window',
+                },
+              ].map((p, idx) => (
                 <button
-                  key={sc.id}
-                  onClick={() => setActiveScenario(sc.id as any)}
+                  key={idx}
+                  onClick={() => handlePresetSelect(p)}
                   style={{
-                    padding: '7px 14px',
-                    fontSize: '12.5px',
-                    fontWeight: activeScenario === sc.id ? 600 : 400,
-                    color: activeScenario === sc.id ? 'var(--color-ink)' : 'var(--color-ink-muted)',
-                    background: activeScenario === sc.id ? 'var(--color-surface)' : 'transparent',
-                    border: activeScenario === sc.id ? '1px solid var(--color-border)' : '1px solid transparent',
+                    padding: '7px 12px',
+                    fontSize: '12px',
+                    fontWeight: storeName === p.store ? 600 : 400,
+                    color: storeName === p.store ? 'var(--color-ink)' : 'var(--color-ink-muted)',
+                    background: storeName === p.store ? 'var(--color-surface)' : 'transparent',
+                    border: storeName === p.store ? '1px solid var(--color-border)' : '1px solid transparent',
                     borderRadius: 'var(--radius-xs)',
-                    boxShadow: activeScenario === sc.id ? 'var(--shadow-subtle)' : 'none',
+                    boxShadow: storeName === p.store ? 'var(--shadow-subtle)' : 'none',
                     transition: 'var(--motion-fast)',
                   }}
                 >
-                  {sc.label}
+                  {p.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Scenario Context Bar */}
-          <div style={{ background: 'var(--color-surface-raised)', padding: '16px 20px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600 }}>
-                {currentScenario.tag}
-              </span>
-              <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}>
-                {currentScenario.store}
-              </span>
+          {/* Live Parameter Bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', background: 'var(--color-surface-raised)', padding: '16px 20px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
+            <div>
+              <label style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', display: 'block', marginBottom: '4px' }}>STORE NAME</label>
+              <input
+                type="text"
+                className="form-input"
+                style={{ padding: '6px 10px', fontSize: '13px' }}
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+              />
             </div>
-            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', margin: '6px 0 4px' }}>
-              {currentScenario.title}
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '16px', marginTop: '10px', fontSize: '12.5px' }}>
-              <div><strong style={{ color: 'var(--color-danger)' }}>The Moment:</strong> <span style={{ color: 'var(--color-ink-muted)' }}>{currentScenario.problem}</span></div>
-              <div><strong style={{ color: 'var(--color-primary)' }}>The StreetCraft Drop:</strong> <span style={{ color: 'var(--color-ink)' }}>{currentScenario.solution}</span></div>
+
+            <div>
+              <label style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', display: 'block', marginBottom: '4px' }}>NEIGHBORHOOD</label>
+              <input
+                type="text"
+                className="form-input"
+                style={{ padding: '6px 10px', fontSize: '13px' }}
+                value={neighborhood}
+                onChange={(e) => setNeighborhood(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', display: 'block', marginBottom: '4px' }}>PROMOTION OFFER</label>
+              <input
+                type="text"
+                className="form-input"
+                style={{ padding: '6px 10px', fontSize: '13px' }}
+                value={offerTitle}
+                onChange={(e) => setOfferTitle(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button
+                className="btn-primary"
+                style={{ width: '100%', padding: '8px 14px', fontSize: '13px', justifyContent: 'center' }}
+                disabled={isGenerating}
+                onClick={() => executeRealtimeGeneration()}
+              >
+                {isGenerating ? <RefreshCw size={13} className="spin" /> : <RefreshCw size={13} />}
+                {isGenerating ? 'Generating...' : 'Run Live Engine'}
+              </button>
             </div>
           </div>
 
           {/* Channel Selector Tabs */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
-              SYNCHRONIZED OUTPUTS ACROSS 4 CHANNELS:
-            </span>
+            <div style={{ fontSize: '12.5px', color: 'var(--color-ink)' }}>
+              <strong>Real-time Proof Output:</strong> <span style={{ color: 'var(--color-ink-muted)' }}>{storeName} &bull; {neighborhood}</span>
+            </div>
 
             <div style={{ display: 'flex', gap: '6px' }}>
               {[
-                { id: 'google', label: 'Google Business' },
-                { id: 'instagram', label: 'Instagram' },
-                { id: 'whatsapp', label: 'WhatsApp' },
-                { id: 'poster', label: 'Counter Poster' },
+                { id: 'GOOGLE_BUSINESS', label: 'Google Business' },
+                { id: 'INSTAGRAM', label: 'Instagram' },
+                { id: 'WHATSAPP', label: 'WhatsApp' },
+                { id: 'IN_STORE_POSTER', label: 'In-Store Poster' },
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveChannel(tab.id as any)}
                   style={{
-                    padding: '5px 12px',
+                    padding: '6px 12px',
                     borderRadius: 'var(--radius-xs)',
                     fontSize: '12px',
-                    fontWeight: activeTab === tab.id ? 600 : 400,
-                    color: activeTab === tab.id ? 'var(--color-ink)' : 'var(--color-ink-muted)',
-                    background: activeTab === tab.id ? 'var(--color-surface-raised)' : 'transparent',
-                    border: activeTab === tab.id ? '1px solid var(--color-border)' : '1px solid transparent',
+                    fontWeight: activeChannel === tab.id ? 600 : 400,
+                    color: activeChannel === tab.id ? 'var(--color-ink)' : 'var(--color-ink-muted)',
+                    background: activeChannel === tab.id ? 'var(--color-surface-raised)' : 'transparent',
+                    border: activeChannel === tab.id ? '1px solid var(--color-border)' : '1px solid transparent',
                   }}
                 >
                   {tab.label}
@@ -318,88 +361,157 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Active Proof Card */}
-          <ChannelCard
-            channel={
-              activeTab === 'google'
-                ? 'GOOGLE_BUSINESS'
-                : activeTab === 'instagram'
-                ? 'INSTAGRAM'
-                : activeTab === 'whatsapp'
-                ? 'WHATSAPP'
-                : 'IN_STORE_POSTER'
-            }
-            status="ready"
-            content={activeProof as unknown as Record<string, unknown>}
-          />
+          {/* Active Live Proof Render */}
+          {livePack && (
+            <div>
+              <ChannelCard
+                channel={activeChannel}
+                status="ready"
+                content={
+                  activeChannel === 'GOOGLE_BUSINESS'
+                    ? (livePack.outputs.googleBusiness as unknown as Record<string, unknown>)
+                    : activeChannel === 'INSTAGRAM'
+                    ? (livePack.outputs.instagram as unknown as Record<string, unknown>)
+                    : activeChannel === 'WHATSAPP'
+                    ? (livePack.outputs.whatsapp as unknown as Record<string, unknown>)
+                    : ((livePack.outputs.poster || {}) as unknown as Record<string, unknown>)
+                }
+              />
+
+              {claimToken && (
+                <div style={{ marginTop: '20px', padding: '14px 18px', background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--color-ink)' }}>
+                    <CheckCircle2 size={15} color="var(--color-primary)" style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+                    This live campaign is generated and ready to be claimed into your permanent store vault.
+                  </div>
+                  <button
+                    className="btn-primary"
+                    style={{ fontSize: '12.5px', padding: '6px 14px' }}
+                    onClick={() => navigate('/login')}
+                  >
+                    Save to Store Memory &rarr;
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* The 4 Architectural Modules */}
-      <section style={{ margin: '0 auto 88px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <span className="section-eyebrow">SYSTEM ARCHITECTURE</span>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '30px', color: 'var(--color-ink)' }}>
-            The Four Core Engines of StreetCraft
+      {/* Real-time Festival Calendar Feed */}
+      {festivals.length > 0 && (
+        <section style={{ margin: '0 auto 80px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <span className="section-eyebrow">REALTIME EVENT RADAR</span>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)' }}>
+              Upcoming Local Calendar Triggers
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
+              StreetCraft monitors regional events and festive seasons to prepare high-converting counter offers.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {festivals.slice(0, 3).map((f) => (
+              <div key={f.id} className="card" style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                    {new Date(f.starts_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}>
+                    OPPORTUNITY
+                  </span>
+                </div>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '6px' }}>
+                  {f.name}
+                </h4>
+                <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', lineHeight: '1.5', marginBottom: '12px' }}>
+                  {f.marketing_relevance}
+                </p>
+                <div style={{ fontSize: '12px', background: 'var(--color-surface-raised)', padding: '8px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', color: 'var(--color-ink)' }}>
+                  <strong>Suggested Drop:</strong> {f.suggested_offer}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Live Plans from Database */}
+      <section style={{ margin: '0 auto 80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+          <span className="section-eyebrow">STRAIGHTFORWARD RATES</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)' }}>
+            Transparent Plans for Local Storefronts
           </h2>
-          <p style={{ fontSize: '14.5px', color: 'var(--color-ink-muted)', maxWidth: '580px', margin: '8px auto 0' }}>
-            Built specifically to solve the real operational challenges of brick-and-mortar storefronts.
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
+            No commissions, no agency lock-in contracts.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-          {/* Module 1 */}
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Store size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>Store Memory</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              Stores your neighborhood landmarks, signature best-sellers, average ticket size, and slow-hour windows so you never need to re-type store details.
-            </p>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          {plans.map((p) => {
+            const isPro = p.id === 'PRO';
+            return (
+              <div
+                key={p.id}
+                className="card"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  border: isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  background: isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                  position: 'relative',
+                  padding: '28px',
+                }}
+              >
+                <div>
+                  {isPro && (
+                    <div style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: 'var(--color-primary)', color: '#FFFFFF', fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-xs)', textTransform: 'uppercase' }}>
+                      MOST POPULAR
+                    </div>
+                  )}
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: isPro ? '4px' : 0 }}>
+                    {p.name}
+                  </h3>
+                  <div style={{ fontSize: '32px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', margin: '12px 0 4px' }}>
+                    ₹{p.price_inr}
+                    <span style={{ fontSize: '13px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}> / month</span>
+                  </div>
+                  <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginBottom: '20px' }}>
+                    {p.monthly_pack_limit} campaign packs / month
+                  </div>
 
-          {/* Module 2 */}
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Layers size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>4-Channel Sync</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              Simultaneously crafts Google Business updates, Instagram hooks and frames, WhatsApp broadcasts, and printable QR counter cards in 60 seconds.
-            </p>
-          </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+                    {p.features.map((feat, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-ink-soft)' }}>
+                        <CheckCircle2 size={13} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-          {/* Module 3 */}
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Sparkles size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>Opportunity Radar</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              Daily morning briefing engine tracks weekday slow hours, upcoming regional festivals, and inactive regulars to propose high-impact promotions.
-            </p>
-          </div>
-
-          {/* Module 4 */}
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Database size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>Campaign Vault</h3>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              Persistent ledger of all created campaigns with status workflows (Ready &rarr; Published &rarr; Completed) and walk-in result logging.
-            </p>
-          </div>
+                <button
+                  className={isPro ? 'btn-primary' : 'btn-secondary'}
+                  style={{ width: '100%', justifyContent: 'center', fontSize: '13px' }}
+                  onClick={() => navigate(p.price_inr === 0 ? '/free-tool' : '/login')}
+                >
+                  {p.price_inr === 0 ? 'Start Free' : `Select ${p.name}`}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Frequently Asked Questions (Informative & Concrete) */}
-      <section style={{ maxWidth: '800px', margin: '0 auto 80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+      {/* Operator FAQ Accordion */}
+      <section style={{ maxWidth: '820px', margin: '0 auto 80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span className="section-eyebrow">COMMON QUESTIONS</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)' }}>
-            Everything You Need to Know
+            Frequently Asked Questions
           </h2>
         </div>
 
@@ -410,7 +522,7 @@ export const LandingPage: React.FC = () => {
               <div
                 key={idx}
                 className="card"
-                style={{ padding: '20px 24px', cursor: 'pointer' }}
+                style={{ padding: '18px 22px', cursor: 'pointer' }}
                 onClick={() => setOpenFaq(isOpen ? null : idx)}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -430,7 +542,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Bottom Quiet Call to Action */}
+      {/* Bottom CTA */}
       <section style={{ textAlign: 'center', padding: '48px 24px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-ink)', marginBottom: '10px' }}>
           Ready to turn slow hours into walk-in foot traffic?
