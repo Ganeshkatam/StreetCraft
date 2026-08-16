@@ -237,7 +237,7 @@ export type Database = {
           id: string;
           monthly_pack_limit: number;
           name: string;
-          price_inr: number;
+          monthly_inr: number;
         };
         Insert: {
           active?: boolean;
@@ -247,7 +247,7 @@ export type Database = {
           id: string;
           monthly_pack_limit: number;
           name: string;
-          price_inr: number;
+          monthly_inr: number;
         };
         Update: {
           active?: boolean;
@@ -257,7 +257,7 @@ export type Database = {
           id?: string;
           monthly_pack_limit?: number;
           name?: string;
-          price_inr?: number;
+          monthly_inr?: number;
         };
       };
       subscriptions: {

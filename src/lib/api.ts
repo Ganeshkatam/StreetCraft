@@ -5,17 +5,16 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import { UUID } from '../types/common';
-import { Business, BusinessProfile, BusinessMember, UserSession } from '../types/business';
+import { BusinessProfile, UserSession } from '../types/business';
 import {
   Campaign,
-  CampaignOutput,
   CampaignStatus,
   FullCampaignPack,
   CampaignType,
   CampaignObjective,
 } from '../types/campaign';
-import { PlanTier, UsagePeriod, UsageEvent, UsageSummary, DatabasePlan } from '../types/billing';
-import { STATIC_PLANS } from '../config/plans';
+import { PlanTier, UsageEvent, UsageSummary, DatabasePlan } from '../types/billing';
+
 import { generateCampaignPack, CampaignGenerationInput } from '../engine/campaignEngine';
 
 class RealtimeApiClient {
@@ -33,6 +32,7 @@ class RealtimeApiClient {
       return {
         userId: '',
         email: '',
+        phone: '',
         name: '',
         isAuthenticated: false,
         activeBusinessId: '',
@@ -45,6 +45,7 @@ class RealtimeApiClient {
       return {
         userId: '',
         email: '',
+        phone: '',
         name: '',
         isAuthenticated: false,
         activeBusinessId: '',
@@ -64,23 +65,97 @@ class RealtimeApiClient {
     return {
       userId: session.user.id,
       email: session.user.email || '',
-      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+      phone: session.user.phone || '',
+      name: session.user.user_metadata?.full_name || session.user.phone || 'User',
       isAuthenticated: true,
       activeBusinessId,
       role,
     };
   }
 
-  public async signUp(email: string, password: string, fullName: string, businessName: string): Promise<UserSession> {
+  public async getMyBusinesses(): Promise<Array<{ id: UUID; name: string }>> {
     if (!isSupabaseConfigured) {
-      const userId = 'usr_' + Date.now();
-      const bizId = 'biz_' + Date.now();
+      return [{ id: 'biz_local', name: 'The Roasted Bean' }];
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !session.user) return [];
+
+    const { data } = await (supabase.from('business_members') as any)
+      .select('business_id, businesses(id, name)')
+      .eq('user_id', session.user.id);
+
+    if (!data) return [];
+
+    // Map joined table
+    return data
+      .filter((d: any) => d.businesses)
+      .map((d: any) => ({
+        id: d.businesses.id,
+        name: d.businesses.name,
+      }));
+  }
+
+  public async getAccountLimits(): Promise<{ limit: number }> {
+    if (!isSupabaseConfigured) return { limit: 2 };
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return { limit: 2 };
+
+    const { data: sub } = await (supabase.from('subscriptions') as any)
+      .select('plan_id')
+      .eq('user_id', session.user.id)
+      .in('status', ['ACTIVE', 'TRIALING'])
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const planId = (sub && sub.length > 0) ? sub[0].plan_id : 'FREE';
+
+    const { data: plan } = await (supabase.from('plans') as any)
+      .select('business_limit')
+      .eq('id', planId)
+      .single();
+
+    return { limit: plan?.business_limit || 2 };
+  }
+
+  public async createBusiness(
+    name: string,
+    category: string,
+    neighborhood: string,
+    city: string,
+    phone: string
+  ): Promise<UserSession> {
+    if (!isSupabaseConfigured) {
+      const sess = await this.getSession();
+      const newBizId = 'biz_' + Date.now();
+      sess.activeBusinessId = newBizId;
+      localStorage.setItem('sc_local_session', JSON.stringify(sess));
+      return sess;
+    }
+
+    const { data, error } = await (supabase as any).rpc('create_business_atomically', {
+      p_name: name,
+      p_category: category,
+      p_neighborhood: neighborhood,
+      p_city: city,
+      p_phone: phone
+    });
+
+    if (error) throw error;
+
+    // Switch active context to the new business
+    return this.getSession();
+  }
+
+  public async signUp(email: string, password: string, fullName: string): Promise<UserSession> {
+    if (!isSupabaseConfigured) {
       const sess: UserSession = {
-        userId,
+        userId: 'usr_' + Date.now(),
         email,
+        phone: '',
         name: fullName,
         isAuthenticated: true,
-        activeBusinessId: bizId,
+        activeBusinessId: '',
         role: 'owner',
       };
       localStorage.setItem('sc_local_session', JSON.stringify(sess));
@@ -93,7 +168,6 @@ class RealtimeApiClient {
       options: {
         data: {
           full_name: fullName,
-          initial_business_name: businessName,
         },
       },
     });
@@ -101,32 +175,7 @@ class RealtimeApiClient {
     if (error) throw error;
     if (!data.user) throw new Error('Signup failed: user not created.');
 
-    // Create Business & Member
-    const { data: biz, error: bizError } = await (supabase.from('businesses') as any)
-      .insert({
-        name: businessName || `${fullName}'s Store`,
-        category: 'Artisanal Cafe & Bakery',
-        timezone: 'Asia/Kolkata',
-      })
-      .select('id')
-      .single();
-
-    if (bizError) throw bizError;
-
-    await (supabase.from('business_members') as any).insert({
-      business_id: biz.id,
-      user_id: data.user.id,
-      role: 'owner',
-    });
-
-    return {
-      userId: data.user.id,
-      email: data.user.email || '',
-      name: fullName,
-      isAuthenticated: true,
-      activeBusinessId: biz.id,
-      role: 'owner',
-    };
+    return this.getSession();
   }
 
   public async signIn(email: string, password: string): Promise<UserSession> {
@@ -134,6 +183,7 @@ class RealtimeApiClient {
       const sess: UserSession = {
         userId: 'usr_local',
         email,
+        phone: '',
         name: email.split('@')[0],
         isAuthenticated: true,
         activeBusinessId: 'biz_local',
@@ -164,37 +214,39 @@ class RealtimeApiClient {
   // 2. REFERENCE TABLES (Database-Backed Plans & Festivals)
   public async getPlans(): Promise<DatabasePlan[]> {
     if (!isSupabaseConfigured) {
-      return Object.values(STATIC_PLANS).map((p) => ({
-        id: p.id,
-        name: p.name,
-        monthly_pack_limit: p.monthlyPackLimit,
-        price_inr: p.priceINR,
-        channels: p.channels,
-        features: p.features,
-        active: true,
-        created_at: new Date().toISOString(),
-      }));
+      return [];
     }
 
     const { data, error } = await (supabase.from('plans') as any)
       .select('*')
       .eq('active', true)
-      .order('price_inr', { ascending: true });
+      .order('monthly_inr', { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      return Object.values(STATIC_PLANS).map((p) => ({
-        id: p.id,
-        name: p.name,
-        monthly_pack_limit: p.monthlyPackLimit,
-        price_inr: p.priceINR,
-        channels: p.channels,
-        features: p.features,
-        active: true,
-        created_at: new Date().toISOString(),
-      }));
+    if (error || !data) {
+      console.error('Failed to fetch plans from database:', error);
+      return [];
     }
 
     return data as DatabasePlan[];
+  }
+
+  // 2.5 FOUNDER ALLOCATION
+  public async getFounderAllocation(): Promise<{ total_slots: number; claimed_slots: number } | null> {
+    if (!isSupabaseConfigured) {
+      return null;
+    }
+
+    const { data, error } = await (supabase.from('founder_allocation') as any)
+      .select('total_slots, claimed_slots')
+      .eq('id', 1)
+      .single();
+
+    if (error || !data) {
+      console.error('Failed to fetch founder allocation:', error);
+      return null;
+    }
+
+    return data;
   }
 
   public async getFestivalCalendar() {
@@ -289,15 +341,16 @@ class RealtimeApiClient {
   // 4. USAGE & SUBSCRIPTION SUMMARY (Live from Postgres)
   public async getUsageSummary(businessId: UUID): Promise<UsageSummary> {
     const plans = await this.getPlans();
+    if (plans.length === 0) throw new Error('No plans found in database. Check Supabase connection.');
 
     if (!businessId || !isSupabaseConfigured) {
-      const defaultPlan = plans[0] || STATIC_PLANS.FREE;
+      const defaultPlan = plans[0];
       return {
         periodId: 'up_local',
         businessId: businessId || 'biz_local',
-        plan: 'FREE',
+        plan: defaultPlan.id as PlanTier,
         planName: defaultPlan.name,
-        priceINR: defaultPlan.price_inr,
+        priceINR: defaultPlan.monthly_inr,
         monthlyLimit: defaultPlan.monthly_pack_limit,
         usedPacks: 0,
         remainingPacks: defaultPlan.monthly_pack_limit,
@@ -316,7 +369,7 @@ class RealtimeApiClient {
       .maybeSingle();
 
     const planTier = (period?.plan || 'FREE') as PlanTier;
-    const planObj = plans.find((p) => p.id === planTier) || plans[0] || STATIC_PLANS.FREE;
+    const planObj = plans.find((p) => p.id === planTier) || plans[0];
     const packLimit = period?.pack_limit ?? planObj.monthly_pack_limit;
     const packsUsed = period?.packs_used ?? 0;
     const remainingPacks = Math.max(0, packLimit - packsUsed);
@@ -326,7 +379,7 @@ class RealtimeApiClient {
       businessId,
       plan: planTier,
       planName: planObj.name,
-      priceINR: planObj.price_inr,
+      priceINR: planObj.monthly_inr,
       monthlyLimit: packLimit,
       usedPacks: packsUsed,
       remainingPacks,
@@ -363,6 +416,20 @@ class RealtimeApiClient {
     input: CampaignGenerationInput,
     onProgress?: (channel: string, status: 'generating' | 'ready') => void
   ): Promise<FullCampaignPack> {
+    if (isSupabaseConfigured) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) throw new Error('Not authenticated.');
+
+      const { data: members, error: memError } = await (supabase.from('business_members') as any)
+        .select('id')
+        .eq('business_id', businessId)
+        .eq('user_id', session.user.id);
+
+      if (memError || !members || members.length === 0) {
+        throw new Error('Unauthorized: You do not have access to this business context.');
+      }
+    }
+
     const profile = await this.getBusinessProfile(businessId);
 
     if (isSupabaseConfigured && businessId) {

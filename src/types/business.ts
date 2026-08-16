@@ -45,6 +45,7 @@ export interface BusinessProfile {
 export interface UserSession {
   userId: UUID;
   email: string;
+  phone: string;
   name: string;
   isAuthenticated: boolean;
   activeBusinessId: UUID;

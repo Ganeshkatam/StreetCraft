@@ -476,7 +476,7 @@ export const LandingPage: React.FC = () => {
                     {p.name}
                   </h3>
                   <div style={{ fontSize: '32px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', margin: '12px 0 4px' }}>
-                    ₹{p.price_inr}
+                    ₹{p.monthly_inr}
                     <span style={{ fontSize: '13px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}> / month</span>
                   </div>
                   <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginBottom: '20px' }}>
@@ -496,9 +496,9 @@ export const LandingPage: React.FC = () => {
                 <button
                   className={isPro ? 'btn-primary' : 'btn-secondary'}
                   style={{ width: '100%', justifyContent: 'center', fontSize: '13px' }}
-                  onClick={() => navigate(p.price_inr === 0 ? '/free-tool' : '/login')}
+                  onClick={() => navigate(p.monthly_inr === 0 ? '/free-tool' : '/login')}
                 >
-                  {p.price_inr === 0 ? 'Start Free' : `Select ${p.name}`}
+                  {p.monthly_inr === 0 ? 'Start Free' : `Select ${p.name}`}
                 </button>
               </div>
             );

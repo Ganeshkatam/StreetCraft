@@ -4,7 +4,7 @@
 
 import { UUID, ISODateString } from './common';
 
-export type PlanTier = 'FREE' | 'PRO' | 'GROWTH';
+export type PlanTier = 'FREE' | 'PRO' | 'GROWTH' | 'FOUNDER';
 
 export interface PlanConfig {
   id: PlanTier;
@@ -26,11 +26,14 @@ export interface PlanEntitlements {
 }
 
 export interface DatabasePlan {
-  id: string;
+  id: PlanTier;
   name: string;
   monthly_pack_limit: number;
-  price_inr: number;
-  channels: string[];
+  monthly_inr: number;
+  quarterly_price_inr: number;
+  annual_price_inr: number;
+  business_limit: number;
+  channels: ('GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER')[];
   features: string[];
   active: boolean;
   created_at: string;

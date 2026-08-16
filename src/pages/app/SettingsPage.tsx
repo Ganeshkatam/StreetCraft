@@ -170,7 +170,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <User size={16} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>Store Account</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>Workspace Profile</h3>
             </div>
             <div style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', marginBottom: '6px' }}>
               Logged in as: <strong style={{ color: 'var(--color-ink)' }}>{session.email}</strong>

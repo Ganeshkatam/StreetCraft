@@ -7,6 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState<UserSession>({
     userId: '',
     email: '',
+    phone: '',
     name: '',
     isAuthenticated: false,
     activeBusinessId: '',
@@ -45,10 +46,33 @@ export function useAuth() {
     return s;
   };
 
-  const signUp = async (email: string, pass: string, fullName: string, businessName: string) => {
-    const s = await api.signUp(email, pass, fullName, businessName);
+  const createBusiness = async (name: string, category: string, neighborhood: string, city: string, phone: string) => {
+    const s = await api.createBusiness(name, category, neighborhood, city, phone);
     setSession(s);
     return s;
+  };
+
+  const signUp = async (email: string, pass: string, fullName: string) => {
+    const s = await api.signUp(email, pass, fullName);
+    setSession(s);
+    return s;
+  };
+
+  const getMyBusinesses = async () => {
+    return await api.getMyBusinesses();
+  };
+
+  const getAccountLimits = async () => {
+    return await api.getAccountLimits();
+  };
+
+  const switchBusiness = (businessId: string) => {
+    if (!session) return;
+    const newSession = { ...session, activeBusinessId: businessId };
+    setSession(newSession);
+    if (!isSupabaseConfigured) {
+      localStorage.setItem('sc_local_session', JSON.stringify(newSession));
+    }
   };
 
   const signOut = async () => {
@@ -56,6 +80,7 @@ export function useAuth() {
     setSession({
       userId: '',
       email: '',
+      phone: '',
       name: '',
       isAuthenticated: false,
       activeBusinessId: '',
@@ -69,6 +94,10 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    createBusiness,
+    getMyBusinesses,
+    getAccountLimits,
+    switchBusiness,
     refreshSession,
   };
 }

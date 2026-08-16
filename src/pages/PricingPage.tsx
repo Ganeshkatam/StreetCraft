@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DatabasePlan } from '../types/billing';
 import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -13,12 +14,29 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('annual');
+  const [founderAllocation, setFounderAllocation] = useState<{ total_slots: number; claimed_slots: number } | null>(null);
 
   useEffect(() => {
     api.getPlans().then((data) => {
       setPlans(data);
       setLoading(false);
     });
+    
+    api.getFounderAllocation().then(setFounderAllocation);
+
+    if (isSupabaseConfigured) {
+      const channel = supabase.channel('founder_allocation_changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'founder_allocation' }, (payload) => {
+          if (payload.new) {
+            setFounderAllocation(payload.new as any);
+          }
+        })
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, []);
 
   const pricingFaqs = [
@@ -54,10 +72,127 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
         </p>
       </div>
 
-      {/* Plan Cards Grid */}
+      {/* Billing Toggle */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--color-surface)', padding: '6px', borderRadius: '32px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
+          {(['monthly', 'quarterly', 'annual'] as const).map((cycle) => (
+            <button
+              key={cycle}
+              onClick={() => setBillingCycle(cycle)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '24px',
+                border: 'none',
+                background: billingCycle === cycle ? 'var(--color-ink)' : 'transparent',
+                color: billingCycle === cycle ? '#FFFFFF' : 'var(--color-ink-muted)',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
+              {cycle === 'annual' && (
+                <span style={{ fontSize: '11px', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.02em' }}>
+                  2 MONTHS FREE
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Founder Plan Section */}
+      {(() => {
+        const founderPlan = plans.find((p) => p.id === 'FOUNDER');
+        if (!founderPlan || !founderAllocation) return null;
+
+        const isSoldOut = founderAllocation.claimed_slots >= founderAllocation.total_slots;
+        const placesRemaining = Math.max(0, founderAllocation.total_slots - founderAllocation.claimed_slots);
+        const proPlan = plans.find((p) => p.id === 'PRO');
+        
+        return (
+          <div style={{ marginBottom: '64px', background: 'var(--color-surface)', border: '2px solid var(--color-ink)', borderRadius: 'var(--radius-sm)', padding: '48px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <span className="section-eyebrow" style={{ color: 'var(--color-ink)', fontWeight: 700, letterSpacing: '0.1em' }}>FIRST 100 MEMBERS</span>
+            
+            {isSoldOut ? (
+              <div style={{ padding: '32px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', marginTop: '24px', width: '100%', maxWidth: '600px' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink-muted)' }}>Founder allocation has ended.</h3>
+                <p style={{ marginTop: '8px', color: 'var(--color-ink-soft)' }}>All {founderAllocation.total_slots} places have been claimed.</p>
+              </div>
+            ) : (
+              <>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', margin: '16px 0 8px', color: 'var(--color-ink)' }}>Founder pricing is now open.</h2>
+                <div style={{ fontSize: '17px', color: 'var(--color-ink-muted)', marginBottom: '40px' }}>Founder offer — available once per account for the first 100 members.</div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '32px', width: '100%', maxWidth: '880px', textAlign: 'left', background: 'var(--color-surface-raised)', padding: '32px', borderRadius: 'var(--radius-xs)', alignItems: 'center' }}>
+                  
+                  {/* Pricing Box */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: '36px', lineHeight: 1.1, color: 'var(--color-ink)' }}>
+                        ₹{founderPlan.quarterly_price_inr.toLocaleString('en-IN')} <span style={{ fontSize: '15px', color: 'var(--color-ink-muted)' }}>/ quarter</span><br/>
+                        <span style={{ fontSize: '20px', color: 'var(--color-ink-soft)' }}>or</span> ₹{founderPlan.annual_price_inr.toLocaleString('en-IN')} <span style={{ fontSize: '15px', color: 'var(--color-ink-muted)' }}>/ year</span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Features Box */}
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px', borderLeft: '1px solid var(--color-border)', paddingLeft: '32px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--color-ink)' }}>
+                       <CheckCircle2 size={20} color="var(--color-ink)" />
+                       <span style={{ fontWeight: 600 }}>{founderPlan.monthly_pack_limit} campaign packs</span>
+                     </div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--color-ink)' }}>
+                       <CheckCircle2 size={20} color="var(--color-ink)" />
+                       <span style={{ fontWeight: 600 }}>{founderPlan.business_limit} businesses</span>
+                     </div>
+                  </div>
+  
+                  {/* CTA Box */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--color-border)', paddingLeft: '32px' }}>
+                    <button className="btn-primary" style={{ width: '100%', padding: '16px', fontSize: '15px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => navigate('/login')}>
+                      Become a Founder
+                    </button>
+                    <div style={{ marginTop: '16px', fontSize: '14px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
+                      {placesRemaining} of {founderAllocation.total_slots} remaining
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Standard Plan Cards Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '24px', marginBottom: '64px' }}>
-        {plans.map((p) => {
+        {plans
+          .filter(p => p.id !== 'FOUNDER' && !(billingCycle !== 'monthly' && p.monthly_inr === 0))
+          .map((p) => {
           const isPro = p.id === 'PRO';
+
+          const displayPrice = billingCycle === 'annual'
+            ? p.annual_price_inr
+            : billingCycle === 'quarterly'
+              ? p.quarterly_price_inr
+              : p.monthly_inr;
+
+          const periodLabel = billingCycle === 'annual'
+            ? '/ year'
+            : billingCycle === 'quarterly'
+              ? '/ 3 months'
+              : '/ month';
+
+          const subtitle = billingCycle === 'annual' && p.annual_price_inr > 0
+            ? `That's ₹${Math.round(p.annual_price_inr / 12).toLocaleString('en-IN')}/month — 2 months free`
+            : billingCycle === 'quarterly' && p.quarterly_price_inr > 0
+              ? `That's ₹${Math.round(p.quarterly_price_inr / 3).toLocaleString('en-IN')}/month`
+              : null;
+
           return (
             <div
               key={p.id}
@@ -84,13 +219,22 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                   {p.name}
                 </h3>
 
-                <div style={{ display: 'flex', alignItems: 'baseline', margin: '16px 0 6px', gap: '4px' }}>
-                  <span style={{ fontSize: '38px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', lineHeight: 1 }}>
-                    ₹{p.price_inr}
-                  </span>
-                  <span style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
-                    / month
-                  </span>
+                <div style={{ margin: '16px 0 6px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span style={{ fontSize: '38px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', lineHeight: 1 }}>
+                        ₹{displayPrice.toLocaleString('en-IN')}
+                      </span>
+                      <span style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
+                        {periodLabel}
+                      </span>
+                    </div>
+                    {subtitle && (
+                      <div style={{ fontSize: '12.5px', color: 'var(--color-primary)', marginTop: '4px', fontWeight: 500 }}>
+                        {subtitle}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '24px', paddingBottom: '14px', borderBottom: '1px solid var(--color-border)' }}>
@@ -114,11 +258,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                   if (onOpenUpgrade) {
                     onOpenUpgrade();
                   } else {
-                    navigate(p.price_inr === 0 ? '/free-tool' : '/login');
+                    navigate(p.monthly_inr === 0 ? '/free-tool' : '/login');
                   }
                 }}
               >
-                {p.price_inr === 0 ? 'Start Free' : `Select ${p.name}`}
+                {p.monthly_inr === 0 ? 'Start Free' : `Select ${p.name}`}
               </button>
             </div>
           );
@@ -127,32 +271,45 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
 
       {/* The Local Unit Economics / ROI Panel */}
       <section className="card" style={{ padding: '32px 36px', marginBottom: '64px', background: 'var(--color-surface-raised)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'center' }}>
-          <div>
-            <span className="section-eyebrow">STORE UNIT ECONOMICS</span>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', margin: '4px 0 10px' }}>
-              How 3 Extra Customers Cover Your Entire Month
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              If your average customer ticket is ₹350, just 3 extra walk-ins generated from a single Tuesday afternoon drop completely pays for the Pro Plan (₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399}/mo). Every additional table cover is 100% net revenue.
-            </p>
-          </div>
+        {(() => {
+          const proPlan = plans.find(p => p.id === 'PRO');
+          const effectiveMonthly = billingCycle === 'annual'
+            ? Math.round((proPlan?.annual_price_inr ?? 3990) / 12)
+            : billingCycle === 'quarterly'
+              ? Math.round((proPlan?.quarterly_price_inr ?? 1099) / 3)
+              : (proPlan?.monthly_inr ?? 399);
+          const requiredCovers = Math.ceil(effectiveMonthly / 200);
+          const cycleNote = billingCycle !== 'monthly' ? ' equivalent' : '';
+          
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'center' }}>
+              <div>
+                <span className="section-eyebrow">WORKSPACE UNIT ECONOMICS</span>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', margin: '4px 0 10px' }}>
+                  How {requiredCovers} Extra Customers Cover Your Entire Month
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
+                  If your average customer ticket is ₹200, just {requiredCovers} extra walk-ins generated from a single Tuesday afternoon drop completely pays for the Pro Plan (₹{effectiveMonthly}/mo{cycleNote}). Every additional table cover is 100% net revenue.
+                </p>
+              </div>
 
-          <div style={{ background: 'var(--color-surface)', padding: '20px 24px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
-              <span style={{ color: 'var(--color-ink-muted)' }}>Average Ticket Size:</span>
-              <strong style={{ color: 'var(--color-ink)' }}>₹350</strong>
+              <div style={{ background: 'var(--color-surface)', padding: '20px 24px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--color-ink-muted)' }}>Average Ticket Size:</span>
+                  <strong style={{ color: 'var(--color-ink)' }}>₹200</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--color-ink-muted)' }}>High-Street Pro Monthly:</span>
+                  <strong style={{ color: 'var(--color-primary)' }}>₹{effectiveMonthly}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', fontSize: '13.5px' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--color-ink)' }}>Breakeven Required:</span>
+                  <strong style={{ color: 'var(--color-accent)' }}>{(effectiveMonthly / 200).toFixed(1)} walk-in covers / month</strong>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
-              <span style={{ color: 'var(--color-ink-muted)' }}>High-Street Pro Monthly:</span>
-              <strong style={{ color: 'var(--color-primary)' }}>₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', fontSize: '13.5px' }}>
-              <span style={{ fontWeight: 600, color: 'var(--color-ink)' }}>Breakeven Required:</span>
-              <strong style={{ color: 'var(--color-accent)' }}>{((plans.find(p => p.id === 'PRO')?.price_inr ?? 399) / 350).toFixed(1)} walk-in covers / month</strong>
-            </div>
-          </div>
-        </div>
+          );
+        })()}
       </section>
 
       {/* Feature Comparison Matrix */}
@@ -169,9 +326,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             <thead>
               <tr style={{ background: 'var(--color-surface-raised)', borderBottom: '1px solid var(--color-border)' }}>
                 <th style={{ padding: '14px 20px', color: 'var(--color-ink-muted)', fontWeight: 600 }}>Capability</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Starter (₹{plans.find(p => p.id === 'FREE')?.price_inr ?? 0})</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-primary)', fontWeight: 700 }}>Pro (₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399})</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Growth (₹{plans.find(p => p.id === 'GROWTH')?.price_inr ?? 799})</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Starter (₹{plans.find(p => p.id === 'FREE')?.monthly_inr ?? 0})</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-primary)', fontWeight: 700 }}>Pro (₹{plans.find(p => p.id === 'PRO')?.monthly_inr ?? 399})</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Growth (₹{plans.find(p => p.id === 'GROWTH')?.monthly_inr ?? 799})</th>
               </tr>
             </thead>
             <tbody>
@@ -181,8 +338,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                 { feature: 'Instagram Reel Hook & Stories', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'WhatsApp Broadcast Copy', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'Print-Ready Counter QR Cards', starter: 'Standard', pro: 'High-Res A5/A4', growth: 'Custom Formats' },
-                { feature: 'Store Memory & Landmarks', starter: '1 Store', pro: '1 Store', growth: 'Up to 3 Stores' },
-                { feature: 'Daily Opportunity Radar', starter: 'Standard', pro: 'Priority Live', growth: 'Realtime Multi-Store' },
+                { feature: 'Isolated Workspaces', starter: 'Up to 2 Businesses', pro: 'Up to 5 Businesses', growth: 'Up to 10 Businesses' },
+                { feature: 'Daily Opportunity Radar', starter: 'Standard', pro: 'Priority Live', growth: 'Realtime Multi-Business' },
                 { feature: 'Commission Fee on Orders', starter: '0%', pro: '0%', growth: '0%' },
               ].map((row, idx) => (
                 <tr key={idx} style={{ borderBottom: idx === 7 ? 'none' : '1px solid var(--color-border)' }}>
