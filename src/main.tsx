@@ -38,6 +38,7 @@ function AppLayout() {
   const { usage } = useUsage(session.activeBusinessId);
 
   const isAppView = location.pathname.startsWith('/app');
+  const isFreeToolView = location.pathname === '/free-tool';
   const isAuthView =
     location.pathname === '/login' ||
     location.pathname === '/signup' ||
@@ -207,7 +208,7 @@ function AppLayout() {
         </div>
       )}
 
-      {!isAuthView && <Footer />}
+      {!isAuthView && !isFreeToolView && <Footer />}
 
       <UpgradeModal
         isOpen={upgradeModalOpen}

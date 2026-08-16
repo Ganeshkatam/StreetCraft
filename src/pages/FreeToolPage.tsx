@@ -4,6 +4,8 @@ import { api } from '../lib/api';
 import { CampaignType, FullCampaignPack } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
 import { ChannelCard } from '../components/ChannelCard';
+import { CustomSelect, SelectOption } from '../components/CustomSelect';
+import { CalendarPicker } from '../components/CalendarPicker';
 import {
   CheckCircle2,
   RefreshCw
@@ -61,6 +63,39 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
       type: 'FESTIVAL_SPECIAL' as CampaignType,
       offerTitle: 'Handcrafted pure ghee festive gift boxes with advance booking',
       timing: 'Festival Week Special Window',
+    },
+  ];
+
+  const triggerOptions: SelectOption<CampaignType>[] = [
+    {
+      value: 'WEEKDAY_BOOST',
+      label: 'Weekday Slow Hours Slump',
+      description: 'Promote slow 3–6 PM hours with special pairing perks',
+    },
+    {
+      value: 'WEEKEND_MAGNET',
+      label: 'Weekend Rush Magnet',
+      description: 'Capture brunch crowds, table reservations & weekend walk-ins',
+    },
+    {
+      value: 'MENU_LAUNCH',
+      label: 'New Item / Signature Dish Drop',
+      description: 'Spotlight a fresh roast, bakery drop, or seasonal special',
+    },
+    {
+      value: 'FESTIVAL_SPECIAL',
+      label: 'Holiday / Festival Special',
+      description: 'Festive celebrations, gift boxes & advance bookings',
+    },
+    {
+      value: 'REVIEW_SPOTLIGHT',
+      label: 'Community & Regulars Spotlight',
+      description: 'Highlight customer love and 5-star neighborhood reputation',
+    },
+    {
+      value: 'WIN_BACK_REGULARS',
+      label: 'Win-Back Regulars Special',
+      description: 'Time-sensitive incentive to re-engage past store customers',
     },
   ];
 
@@ -161,20 +196,57 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
       {/* =========================================================================
           PAGE HEADER
           ========================================================================= */}
-      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
         <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '12px', fontWeight: 600 }}>
           NO SIGNUP REQUIRED &bull; FREE DEMONSTRATION TOOL
         </span>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '46px', color: 'var(--color-ink)', lineHeight: '1.15', margin: '0 0 14px', letterSpacing: '-0.02em' }}>
           Free Campaign Proof Generator
         </h1>
-        <p style={{ fontSize: '16.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6', maxWidth: '680px', margin: '0 auto 28px' }}>
-          Enter your shop details and promotional offer to generate a coordinated 4-channel campaign pack for Google, Instagram, WhatsApp, and in-store print.
+        <p style={{ fontSize: '16.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6', maxWidth: '680px', margin: '0 auto' }}>
+          Enter your shop details and promotional offer to generate a coordinated campaign pack across Google, Instagram, WhatsApp, and in-store print.
         </p>
+      </div>
 
-        {/* Quick Presets Bar */}
-        <div style={{ display: 'inline-flex', gap: '8px', background: 'var(--color-surface-raised)', padding: '6px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', alignSelf: 'center', padding: '0 8px' }}>
+      {/* Sticky Presets Bar */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 'var(--layout-header-height, 68px)',
+          zIndex: 40,
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '14px 0 18px',
+          marginBottom: '28px',
+          background: 'linear-gradient(to bottom, var(--color-page) 75%, transparent)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            display: 'inline-flex',
+            gap: '8px',
+            background: 'var(--color-surface)',
+            padding: '6px 8px',
+            borderRadius: '32px',
+            border: '1px solid var(--color-border)',
+            boxShadow: 'var(--shadow-paper)',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '11.5px',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-primary)',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              padding: '0 8px',
+            }}
+          >
             Try Sample:
           </span>
           {presets.map((p, idx) => (
@@ -182,14 +254,13 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
               key={idx}
               onClick={() => handleApplyPreset(p)}
               style={{
-                padding: '7px 14px',
+                padding: '7px 16px',
                 fontSize: '12.5px',
-                fontWeight: name === p.name ? 600 : 400,
-                color: name === p.name ? 'var(--color-ink)' : 'var(--color-ink-muted)',
-                background: name === p.name ? 'var(--color-surface)' : 'transparent',
-                border: name === p.name ? '1px solid var(--color-border)' : '1px solid transparent',
-                borderRadius: 'var(--radius-xs)',
-                boxShadow: name === p.name ? 'var(--shadow-subtle)' : 'none',
+                fontWeight: name === p.name ? 600 : 500,
+                color: name === p.name ? '#FFFFFF' : 'var(--color-ink-muted)',
+                background: name === p.name ? 'var(--color-ink)' : 'transparent',
+                border: 'none',
+                borderRadius: '24px',
                 cursor: 'pointer',
                 transition: 'var(--motion-fast)',
               }}
@@ -205,8 +276,17 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
           ========================================================================= */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 400px) 1fr', gap: '32px', alignItems: 'start' }}>
 
-        {/* Input Parameters Card */}
-        <form onSubmit={handleSubmit} className="card" style={{ padding: '28px', background: 'var(--color-surface)' }}>
+        {/* Input Parameters Card (Sticky Workbench) */}
+        <form
+          onSubmit={handleSubmit}
+          className="card"
+          style={{
+            padding: '28px',
+            background: 'var(--color-surface)',
+            position: 'sticky',
+            top: 'calc(var(--layout-header-height, 68px) + 72px)',
+          }}
+        >
           <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: '10px', borderBottom: '1px solid var(--color-border)', marginBottom: '18px' }}>
             Store Parameters
           </div>
@@ -261,21 +341,12 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Promotion Trigger</label>
-            <select
-              className="form-select"
-              value={type}
-              onChange={(e) => setType(e.target.value as CampaignType)}
-            >
-              <option value="WEEKDAY_BOOST">Weekday Slow Hours Slump</option>
-              <option value="WEEKEND_MAGNET">Weekend Rush Magnet</option>
-              <option value="MENU_LAUNCH">New Item / Signature Dish Drop</option>
-              <option value="FESTIVAL_SPECIAL">Holiday / Festival Special</option>
-              <option value="REVIEW_SPOTLIGHT">Community &amp; Regulars Spotlight</option>
-              <option value="FLASH_OFFER">Flash Counter Incentive</option>
-            </select>
-          </div>
+          <CustomSelect<CampaignType>
+            label="Promotion Trigger"
+            value={type}
+            onChange={(newType) => setType(newType)}
+            options={triggerOptions}
+          />
 
           <div className="form-group">
             <label className="form-label">Offer / Special Headline</label>
@@ -289,16 +360,12 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Target Time Window</label>
-            <input
-              type="text"
-              className="form-input"
-              value={timing}
-              onChange={(e) => setTiming(e.target.value)}
-              placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
-            />
-          </div>
+          <CalendarPicker
+            label="Target Time Window"
+            value={timing}
+            onChange={(newTiming) => setTiming(newTiming)}
+            placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
+          />
 
           <button
             type="submit"
@@ -307,7 +374,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
             disabled={isGenerating}
           >
             {isGenerating ? <RefreshCw size={14} className="spin" /> : <RefreshCw size={14} />}
-            {isGenerating ? 'Generating 4-Channel Pack...' : 'Generate 4-Channel Pack'}
+            {isGenerating ? 'Generating campaign pack...' : 'Generate Campaign Pack'}
           </button>
         </form>
 
@@ -349,7 +416,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
 
               <div style={{ display: 'flex', gap: '6px', background: 'var(--color-surface-raised)', padding: '4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
                 {[
-                  { id: 'ALL', label: 'All 4 Proofs' },
+                  { id: 'ALL', label: 'All Proofs' },
                   { id: 'GOOGLE_BUSINESS', label: 'Google' },
                   { id: 'INSTAGRAM', label: 'Instagram' },
                   { id: 'WHATSAPP', label: 'WhatsApp' },

@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
               <button className="footer-link" onClick={() => navigate('/how-it-works')}>How it works</button>
               <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
               <button className="footer-link" onClick={() => navigate('/pricing')}>Plans &amp; pricing</button>
-              <button className="footer-link" onClick={() => navigate('/how-it-works')}>4-Channel pipeline</button>
+              <button className="footer-link" onClick={() => navigate('/how-it-works')}>Marketing pipeline</button>
             </div>
           </div>
 

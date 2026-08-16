@@ -171,7 +171,7 @@ export const LandingPage: React.FC = () => {
     },
     {
       q: 'Do I need marketing experience?',
-      a: 'Zero. StreetCraft writes customer-ready copy and provides exact formats formatted for each channel so you can publish immediately.',
+      a: 'Zero. StreetCraft writes customer-ready copy and provides exact formats formatted for each platform so you can publish immediately.',
     },
     {
       q: 'Can I manage multiple businesses?',
@@ -179,7 +179,7 @@ export const LandingPage: React.FC = () => {
     },
     {
       q: 'What happens on the Free plan?',
-      a: 'The Free plan gives you 3 complete 4-channel campaign packs every month, store preferences, and access to regional calendar triggers. No payment card is required.',
+      a: 'The Free plan gives you 3 complete campaign packs every month, store preferences, and access to regional calendar triggers. No payment card is required.',
     },
     {
       q: 'How does Founder pricing work?',
@@ -240,7 +240,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Tangible 4-Channel Physical Artifact Stage */}
+          {/* Right: Tangible Multi-Touchpoint Physical Artifact Stage */}
           <div className="card" style={{ padding: '28px 30px', background: 'var(--color-surface)', border: '2px solid var(--color-border)', boxShadow: 'var(--shadow-paper)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.08em' }}>
@@ -404,7 +404,7 @@ export const LandingPage: React.FC = () => {
               03 &mdash; CREATE EVERYTHING AT ONCE
             </span>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '21px', color: 'var(--color-ink)', marginBottom: '10px' }}>
-              Coordinated Multi-Channel Pack
+              Coordinated Campaign Pack
             </h3>
             <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.65' }}>
               One idea becomes coordinated, character-compliant marketing for Google Search &amp; Maps, Instagram, WhatsApp, and physical in-store counter cards.
@@ -424,7 +424,7 @@ export const LandingPage: React.FC = () => {
             One Opportunity, Everywhere
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', maxWidth: '600px', margin: '8px auto 0', lineHeight: '1.6' }}>
-            Every channel receives content specifically structured for its format and customer context.
+            Every storefront format receives content specifically structured for its context and customers.
           </p>
         </div>
 
@@ -525,7 +525,7 @@ export const LandingPage: React.FC = () => {
                 See how the engine works
               </h2>
               <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginTop: '6px' }}>
-                Select a sample business scenario or customize parameters to preview multi-channel generation.
+                Select a sample business scenario or customize parameters to preview generation.
               </p>
             </div>
 
@@ -630,7 +630,7 @@ export const LandingPage: React.FC = () => {
                 onClick={() => executeDemoGeneration()}
               >
                 {isGenerating ? <RefreshCw size={14} className="spin" /> : <RefreshCw size={14} />}
-                {isGenerating ? 'Generating Multi-Channel Pack...' : 'Generate Demo Pack'}
+                {isGenerating ? 'Generating Campaign Pack...' : 'Generate Demo Pack'}
               </button>
             </div>
 
@@ -805,7 +805,7 @@ export const LandingPage: React.FC = () => {
             {/* Right: Comparative Commerce Ledger */}
             <div style={{ background: 'var(--color-surface-raised)', padding: '24px 28px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
               <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '14px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>
-                Channel Cost Comparison
+                Marketing Cost Comparison
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

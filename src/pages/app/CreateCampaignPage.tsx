@@ -107,7 +107,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       {/* Editorial Header */}
       <div className="section-header">
         <span className="section-eyebrow">CAMPAIGN COMPOSER &bull; STEP {step} OF 4</span>
-        <h1 className="section-title">Compose Multi-Channel Campaign</h1>
+        <h1 className="section-title">Compose Marketing Campaign</h1>
         <p className="section-subtitle">
           Turn your counter special into coordinated proofs across Google, Instagram, WhatsApp, and in-store QR poster.
         </p>

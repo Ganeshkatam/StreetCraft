@@ -42,7 +42,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   const pricingFaqs = [
     {
       q: 'How does the monthly campaign pack limit work?',
-      a: 'Each campaign pack generates 4 coordinated channel outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
+      a: 'Each campaign pack generates coordinated outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
     },
     {
       q: 'Are there any hidden fees or sales commissions?',
@@ -50,7 +50,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
     },
     {
       q: 'Can I start for free without a credit card?',
-      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete 4-channel campaign packs every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
+      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete campaign packs every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
     },
     {
       q: 'Can I upgrade or cancel my plan at any time?',

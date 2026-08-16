@@ -42,7 +42,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       `${LIMITS.PRO} Coordinated Campaign Packs / mo`,
-      'All 4 Marketing Channels Included',
+      'All Storefront Marketing Formats Included',
       'Print-Ready In-Store Poster Layouts',
       'Advanced Festival & Holiday Strategy',
       'Permanent Business Preferences Engine',
@@ -57,7 +57,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       `${LIMITS.GROWTH} Coordinated Campaign Packs / mo`,
-      'Full 4-Channel Distribution Engine',
+      'Full Multi-Touchpoint Distribution Engine',
       'Dedicated Fast Lane Generation',
       'Custom Brand Tone & Voice Presets',
       'Role-Based Team Collaboration',

@@ -51,8 +51,8 @@ export const HowItWorksPage: React.FC = () => {
     {
       step: 3,
       tag: 'COORDINATED GENERATION',
-      title: 'Coordinated 4-Channel Pack',
-      summary: 'StreetCraft transforms your opportunity into 4 production-ready, character-compliant marketing assets simultaneously—not disconnected generic text.',
+      title: 'Coordinated Campaign Pack',
+      summary: 'StreetCraft transforms your opportunity into production-ready, character-compliant marketing assets simultaneously—not disconnected generic text.',
       details: [
         'Google Business: Local search & Maps update with neighborhood landmarks',
         'Instagram: 3-second Reel hook, 3 Story frames, caption, and local tags',
@@ -65,10 +65,10 @@ export const HowItWorksPage: React.FC = () => {
       step: 4,
       tag: 'QUALITY & COMPLIANCE',
       title: 'Deterministic Rules & Validation',
-      summary: 'Every output passes through strict channel-specific character limits, hashtag budgets, and structured format validators before you see it.',
+      summary: 'Every output passes through strict format-specific character limits, hashtag budgets, and structured layout validators before you see it.',
       details: [
         'Zod schema output verification',
-        'Exact character boundary enforcement per channel',
+        'Exact character boundary enforcement per platform',
         'Zero generic hallucinations or irrelevant buzzwords',
         'One-click clipboard copying and print layout export'
       ],
@@ -118,10 +118,10 @@ export const HowItWorksPage: React.FC = () => {
         >
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>
-              THE MULTI-CHANNEL PIPELINE
+              THE STOREFRONT PIPELINE
             </span>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', marginTop: '4px' }}>
-              One Store Opportunity &rarr; Four Coordinated Channels
+              One Store Opportunity &rarr; Coordinated Storefront Touchpoints
             </h3>
           </div>
 
@@ -237,7 +237,7 @@ export const HowItWorksPage: React.FC = () => {
                 OUTPUT &bull; STAGE 03
               </span>
               <strong style={{ fontSize: '16px', color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
-                4-Channel Pack
+                Multi-Touchpoint Pack
               </strong>
               <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5', margin: 0 }}>
                 Google &bull; Instagram &bull; WhatsApp &bull; Counter Print
@@ -368,7 +368,7 @@ export const HowItWorksPage: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <span className="section-eyebrow">OUTPUT SPECIFICATIONS</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', marginTop: '4px' }}>
-            Four Channel Touchpoints in Detail
+            Campaign Touchpoints in Detail
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', maxWidth: '600px', margin: '8px auto 0', lineHeight: '1.6' }}>
             Every touchpoint is formatted for its specific reading environment and action trigger.
@@ -513,7 +513,7 @@ export const HowItWorksPage: React.FC = () => {
           See StreetCraft in action for your store.
         </h2>
         <p style={{ fontSize: '15.5px', color: 'var(--color-ink-muted)', maxWidth: '540px', margin: '0 auto 28px', lineHeight: '1.6' }}>
-          Generate your first complete multi-channel campaign in 10 seconds. No credit card required.
+          Generate your first complete campaign in 10 seconds. No credit card required.
         </p>
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" style={{ padding: '13px 30px', fontSize: '15px' }} onClick={() => navigate('/free-tool')}>

@@ -35,7 +35,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
           <span className="section-eyebrow">PERSISTENT CAMPAIGN VAULT</span>
           <h1 className="section-title">Campaign Vault</h1>
           <p className="section-subtitle">
-            All generated proofs, multi-channel outputs, and recorded walk-in results.
+            All generated proofs, platform outputs, and recorded walk-in results.
           </p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/app/create')}>
@@ -170,7 +170,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                   )}
                 </div>
 
-                {/* Expanded 4 Channels */}
+                {/* Expanded Campaign Proofs */}
                 {isExpanded && (
                   <div className="proofs-grid-2x2" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
                     <ChannelCard

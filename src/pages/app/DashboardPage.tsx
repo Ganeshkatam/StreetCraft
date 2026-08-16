@@ -142,7 +142,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
             {campaigns.length === 0 ? (
               <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', padding: '16px 0' }}>
-                No campaign drops yet. Click 'Create promotion' to draft your first 4-channel pack.
+                No campaign drops yet. Click 'Create promotion' to draft your first campaign pack.
               </p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>

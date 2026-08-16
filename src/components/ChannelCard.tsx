@@ -59,7 +59,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
     if (status === 'pending') {
       return (
         <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--color-ink-muted)', fontSize: '13px' }}>
-          Queued in multi-channel sequence...
+          Queued in generation sequence...
         </div>
       );
     }
