@@ -240,14 +240,32 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <CampaignStatusBadge status={status} size="sm" />
           {status === 'ready' && (
-            <button
-              className="btn-secondary"
-              style={{ fontSize: '11.5px', padding: '4px 10px' }}
-              onClick={() => handleCopy(getFullCopyText())}
-            >
-              {copied ? <Check size={12} color="var(--accent-emerald)" /> : <Copy size={12} />}
-              {copied ? 'Copied' : 'Copy'}
-            </button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '11.5px', padding: '4px 10px' }}
+                onClick={() => {
+                  const blob = new Blob([getFullCopyText()], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${channel.toLowerCase()}_proof.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                title="Download as text file"
+              >
+                Download
+              </button>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '11.5px', padding: '4px 10px' }}
+                onClick={() => handleCopy(getFullCopyText())}
+              >
+                {copied ? <Check size={12} color="var(--accent-emerald)" /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
           )}
         </div>
       </div>
