@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { DatabasePlan } from '../types/billing';
-import { CheckCircle2, ArrowRight, ShieldCheck, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface PricingPageProps {
   onOpenUpgrade?: () => void;
@@ -42,7 +42,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
 
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '56px 24px 96px' }}>
-      
+
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <span className="section-eyebrow">STRAIGHTFORWARD RATES</span>
@@ -79,11 +79,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                     MOST POPULAR FOR CAFES
                   </div>
                 )}
-                
+
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginTop: isPro ? '6px' : 0 }}>
                   {p.name}
                 </h3>
-                
+
                 <div style={{ display: 'flex', alignItems: 'baseline', margin: '16px 0 6px', gap: '4px' }}>
                   <span style={{ fontSize: '38px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', lineHeight: 1 }}>
                     ₹{p.price_inr}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { ArrowRight, ArrowLeft, Check, Store, ShieldCheck, MapPin, Clock, Utensils } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
 interface LoginPageProps {
   claimToken?: string | null;
@@ -77,7 +77,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
     try {
       const session = await signUp(signupEmail, signupPassword, ownerName, storeName);
-      
+
       if (session.activeBusinessId) {
         await api.updateBusinessProfile(session.activeBusinessId, {
           businessId: session.activeBusinessId,
@@ -119,7 +119,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
   return (
     <div style={{ maxWidth: '920px', margin: '0 auto', padding: '0 24px 80px', minHeight: 'calc(100vh - 80px)' }}>
-      
+
       {/* Quiet Single App Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '24px 0 16px', borderBottom: '1px solid var(--color-border)', marginBottom: '48px' }}>
         <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '0.02em', color: 'var(--color-ink)' }}>
@@ -244,7 +244,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
          ========================================================================= */}
       {mode === 'signup' && !setupComplete && (
         <div style={{ maxWidth: '620px', margin: '0 auto' }}>
-          
+
           <div style={{ marginBottom: '28px' }}>
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               STORE ONBOARDING &bull; STEP {signupStep} OF 3
