@@ -6,24 +6,33 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   return (
-    <footer style={{ borderTop: '1px solid var(--border-editorial)', padding: '36px 48px', marginTop: 'auto', background: 'var(--bg-canvas)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1080px', margin: '0 auto', fontSize: '13px', color: 'var(--color-muted)' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>
-          STREETCRAFT &mdash; Local business marketing instrument &copy; 2026.
+    <footer className="editorial-footer">
+      <div className="footer-inner">
+        <div className="footer-brand-block">
+          <div className="footer-brand-title">STREETCRAFT</div>
+          <p className="footer-tagline">
+            The local-business marketing instrument. Turn one store event or quiet weekday into synchronized campaign proofs across Google, Instagram, WhatsApp, and your counter.
+          </p>
+          <div className="footer-copyright">
+            &copy; {new Date().getFullYear()} StreetCraft. Built for independent neighborhood stores.
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '24px' }}>
-          <button className="nav-item" onClick={() => navigate('home')}>
-            How it works
-          </button>
-          <button className="nav-item" onClick={() => navigate('free-tool')}>
-            Free tool
-          </button>
-          <button className="nav-item" onClick={() => navigate('pricing')}>
-            Pricing
-          </button>
-          <button className="nav-item" onClick={() => navigate('app/dashboard')}>
-            Workspace
-          </button>
+
+        <div className="footer-nav-columns">
+          <div className="footer-col">
+            <span className="footer-col-heading">Product</span>
+            <button onClick={() => navigate('home')}>How it works</button>
+            <button onClick={() => navigate('free-tool')}>Free campaign tool</button>
+            <button onClick={() => navigate('pricing')}>Plans & pricing</button>
+          </div>
+
+          <div className="footer-col">
+            <span className="footer-col-heading">Workspace</span>
+            <button onClick={() => navigate('app/dashboard')}>Daily workspace</button>
+            <button onClick={() => navigate('app/create')}>Campaign creator</button>
+            <button onClick={() => navigate('app/campaigns')}>Campaign vault</button>
+            <button onClick={() => navigate('app/business')}>Store memory</button>
+          </div>
         </div>
       </div>
     </footer>
