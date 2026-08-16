@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { DatabasePlan } from '../types/billing';
-import { Check, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 interface PricingPageProps {
   navigate: (route: string) => void;
@@ -10,7 +10,7 @@ interface PricingPageProps {
 
 export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrade }) => {
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     api.getPlans().then((data) => {
@@ -20,12 +20,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
   }, []);
 
   return (
-    <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '48px 32px 80px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <span className="section-eyebrow">TRANSPARENT & SIMPLE PRICING</span>
-        <h1 className="section-title">One Campaign Can Pay For The Entire Month</h1>
-        <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
-          Database-backed plans with no hidden fees, zero per-channel upcharges, and transparent campaign pack metering.
+    <div style={{ maxWidth: '980px', margin: '0 auto', padding: '56px 32px 96px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+        <span className="editorial-eyebrow">SIMPLE, CLEAR RATES</span>
+        <h1 className="editorial-headline" style={{ fontSize: '44px' }}>
+          One good afternoon campaign<br />pays for the whole month.
+        </h1>
+        <p className="editorial-lead" style={{ margin: '8px auto 0', fontSize: '16px' }}>
+          Straightforward pricing for independent local businesses. No commissions, no agency retainers.
         </p>
       </div>
 
@@ -40,23 +42,23 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
             >
               <div>
                 {isPro && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '4px 10px', borderRadius: 'var(--radius-full)', marginBottom: '12px', fontWeight: 700 }}>
-                    <Sparkles size={12} /> MOST POPULAR FOR LOCAL CAFES
-                  </div>
+                  <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                    MOST POPULAR FOR CAFES
+                  </span>
                 )}
                 <h3 className="plan-name">{p.name}</h3>
                 <div className="plan-price">
                   ₹{p.price_inr}
                   <span className="plan-period">/ month</span>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px', fontWeight: 600 }}>
-                  {p.monthly_pack_limit} Coordinated Campaign Packs per month
+                <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginBottom: '24px' }}>
+                  {p.monthly_pack_limit} coordinated campaign packs monthly
                 </div>
 
-                <div className="feature-list" style={{ marginBottom: '24px' }}>
+                <div className="feature-list" style={{ marginBottom: '32px' }}>
                   {p.features.map((feat, i) => (
                     <div key={i} className="feature-item">
-                      <Check size={14} color="var(--accent-emerald)" />
+                      <Check size={14} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '3px' }} />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -74,22 +76,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
                   }
                 }}
               >
-                {p.price_inr === 0 ? 'Start Free' : `Upgrade to ${p.name}`} <ArrowRight size={14} />
+                {p.price_inr === 0 ? 'Start Free' : `Select ${p.name}`}
               </button>
             </div>
           );
         })}
-      </div>
-
-      {/* Security Guarantee */}
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '32px', textAlign: 'center', maxWidth: '720px', margin: '0 auto' }}>
-        <ShieldCheck size={28} color="var(--accent-emerald)" style={{ marginBottom: '12px' }} />
-        <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-          Server-Enforced Quotas & Tenant Isolation
-        </h4>
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-          All subscriptions are tracked with server-side atomic locking to prevent over-generation and ensure complete data isolation across independent store accounts.
-        </p>
       </div>
     </div>
   );

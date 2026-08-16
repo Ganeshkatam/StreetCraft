@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlanTier } from '../types/billing';
 import { PLANS } from '../lib/entitlements';
-import { X, Check, CreditCard, ArrowRight } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onPlanUpdated,
   onSuccess,
 }) => {
-  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('PRO');
+  const [, setSelectedPlan] = useState<PlanTier>('PRO');
   const [isProcessing, setIsProcessing] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -26,7 +26,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      setSuccessNotice(`Successfully upgraded to ${PLANS[tier].name}. Quota updated to ${PLANS[tier].monthlyPackLimit} campaign packs.`);
+      setSuccessNotice(`Upgraded to ${PLANS[tier].name}. Quota updated to ${PLANS[tier].monthlyPackLimit} campaign packs.`);
       if (onPlanUpdated) onPlanUpdated();
       if (onSuccess) onSuccess();
       setTimeout(() => {
@@ -38,23 +38,23 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" style={{ maxWidth: '720px' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="section-eyebrow">METERED BILLING & TIERS</span>
-            <h3 className="modal-title">Upgrade Your StreetCraft AI Subscription</h3>
+            <span className="section-eyebrow">STORE SUBSCRIPTION</span>
+            <h3 className="modal-title">Upgrade Promotion Quota</h3>
           </div>
           <button className="btn-ghost" onClick={onClose}>
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {successNotice ? (
-          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--accent-emerald-subtle)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-md)', margin: '20px 0' }}>
-            <h4 style={{ color: 'var(--accent-emerald)', fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>
-              Subscription Synchronized
+          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-faint)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-sm)', margin: '20px 0' }}>
+            <h4 style={{ color: 'var(--color-primary-dark)', fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>
+              Subscription Updated
             </h4>
-            <p style={{ color: 'var(--text-primary)', fontSize: '14px' }}>{successNotice}</p>
+            <p style={{ color: 'var(--color-ink)', fontSize: '14px' }}>{successNotice}</p>
           </div>
         ) : (
           <>
@@ -66,9 +66,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <div
                     key={tierKey}
                     style={{
-                      background: isPro ? 'rgba(16, 185, 129, 0.06)' : 'var(--bg-surface-elevated)',
-                      border: isPro ? '1px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
+                      background: isPro ? 'var(--bg-elevated)' : 'var(--bg-surface)',
+                      border: isPro ? '1.5px solid var(--color-primary)' : '1px solid var(--border-editorial)',
+                      borderRadius: 'var(--radius-xs)',
                       padding: '20px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -77,20 +77,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 800, fontSize: '16px' }}>{plan.name}</span>
-                        {isPro && <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)' }}>RECOMMENDED</span>}
+                        <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--color-ink)' }}>{plan.name}</span>
+                        {isPro && <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>POPULAR</span>}
                       </div>
-                      <div style={{ fontSize: '24px', fontWeight: 800, margin: '10px 0 6px' }}>
-                        {plan.priceINR === 0 ? 'Free' : `INR ${plan.priceINR}`}
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>/mo</span>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', margin: '8px 0 4px', color: 'var(--color-ink)' }}>
+                        {plan.priceINR === 0 ? 'Free' : `₹${plan.priceINR}`}
+                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}>/mo</span>
                       </div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent-emerald)', marginBottom: '14px' }}>
-                        {plan.monthlyPackLimit} Campaign Packs / mo
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-muted)', marginBottom: '14px' }}>
+                        {plan.monthlyPackLimit} packs / month
                       </div>
-                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-muted)' }}>
                         {plan.features.slice(0, 3).map((f, i) => (
                           <li key={i} style={{ display: 'flex', gap: '6px' }}>
-                            <Check size={12} color="var(--accent-emerald)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <Check size={12} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
                             <span>{f}</span>
                           </li>
                         ))}
@@ -99,22 +99,18 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
                     <button
                       className={isPro ? 'btn-primary' : 'btn-secondary'}
-                      style={{ marginTop: '20px', width: '100%', justifyContent: 'center' }}
+                      style={{ marginTop: '18px', width: '100%', justifyContent: 'center', fontSize: '12.5px' }}
                       disabled={isProcessing}
                       onClick={() => handleUpgrade(tierKey)}
                     >
-                      {isProcessing ? 'Processing...' : `Switch to ${plan.name}`}
+                      {isProcessing ? 'Updating...' : `Select ${plan.name}`}
                     </button>
                   </div>
                 );
               })}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <CreditCard size={14} />
-                <span>Synchronized with Razorpay Subscription Webhook engine</span>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
               <button className="btn-secondary" onClick={onClose}>
                 Close
               </button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
@@ -21,8 +21,6 @@ import { BusinessPage } from './pages/app/BusinessPage';
 import { CreateCampaignPage } from './pages/app/CreateCampaignPage';
 import { CampaignVaultPage } from './pages/app/CampaignVaultPage';
 import { SettingsPage } from './pages/app/SettingsPage';
-
-import { LayoutDashboard, Sparkles, FolderArchive, Store, Settings } from 'lucide-react';
 
 function App() {
   const { session, signOut } = useAuth();
@@ -63,7 +61,6 @@ function App() {
 
   const isAppView = route.startsWith('app');
 
-  // If user is accessing app view but not authenticated, redirect to login
   useEffect(() => {
     if (isAppView && !session.isAuthenticated) {
       navigate('login');
@@ -115,14 +112,14 @@ function App() {
         </main>
       ) : (
         <div className="workspace-layout">
-          {/* Sidebar */}
+          {/* Restrained Quiet Workspace Sidebar */}
           <aside className="sidebar">
             <div className="sidebar-nav">
               <button
                 className={`sidebar-link ${route === 'app/dashboard' ? 'active' : ''}`}
                 onClick={() => navigate('app/dashboard')}
               >
-                <LayoutDashboard size={16} /> Dashboard
+                Today
               </button>
 
               <button
@@ -132,35 +129,38 @@ function App() {
                   navigate('app/create');
                 }}
               >
-                <Sparkles size={16} /> Create Campaign
+                Create
               </button>
 
               <button
                 className={`sidebar-link ${route === 'app/campaigns' ? 'active' : ''}`}
                 onClick={() => navigate('app/campaigns')}
               >
-                <FolderArchive size={16} /> Campaign Vault
+                Campaigns
               </button>
 
               <button
                 className={`sidebar-link ${route === 'app/business' ? 'active' : ''}`}
                 onClick={() => navigate('app/business')}
               >
-                <Store size={16} /> Business Memory
-              </button>
-
-              <button
-                className={`sidebar-link ${route === 'app/settings' ? 'active' : ''}`}
-                onClick={() => navigate('app/settings')}
-              >
-                <Settings size={16} /> Settings & Usage
+                Store Memory
               </button>
             </div>
 
-            <div className="sidebar-tenant-card">
-              <div className="sidebar-tenant-name">{profile?.name || 'My Store Memory'}</div>
-              <div className="sidebar-tenant-sub">
-                {profile?.neighborhood ? `${profile.neighborhood} • ` : ''}{session.role.toUpperCase()}
+            <div>
+              <button
+                className={`sidebar-link ${route === 'app/settings' ? 'active' : ''}`}
+                style={{ fontSize: '12.5px', color: 'var(--color-muted)', marginBottom: '16px' }}
+                onClick={() => navigate('app/settings')}
+              >
+                Settings & Ledger
+              </button>
+
+              <div className="sidebar-tenant-card">
+                <div className="sidebar-tenant-name">{profile?.name || 'The Roasted Bean'}</div>
+                <div className="sidebar-tenant-sub">
+                  {profile?.neighborhood || 'Indiranagar'}
+                </div>
               </div>
             </div>
           </aside>

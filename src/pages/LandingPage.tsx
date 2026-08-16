@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, Store, Check, Copy, TrendingUp, ShieldCheck, MapPin, Zap, MessageSquare, Newspaper, Image, Send } from 'lucide-react';
+import { ArrowRight, Copy, Check } from 'lucide-react';
 
 interface LandingPageProps {
   navigate: (route: string) => void;
@@ -7,286 +7,208 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
-  const [weeklyCampaigns, setWeeklyCampaigns] = useState<number>(3);
-  const [avgTicket, setAvgTicket] = useState<number>(350);
-  const [activeChannelTab, setActiveChannelTab] = useState<'GOOGLE' | 'INSTAGRAM' | 'WHATSAPP' | 'POSTER'>('GOOGLE');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'google' | 'instagram' | 'whatsapp' | 'poster'>('google');
+  const [copied, setCopied] = useState(false);
 
-  const hoursSavedPerMonth = Math.round(weeklyCampaigns * 4 * 2.5);
-  const estimatedRevenueGainINR = weeklyCampaigns * 4 * 12 * avgTicket;
+  const proofOutputs = {
+    google: {
+      channel: 'Google Business Profile',
+      meta: 'Local Search & Maps update',
+      content:
+        'Beat the afternoon slump in Indiranagar. Enjoy 20% off all specialty single-origin pour-overs paired with warm artisanal bakes near 12th Main (3 PM - 6 PM, Mon-Thu). Fast Wi-Fi and quiet window tables ready.',
+      action: 'Action: Visit Us',
+    },
+    instagram: {
+      channel: 'Instagram Post & Story',
+      meta: 'Visual feed + 0:03 reel hook',
+      content:
+        'Your 3:30 PM coffee run just found its new home.\n\nWe are serving freshly brewed single-origin roasts and warm sourdough bakes all afternoon in Indiranagar. Tag your work buddy who needs a quiet workspace today.\n\n#IndiranagarCafe #BengaluruCoffee #BangaloreEats',
+      action: 'Hook: "Weekday afternoons shouldn\'t be quiet."',
+    },
+    whatsapp: {
+      channel: 'WhatsApp Broadcast',
+      meta: 'VIP regular customer push',
+      content:
+        'Hi from The Roasted Bean! Make your weekday afternoon unhurried with our neighborhood perk: 20% off all specialty pour-overs & fresh bakes from 3:00 PM to 6:00 PM (Mon-Thu).\n\nShow this message at the counter to redeem. See you soon!',
+      action: 'Redemption: Show text at counter',
+    },
+    poster: {
+      channel: 'In-Store Table Tent',
+      meta: 'Point-of-sale printed card',
+      content:
+        'AFTERNOON FOCUS HOUR / 3 PM – 6 PM\n\nPair any signature pour-over with fresh artisanal bakery bakes for 20% off.\n\nAsk our barista at the counter to redeem.',
+      action: 'Format: A5 Table Card',
+    },
+  };
 
-  const handleCopySample = (text: string, id: string) => {
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  const channelSamples = {
-    GOOGLE: {
-      title: 'Google Business Profile Post',
-      badge: 'Local Search & Maps',
-      headline: 'Afternoon Pour-Over Special in Indiranagar',
-      body: 'Beat the afternoon slump at The Roasted Bean. Enjoy 20% off all freshly brewed single-origin pour-overs paired with warm artisanal bakes near 12th Main (3 PM - 6 PM, Mon-Thu). Fast Wi-Fi and power outlets ready.',
-      cta: 'Visit Us',
-      tag: 'Rank in Local Pack',
-    },
-    INSTAGRAM: {
-      title: 'Instagram Caption & Hook',
-      badge: 'Visual Discovery & Reels',
-      headline: '"Your 3:30 PM coffee run just found its new home."',
-      body: 'Unwind this weekday afternoon at The Roasted Bean in Indiranagar. Single-origin roasts, quiet corner tables, and warm cinnamon rolls fresh from our oven.\n\nTag your work buddy who needs a change of scenery today.',
-      cta: '#IndiranagarCafe #BangaloreCoffee #BengaluruEats',
-      tag: '0:03 Hook + Tags',
-    },
-    WHATSAPP: {
-      title: 'WhatsApp Broadcast Message',
-      badge: 'Direct Customer VIP Push',
-      headline: 'VIP Community Update',
-      body: 'Hi from The Roasted Bean! Beat the afternoon slump with our weekday perk: 20% off all specialty pour-overs & fresh bakery bakes from 3:00 PM to 6:00 PM (Mon-Thu).\n\nShow this text at the counter to redeem. See you soon!',
-      cta: 'Show message at counter',
-      tag: '98% Open Rate',
-    },
-    POSTER: {
-      title: 'In-Store Table Tent & Poster',
-      badge: 'Point-of-Sale Upsell',
-      headline: 'AFTERNOON FOCUS HOUR / 3 PM - 6 PM',
-      body: 'Pair any signature single-origin brew with fresh artisanal bakes for 20% off.\n\nAsk our barista at the counter to redeem.',
-      cta: 'Dine-In Promotion',
-      tag: 'A5 Counter Ready',
-    },
-  };
-
-  const currentSample = channelSamples[activeChannelTab];
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="landing-hero">
-        <div className="hero-pill">
-          <Store size={14} />
-          <span>BUILT FOR HIGH-STREET CAFES, RESTAURANTS & NEIGHBORHOOD STORES</span>
-        </div>
-
-        <h1 className="hero-title">
-          Turn one offer into <em>everything</em> your local customers need to see.
+      {/* Editorial Hero Section */}
+      <section className="editorial-hero">
+        <span className="editorial-eyebrow">A MARKETING TOOL FOR INDEPENDENT STORES</span>
+        
+        <h1 className="editorial-headline">
+          Turn one local moment<br />into a reason to visit.
         </h1>
 
-        <p className="hero-subtitle">
-          StreetCraft converts a single business event or slow weekday into an integrated 4-channel campaign pack: Google Business post, Instagram caption & reel hook, WhatsApp broadcast, and printable in-store poster.
+        <p className="editorial-lead">
+          Your Tuesday afternoon is quiet. Your customers don't have to know that. StreetCraft turns a single store event into a coordinated campaign pack across Google, Instagram, WhatsApp, and your counter.
         </p>
 
-        <div className="hero-actions">
-          <button className="btn-primary" style={{ padding: '15px 32px', fontSize: '15px' }} onClick={() => navigate('free-tool')}>
-            <Sparkles size={16} /> Try Free Campaign Refiner
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', alignItems: 'center' }}>
+          <button className="btn-primary" style={{ padding: '12px 24px', fontSize: '14.5px' }} onClick={() => navigate('free-tool')}>
+            Create a promotion &rarr;
           </button>
-          <button className="btn-secondary" style={{ padding: '15px 26px', fontSize: '15px' }} onClick={() => navigate('app/dashboard')}>
-            Explore App Studio <ArrowRight size={16} />
+          <button className="btn-secondary" style={{ padding: '11px 20px', fontSize: '14px' }} onClick={() => navigate('pricing')}>
+            View plans
           </button>
         </div>
       </section>
 
-      {/* 4-Channel Live Interactive Studio Preview */}
-      <section style={{ maxWidth: '1080px', margin: '0 auto 60px', padding: '0 24px' }}>
-        <div style={{ background: 'var(--bg-surface-glass)', backdropFilter: 'blur(20px)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-xl)', padding: '36px', boxShadow: 'var(--shadow-lg)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <span className="section-eyebrow">COORDINATED 4-CHANNEL PACK</span>
-              <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                Live Pack Preview: "Afternoon Focus Hour"
-              </h3>
-            </div>
+      {/* Real Local Photography */}
+      <section className="photo-grid">
+        <div className="photo-card" style={{ height: '320px' }}>
+          <img
+            src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=80"
+            alt="Artisanal cafe counter and warm interior"
+          />
+          <div className="photo-caption">The Roasted Bean &bull; Indiranagar, Bengaluru</div>
+        </div>
 
-            {/* Segmented Channel Switcher */}
-            <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.04)', padding: '4px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-subtle)' }}>
-              {[
-                { key: 'GOOGLE', label: 'Google Business', icon: <Newspaper size={13} /> },
-                { key: 'INSTAGRAM', label: 'Instagram', icon: <Image size={13} /> },
-                { key: 'WHATSAPP', label: 'WhatsApp', icon: <MessageSquare size={13} /> },
-                { key: 'POSTER', label: 'In-Store Poster', icon: <Send size={13} /> },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveChannelTab(tab.key as any)}
-                  style={{
-                    padding: '7px 14px',
-                    borderRadius: 'var(--radius-full)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: activeChannelTab === tab.key ? '#ffffff' : 'var(--text-secondary)',
-                    background: activeChannelTab === tab.key ? 'var(--bg-surface-elevated)' : 'transparent',
-                    border: activeChannelTab === tab.key ? '1px solid var(--accent-emerald)' : 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'var(--transition-fast)',
-                  }}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              ))}
+        <div className="photo-card" style={{ height: '320px' }}>
+          <img
+            src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80"
+            alt="Fresh pour-over coffee brewing"
+          />
+          <div className="photo-caption">Single-origin pour-overs</div>
+        </div>
+
+        <div className="photo-card" style={{ height: '320px' }}>
+          <img
+            src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80"
+            alt="Neighborhood cafe seating area"
+          />
+          <div className="photo-caption">Quiet afternoon tables</div>
+        </div>
+      </section>
+
+      {/* Physical Campaign Proof Card */}
+      <section style={{ padding: '0 32px' }}>
+        <div className="proof-sheet">
+          <div className="proof-header">
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              CAMPAIGN PROOF &bull; PROMOTION 004
+            </span>
+            <h2 className="proof-store-title" style={{ marginTop: '8px' }}>
+              The Roasted Bean
+            </h2>
+            <div className="proof-store-loc">
+              Indiranagar, Bengaluru &bull; Weekday Afternoon Campaign
             </div>
+            <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '20px', color: 'var(--color-ink)', marginTop: '12px' }}>
+              "Coffee + bakery bake, together for ₹299."
+            </p>
           </div>
 
-          {/* Active Preview Showcase */}
-          <div style={{ background: 'rgba(14, 17, 24, 0.95)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '28px', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '3px 8px', borderRadius: '4px' }}>
-                  {currentSample.badge}
+          {/* Channel Selector */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--border-editorial)', paddingBottom: '16px' }}>
+            {[
+              { id: 'google', label: 'Google Business' },
+              { id: 'instagram', label: 'Instagram' },
+              { id: 'whatsapp', label: 'WhatsApp' },
+              { id: 'poster', label: 'In-Store Poster' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-xs)',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: activeTab === t.id ? 600 : 400,
+                  color: activeTab === t.id ? 'var(--color-ink)' : 'var(--color-muted)',
+                  background: activeTab === t.id ? 'var(--bg-paper-dark)' : 'transparent',
+                  border: activeTab === t.id ? '1px solid var(--border-dark)' : '1px solid transparent',
+                  transition: 'var(--transition-fast)',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Proof Body */}
+          <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-editorial)', borderRadius: 'var(--radius-xs)', padding: '24px', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--border-editorial)' }}>
+              <div>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                  {proofOutputs[activeTab].channel}
                 </span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {currentSample.title}
+                <span style={{ fontSize: '11px', color: 'var(--color-muted)', marginLeft: '8px', fontFamily: 'var(--font-mono)' }}>
+                  {proofOutputs[activeTab].meta}
                 </span>
               </div>
 
               <button
                 className="btn-ghost"
                 style={{ fontSize: '12px' }}
-                onClick={() => handleCopySample(`${currentSample.headline}\n\n${currentSample.body}`, 'preview_sample')}
+                onClick={() => handleCopy(proofOutputs[activeTab].content)}
               >
-                {copiedId === 'preview_sample' ? <Check size={13} color="var(--accent-emerald)" /> : <Copy size={13} />}
-                {copiedId === 'preview_sample' ? 'Copied' : 'Copy Sample'}
+                {copied ? <Check size={12} color="var(--color-primary)" /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
 
-            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px' }}>
-              {currentSample.headline}
+            <div style={{ fontSize: '14.5px', color: 'var(--color-ink)', lineHeight: '1.7', whiteSpace: 'pre-wrap', marginBottom: '16px' }}>
+              {proofOutputs[activeTab].content}
             </div>
 
-            <div style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap', marginBottom: '20px' }}>
-              {currentSample.body}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.03)', padding: '12px 16px', borderRadius: 'var(--radius-sm)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                <strong>Formatted for:</strong> {currentSample.tag}
-              </div>
-              <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)' }}>
-                Zod Schema Validated
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)', paddingTop: '10px', borderTop: '1px solid var(--border-editorial)' }}>
+              <span>{proofOutputs[activeTab].action}</span>
+              <span style={{ color: 'var(--color-primary)' }}>Character limit verified</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Comparison Widget */}
-      <section className="comparison-section">
+      {/* Editorial Comparison */}
+      <section style={{ maxWidth: '880px', margin: '0 auto 80px', padding: '0 32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <span className="section-eyebrow">LOCALIZED INTENT VS GENERIC AI</span>
-          <h2 className="section-title">Why Generic Prompts Fail Local Businesses</h2>
-          <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
-            StreetCraft injects verified neighborhood landmarks, character constraints, and dining behaviors directly into structured output schemas.
-          </p>
+          <span className="editorial-eyebrow">THE DIFFERENCE</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)' }}>
+            Why generic AI prompts sound wrong for local stores
+          </h2>
         </div>
 
-        <div className="comparison-grid">
-          <div className="comp-card-bad">
-            <span className="comp-label bad">Generic AI Output (Vague & Fluffy)</span>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
-              {`"Hey foodies! Looking for a delicious coffee and yummy snacks? Come on down to our lovely cafe today and enjoy our amazing special discounts on all items! Don't miss out on this fantastic treat. See you all soon! #foodie #cafe #coffee #delicious #yum"`}
-            </div>
-            <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(244,63,94,0.2)', fontSize: '12px', color: 'var(--accent-rose)' }}>
-              Lacks neighborhood landmarks, specific time-bound window, structured call-to-action, or channel formatting.
-            </div>
-          </div>
-
-          <div className="comp-card-good">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span className="comp-label good">StreetCraft Coordinated Pack (Indiranagar Cafe)</span>
-              <button
-                className="btn-ghost"
-                style={{ fontSize: '11px', padding: '2px 8px' }}
-                onClick={() =>
-                  handleCopySample(
-                    'Beat the 3:30 PM slump in Indiranagar. 20% off specialty pour-overs & bakes at The Roasted Bean near 12th Main.',
-                    'comp_good'
-                  )
-                }
-              >
-                {copiedId === 'comp_good' ? <Check size={12} color="var(--accent-emerald)" /> : <Copy size={12} />}
-                {copiedId === 'comp_good' ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-            <div style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
-              {`GOOGLE BUSINESS: Beat the afternoon slump in Indiranagar at The Roasted Bean. Enjoy 20% off all freshly brewed single-origin pour-overs paired with warm artisanal bakes near 12th Main (3 PM - 6 PM, Mon-Thu). Fast Wi-Fi and power outlets ready.\n\nINSTAGRAM: Your 3:30 PM coffee run just found its new home. Tag your work buddy who needs a quiet Indiranagar workspace.`}
-            </div>
-            <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', color: 'var(--accent-emerald)' }}>
-              Includes local landmark, exact slow-hour window (3 PM - 6 PM), validated character limits, and actionable copy.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive ROI Calculator */}
-      <section style={{ padding: '70px 32px', background: 'var(--bg-surface-glass)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <span className="section-eyebrow">MEASURE THE REVENUE IMPACT</span>
-            <h2 className="section-title">ROI & Time-Saved Calculator</h2>
-            <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
-              See how many hours and estimated walk-in revenue StreetCraft unlocks for your location.
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-editorial)', padding: '24px', borderRadius: 'var(--radius-xs)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-terracotta)', display: 'block', marginBottom: '8px' }}>
+              GENERIC AI OUTPUT
+            </span>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-muted)', lineHeight: '1.6', fontStyle: 'italic' }}>
+              "Hey foodies! Looking for a delicious coffee and yummy snacks? Come on down to our cafe today for amazing discounts on all items! #foodie #yummy #coffee"
             </p>
+            <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--border-editorial)', fontSize: '11.5px', color: 'var(--color-subtle)' }}>
+              Lacks neighborhood landmarks, specific hours, and authentic voice.
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '36px', alignItems: 'center' }}>
-            <div className="card">
-              <div className="form-group" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <label className="form-label">Weekly Campaign Drops</label>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
-                    {weeklyCampaigns} packs / week
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  step="1"
-                  value={weeklyCampaigns}
-                  onChange={(e) => setWeeklyCampaigns(parseInt(e.target.value, 10))}
-                  style={{ width: '100%', accentColor: 'var(--accent-emerald)' }}
-                />
-              </div>
-
-              <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <label className="form-label">Average Customer Ticket Size (INR)</label>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
-                    ₹{avgTicket}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="150"
-                  max="1500"
-                  step="50"
-                  value={avgTicket}
-                  onChange={(e) => setAvgTicket(parseInt(e.target.value, 10))}
-                  style={{ width: '100%', accentColor: 'var(--accent-emerald)' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="card" style={{ borderLeft: '4px solid var(--accent-emerald)' }}>
-                <small style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>ESTIMATED TIME SAVED / MONTH</small>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
-                  {hoursSavedPerMonth} hours
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                  Replaces manual drafting across 4 separate marketing channels
-                </div>
-              </div>
-
-              <div className="card" style={{ borderLeft: '4px solid var(--accent-indigo)' }}>
-                <small style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>ESTIMATED MONTHLY WALK-IN VALUE</small>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--accent-emerald)', marginTop: '4px' }}>
-                  ₹{estimatedRevenueGainINR.toLocaleString('en-IN')}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                  Based on ~12 incremental walk-ins generated per campaign drop
-                </div>
-              </div>
+          <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-primary)', padding: '24px', borderRadius: 'var(--radius-xs)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', display: 'block', marginBottom: '8px' }}>
+              STREETCRAFT PROOF
+            </span>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-ink)', lineHeight: '1.6' }}>
+              "Beat the 3:30 PM slump in Indiranagar. 20% off specialty pour-overs & fresh bakes at The Roasted Bean near 12th Main (3–6 PM, Mon–Thu)."
+            </p>
+            <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--border-editorial)', fontSize: '11.5px', color: 'var(--color-primary-dark)' }}>
+              Anchored to your street cues, verified hours, and exact counter offer.
             </div>
           </div>
         </div>

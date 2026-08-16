@@ -1,8 +1,7 @@
 import React from 'react';
 import { UserSession } from '../types/business';
 import { UsageSummary } from '../types/billing';
-import { UsageMeter } from './UsageMeter';
-import { Sparkles, LogOut, LogIn, Store } from 'lucide-react';
+import { ArrowRight, LogOut, LogIn } from 'lucide-react';
 
 interface NavigationProps {
   currentRoute: string;
@@ -28,10 +27,13 @@ export const Navigation: React.FC<NavigationProps> = ({
   return (
     <header className="main-header">
       <div className="brand-wrapper">
-        <button className="brand-wrapper" onClick={() => navigate(session.isAuthenticated ? 'app/dashboard' : 'home')}>
-          <div className="brand-badge">S</div>
-          <span className="brand-title">
-            StreetCraft<span>AI</span>
+        <button
+          onClick={() => navigate(session.isAuthenticated ? 'app/dashboard' : 'home')}
+          style={{ display: 'flex', alignItems: 'baseline' }}
+        >
+          <span className="brand-wordmark">
+            STREETCRAFT
+            <span>Local Studio</span>
           </span>
         </button>
       </div>
@@ -43,14 +45,13 @@ export const Navigation: React.FC<NavigationProps> = ({
               className={`nav-item ${currentRoute === 'home' ? 'active' : ''}`}
               onClick={() => navigate('home')}
             >
-              Home
+              How it works
             </button>
             <button
               className={`nav-item ${currentRoute === 'free-tool' ? 'active' : ''}`}
               onClick={() => navigate('free-tool')}
             >
-              Free Campaign Refiner
-              <span className="nav-badge-free">Instant</span>
+              Free tool
             </button>
             <button
               className={`nav-item ${currentRoute === 'pricing' ? 'active' : ''}`}
@@ -65,25 +66,25 @@ export const Navigation: React.FC<NavigationProps> = ({
               className={`nav-item ${currentRoute === 'app/dashboard' ? 'active' : ''}`}
               onClick={() => navigate('app/dashboard')}
             >
-              Dashboard
+              Today
             </button>
             <button
               className={`nav-item ${currentRoute === 'app/create' ? 'active' : ''}`}
               onClick={() => navigate('app/create')}
             >
-              Create Campaign
+              Create
             </button>
             <button
               className={`nav-item ${currentRoute === 'app/campaigns' ? 'active' : ''}`}
               onClick={() => navigate('app/campaigns')}
             >
-              Campaign Vault
+              Campaigns
             </button>
             <button
               className={`nav-item ${currentRoute === 'app/business' ? 'active' : ''}`}
               onClick={() => navigate('app/business')}
             >
-              Business Memory
+              Store Memory
             </button>
           </>
         )}
@@ -92,29 +93,29 @@ export const Navigation: React.FC<NavigationProps> = ({
       <div className="header-actions">
         {session.isAuthenticated ? (
           <>
-            <UsageMeter usage={usage} onUpgrade={onOpenUpgrade} compact />
+            {usage && (
+              <div className="usage-pill" onClick={onOpenUpgrade} style={{ cursor: 'pointer' }}>
+                <span>{usage.remainingPacks} packs left</span>
+              </div>
+            )}
 
             {!isAppView ? (
               <button className="btn-primary" onClick={() => navigate('app/dashboard')}>
-                <Sparkles size={14} /> Open Studio
+                Open Workspace <ArrowRight size={13} />
               </button>
             ) : (
-              <button
-                className="btn-ghost"
-                onClick={onSignOut}
-                title="Log out"
-              >
-                <LogOut size={14} /> Sign out
+              <button className="btn-ghost" onClick={onSignOut}>
+                <LogOut size={13} /> Sign out
               </button>
             )}
           </>
         ) : (
           <>
-            <button className="btn-secondary" onClick={onOpenAuth}>
-              <LogIn size={14} /> Sign In
+            <button className="btn-ghost" onClick={onOpenAuth}>
+              Sign In
             </button>
             <button className="btn-primary" onClick={() => navigate('free-tool')}>
-              <Sparkles size={14} /> Try Free Refiner
+              Start creating &rarr;
             </button>
           </>
         )}

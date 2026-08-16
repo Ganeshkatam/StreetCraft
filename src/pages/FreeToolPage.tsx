@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { CampaignType, FullCampaignPack } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
 import { ChannelCard } from '../components/ChannelCard';
-import { Store, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface FreeToolPageProps {
   navigate: (route: string) => void;
@@ -78,20 +78,20 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
   };
 
   return (
-    <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '48px 32px 80px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '48px 32px 80px' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <span className="section-eyebrow">NO SIGNUP REQUIRED &bull; INSTANT GENERATION</span>
-        <h1 className="section-title">Free Local Campaign Refiner</h1>
+        <span className="section-eyebrow">NO SIGNUP REQUIRED &bull; INSTANT PROOFS</span>
+        <h1 className="section-title">Free Campaign Refiner</h1>
         <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
-          Enter your offer and neighborhood to generate a coordinated 4-channel pack in real time.
+          Enter your offer and neighborhood to generate a coordinated 4-channel campaign proof in real time.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '32px' }}>
         {/* Input Parameters Form */}
         <form onSubmit={handleGenerate} className="card">
-          <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Store size={18} color="var(--accent-emerald)" /> Campaign Parameters
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            Store Details
           </h3>
 
           <div className="form-group">
@@ -155,7 +155,6 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
               <option value="MENU_LAUNCH">New Menu or Dish Drop</option>
               <option value="FESTIVAL_SPECIAL">Festival or Holiday Special</option>
               <option value="REVIEW_SPOTLIGHT">Customer Review Spotlight</option>
-              <option value="WIN_BACK_REGULARS">Win-Back Inactive Regulars</option>
             </select>
           </div>
 
@@ -183,37 +182,36 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
           </div>
 
           <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={isGenerating}>
-            {isGenerating ? 'Generating Pack...' : 'Generate 4-Channel Pack'} <Sparkles size={14} />
+            {isGenerating ? 'Generating Proofs...' : 'Generate 4 Campaign Proofs'}
           </button>
         </form>
 
-        {/* 4-Channel Live View */}
+        {/* 4-Channel Proofs */}
         <div>
           {!generatedPack ? (
             <div className="card" style={{ textAlign: 'center', padding: '60px 20px', minHeight: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={32} color="var(--accent-emerald)" style={{ marginBottom: '16px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>
-                Enter Your Store & Offer
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+                Your Campaign Proof Sheet
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', maxWidth: '420px' }}>
-                Fill in your shop name and current promotion in the left panel to produce your real 4-channel copy instantly.
+              <p style={{ fontSize: '14px', color: 'var(--color-muted)', maxWidth: '380px' }}>
+                Fill in your shop name and current promotion on the left to produce your verified multi-channel copy.
               </p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Option B: Claim Banner */}
-              <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #18221d 0%, #151a24 100%)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Claim Banner */}
+              <div style={{ padding: '16px 20px', background: 'var(--color-primary-faint)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CheckCircle2 size={16} color="var(--accent-emerald)" /> Campaign Generated & Ready to Claim
+                  <h4 style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle2 size={16} /> Campaign Generated & Ready to Claim
                   </h4>
-                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    Sign up to save this campaign to your permanent database vault and receive daily morning briefings.
+                  <p style={{ fontSize: '12.5px', color: 'var(--color-muted)', marginTop: '2px' }}>
+                    Sign up to save this campaign to your permanent database vault.
                   </p>
                 </div>
                 <button
                   className="btn-primary"
-                  style={{ fontSize: '13px', padding: '8px 16px' }}
+                  style={{ fontSize: '13px', padding: '7px 14px' }}
                   onClick={() => {
                     if (claimToken && onOpenAuthWithClaim) {
                       onOpenAuthWithClaim(claimToken);
@@ -222,7 +220,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
                     }
                   }}
                 >
-                  Save to My Vault <ArrowRight size={14} />
+                  Save to Vault &rarr;
                 </button>
               </div>
 

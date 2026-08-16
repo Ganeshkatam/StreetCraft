@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBusiness } from '../../hooks/useBusiness';
 import { BusinessProfile } from '../../types/business';
-import { Store, Save, CheckCircle2, Clock, MapPin, Users, Sparkles } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface BusinessPageProps {
   businessId: string;
@@ -21,8 +21,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
   if (loading || !formData) {
     return (
-      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
-        Loading persistent business memory...
+      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--color-muted)' }}>
+        Loading store memory...
       </div>
     );
   }
@@ -40,31 +40,31 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
   };
 
   return (
-    <div style={{ maxWidth: '900px' }}>
+    <div style={{ maxWidth: '780px' }}>
       <div className="section-header">
-        <span className="section-eyebrow">PERSISTENT BUSINESS MEMORY &bull; POSTGRES REALTIME</span>
-        <h1 className="section-title">Store Context & Voice</h1>
+        <span className="section-eyebrow">PERSISTENT STORE CONTEXT &bull; REALTIME MEMORY</span>
+        <h1 className="section-title">Store Profile & Tone</h1>
         <p className="section-subtitle">
-          StreetCraft injects these exact parameters into every campaign pack. Updates synchronize instantly to the database.
+          StreetCraft injects these exact parameters into every campaign proof. Updates synchronize directly to PostgreSQL.
         </p>
       </div>
 
       {savedSuccess && (
-        <div style={{ padding: '16px 20px', background: 'var(--accent-emerald-subtle)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-emerald)', fontWeight: 600 }}>
-          <CheckCircle2 size={18} /> Business Memory updated and synchronized to PostgreSQL.
+        <div style={{ padding: '14px 18px', background: 'var(--color-primary-faint)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary-dark)', fontSize: '13.5px', fontWeight: 600 }}>
+          <CheckCircle2 size={16} /> Store Memory updated and synchronized.
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="card">
         {/* Basic Identity */}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Store size={16} color="var(--accent-emerald)" /> Business Identity
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            Store Identity
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px' }}>
             <div className="form-group">
-              <label className="form-label">Business / Shop Name</label>
+              <label className="form-label">Shop / Business Name</label>
               <input
                 type="text"
                 className="form-input"
@@ -91,8 +91,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
         {/* Location & Neighborhood */}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MapPin size={16} color="var(--accent-indigo)" /> Neighborhood & Micro-Location
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            Neighborhood & Landmarks
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -135,8 +135,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
         {/* Customer & Voice */}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Users size={16} color="var(--accent-amber)" /> Audience, Signature Offerings & Tone
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            Audience, Signature Offerings & Tone
           </h3>
 
           <div className="form-group">
@@ -175,13 +175,13 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
         {/* Operational Rhythm */}
         <div style={{ marginBottom: '28px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Clock size={16} color="var(--accent-rose)" /> Operational Hours & Revenue Windows
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            Operating Hours & Default Offer
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div className="form-group">
-              <label className="form-label">Slow Hours (Opportunities Target This)</label>
+              <label className="form-label">Slow Hours (Promotions Target This)</label>
               <input
                 type="text"
                 className="form-input"
@@ -192,7 +192,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Default Baseline Offer</label>
+              <label className="form-label">Default Counter Offer</label>
               <input
                 type="text"
                 className="form-input"
@@ -216,7 +216,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Store WhatsApp / Contact Phone</label>
+              <label className="form-label">Store WhatsApp Phone</label>
               <input
                 type="text"
                 className="form-input"
@@ -228,9 +228,9 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
           <button type="submit" className="btn-primary" disabled={isSaving}>
-            <Save size={16} /> {isSaving ? 'Saving to Database...' : 'Save Business Memory'}
+            {isSaving ? 'Saving...' : 'Save Store Memory'}
           </button>
         </div>
       </form>

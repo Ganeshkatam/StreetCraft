@@ -3,7 +3,6 @@ import { useUsage } from '../../hooks/useUsage';
 import { useBusiness } from '../../hooks/useBusiness';
 import { UserSession } from '../../types/business';
 import { UsageMeter } from '../../components/UsageMeter';
-import { ShieldCheck, History, Users, CreditCard, ArrowRight } from 'lucide-react';
 
 interface SettingsPageProps {
   businessId: string;
@@ -16,12 +15,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
   const { profile } = useBusiness(businessId);
 
   return (
-    <div style={{ maxWidth: '900px' }}>
+    <div style={{ maxWidth: '820px' }}>
       <div className="section-header">
-        <span className="section-eyebrow">USAGE LEDGER &bull; POSTGRES AUDIT TRAIL</span>
-        <h1 className="section-title">Settings & Quota Accounting</h1>
+        <span className="section-eyebrow">STORE LEDGER &bull; QUOTA ACCOUNTING</span>
+        <h1 className="section-title">Settings & Ledger</h1>
         <p className="section-subtitle">
-          Realtime subscription tier, server-side atomic usage limits, and tamper-proof generation audit trail.
+          Subscription quota, active store membership, and generation audit ledger.
         </p>
       </div>
 
@@ -32,36 +31,32 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
         {/* Tenant Information Card */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Users size={18} color="var(--accent-indigo)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 800 }}>Account & Access</h3>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', textTransform: 'uppercase' }}>ACCOUNT</span>
+            <div style={{ fontSize: '14px', color: 'var(--color-ink)', marginTop: '8px', marginBottom: '6px' }}>
+              Logged in as: <strong>{session.email}</strong>
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              Logged in as: <strong style={{ color: 'var(--text-primary)' }}>{session.email}</strong>
+            <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginBottom: '6px' }}>
+              Role: <span style={{ textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 600 }}>{session.role}</span>
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              Role: <strong style={{ color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>{session.role}</strong>
-            </div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Active Store: <strong style={{ color: 'var(--text-primary)' }}>{profile?.name || 'Store'}</strong>
+            <div style={{ fontSize: '13px', color: 'var(--color-muted)' }}>
+              Store: <strong style={{ color: 'var(--color-ink)' }}>{profile?.name || 'Store'}</strong>
             </div>
           </div>
 
-          <div style={{ padding: '10px 12px', background: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldCheck size={14} color="var(--accent-emerald)" />
-            <span>Enforced by Postgres Row-Level Security</span>
+          <div style={{ paddingTop: '12px', borderTop: '1px solid var(--border-editorial)', fontSize: '11px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
+            Protected by PostgreSQL Row-Level Security
           </div>
         </div>
       </div>
 
       {/* Append-Only Ledger Table */}
       <div className="card">
-        <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <History size={18} color="var(--accent-amber)" /> Quota Generation Ledger (Audit Trail)
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+          Generation Ledger (Audit Trail)
         </h3>
 
         {events.length === 0 ? (
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', padding: '20px 0', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: 'var(--color-muted)', padding: '20px 0', textAlign: 'center' }}>
             No campaign packs have been generated yet for this billing cycle.
           </p>
         ) : (
@@ -69,7 +64,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
             <thead>
               <tr>
                 <th>Timestamp</th>
-                <th>Event Type</th>
+                <th>Event</th>
                 <th>Units</th>
                 <th>Description</th>
               </tr>
@@ -77,14 +72,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
             <tbody>
               {events.map((e) => (
                 <tr key={e.id}>
-                  <td>{new Date(e.createdAt).toLocaleString('en-IN')}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>{new Date(e.createdAt).toLocaleString('en-IN')}</td>
                   <td>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '2px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-primary)', background: 'var(--color-primary-faint)', padding: '2px 6px', borderRadius: '2px' }}>
                       {e.eventType}
                     </span>
                   </td>
-                  <td>{e.units > 0 ? `+${e.units}` : e.units}</td>
-                  <td>{e.description || 'Campaign generation event'}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)' }}>{e.units > 0 ? `+${e.units}` : e.units}</td>
+                  <td style={{ fontSize: '13px' }}>{e.description || 'Campaign generation event'}</td>
                 </tr>
               ))}
             </tbody>
