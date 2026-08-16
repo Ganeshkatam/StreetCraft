@@ -81,6 +81,19 @@ function AppLayout() {
                 />
               }
             />
+            <Route
+              path="/signup"
+              element={
+                <LoginPage
+                  claimToken={claimToken}
+                  onSuccess={() => setClaimToken(null)}
+                />
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={<LoginPage />}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
