@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { DatabasePlan } from '../types/billing';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, Zap, Sparkles } from 'lucide-react';
 
 interface PricingPageProps {
   navigate: (route: string) => void;
@@ -20,45 +20,55 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
   }, []);
 
   return (
-    <div style={{ maxWidth: '980px', margin: '0 auto', padding: '56px 32px 96px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-        <span className="editorial-eyebrow">SIMPLE, CLEAR RATES</span>
-        <h1 className="editorial-headline" style={{ fontSize: '44px' }}>
-          One good afternoon campaign<br />pays for the whole month.
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '60px 24px 96px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <span className="section-eyebrow">TRANSPARENT PLANS</span>
+        <h1 className="section-title">
+          Scale Your Local Marketing
         </h1>
-        <p className="editorial-lead" style={{ margin: '8px auto 0', fontSize: '16px' }}>
-          Straightforward pricing for independent local businesses. No commissions, no agency retainers.
+        <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
+          One good afternoon campaign covers the entire monthly subscription. No commissions, no agency retainers.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '64px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
         {plans.map((p) => {
           const isPro = p.id === 'PRO';
           return (
             <div
               key={p.id}
-              className={`pricing-card ${isPro ? 'featured' : ''}`}
-              style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+              className="card"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                border: isPro ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                boxShadow: isPro ? 'var(--shadow-glow-emerald)' : 'var(--shadow-md)',
+                background: isPro ? 'var(--bg-surface-elevated)' : 'var(--bg-surface)',
+                position: 'relative',
+              }}
             >
               <div>
                 {isPro && (
-                  <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                    MOST POPULAR FOR CAFES
-                  </span>
+                  <div style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: '#000', fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 800, padding: '2px 10px', borderRadius: 'var(--radius-full)', textTransform: 'uppercase' }}>
+                    MOST POPULAR
+                  </div>
                 )}
-                <h3 className="plan-name">{p.name}</h3>
-                <div className="plan-price">
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginTop: isPro ? '8px' : 0 }}>
+                  {p.name}
+                </h3>
+                <div style={{ fontSize: '36px', fontWeight: 800, color: '#FFFFFF', margin: '14px 0 6px', letterSpacing: '-0.02em' }}>
                   ₹{p.price_inr}
-                  <span className="plan-period">/ month</span>
+                  <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}> / month</span>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginBottom: '24px' }}>
-                  {p.monthly_pack_limit} coordinated campaign packs monthly
+                <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', marginBottom: '24px' }}>
+                  {p.monthly_pack_limit} campaign packs monthly
                 </div>
 
-                <div className="feature-list" style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
                   {p.features.map((feat, i) => (
-                    <div key={i} className="feature-item">
-                      <Check size={14} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '3px' }} />
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <Check size={14} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -76,7 +86,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
                   }
                 }}
               >
-                {p.price_inr === 0 ? 'Start Free' : `Select ${p.name}`}
+                {p.price_inr === 0 ? 'Start Free' : `Choose ${p.name}`}
               </button>
             </div>
           );

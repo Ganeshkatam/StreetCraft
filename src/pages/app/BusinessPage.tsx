@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBusiness } from '../../hooks/useBusiness';
 import { BusinessProfile } from '../../types/business';
-import { CheckCircle2, Store } from 'lucide-react';
+import { CheckCircle2, Store, Save } from 'lucide-react';
 
 interface BusinessPageProps {
   businessId: string;
@@ -21,7 +21,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
   if (loading || !formData) {
     return (
-      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--color-muted)' }}>
+      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
         Loading store memory...
       </div>
     );
@@ -42,7 +42,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
   return (
     <div>
       <div className="section-header">
-        <span className="section-eyebrow">PERSISTENT STORE CONTEXT &bull; REALTIME MEMORY</span>
+        <span className="section-eyebrow">PERSISTENT CONTEXT &bull; REALTIME MEMORY</span>
         <h1 className="section-title">Store Profile & Memory</h1>
         <p className="section-subtitle">
           StreetCraft injects these exact parameters into every campaign proof. Updates synchronize directly to PostgreSQL.
@@ -50,16 +50,16 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
       </div>
 
       {savedSuccess && (
-        <div style={{ padding: '14px 18px', background: 'var(--color-primary-faint)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary-dark)', fontSize: '13.5px', fontWeight: 600 }}>
+        <div style={{ padding: '14px 18px', background: 'var(--accent-emerald-subtle)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-sm)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-emerald)', fontSize: '13.5px', fontWeight: 600 }}>
           <CheckCircle2 size={16} /> Store Memory updated and synchronized to database.
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '36px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '36px', alignItems: 'start' }}>
         <form onSubmit={handleSubmit} className="card">
           {/* Basic Identity */}
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
               Store Identity
             </h3>
 
@@ -92,7 +92,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
           {/* Location & Neighborhood */}
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
               Neighborhood & Landmarks
             </h3>
 
@@ -136,8 +136,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
           {/* Customer & Voice */}
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Audience, Signature Offerings & Tone
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
+              Audience & Brand Voice
             </h3>
 
             <div className="form-group">
@@ -176,8 +176,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
 
           {/* Operational Rhythm */}
           <div style={{ marginBottom: '28px' }}>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Operating Hours & Default Offer
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
+              Operating Hours & Counter Offer
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -229,35 +229,31 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
             <button type="submit" className="btn-primary" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Store Memory'}
+              <Save size={14} /> {isSaving ? 'Saving...' : 'Save Store Memory'}
             </button>
           </div>
         </form>
 
-        {/* Right Column: Live Memory Proof Inspector */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="card" style={{ background: 'var(--bg-elevated)' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              MEMORY PROOF CARD
-            </span>
-            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '8px' }}>
-              {formData.name || 'Your Store'}
-            </h4>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', marginBottom: '16px' }}>
-              {formData.neighborhood || 'Neighborhood'}, {formData.city || 'City'}
-            </div>
+        {/* Right Column: Live Memory Preview */}
+        <div className="card" style={{ background: 'var(--bg-surface-elevated)' }}>
+          <span className="section-eyebrow">MEMORY CARD</span>
+          <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
+            {formData.name || 'Your Store'}
+          </h4>
+          <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+            {formData.neighborhood || 'Neighborhood'}, {formData.city || 'City'}
+          </div>
 
-            <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--bg-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-editorial)', marginBottom: '14px' }}>
-              <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', marginBottom: '4px' }}>SIGNATURE ITEMS</div>
-              {formData.signatureItems || 'Signature roasts, fresh bakery bakes'}
-            </div>
+          <div style={{ fontSize: '12.5px', color: '#E2E8F0', lineHeight: '1.6', background: 'var(--bg-input)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', marginBottom: '14px' }}>
+            <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '4px' }}>SIGNATURE ITEMS</div>
+            {formData.signatureItems || 'Signature roasts, fresh bakery bakes'}
+          </div>
 
-            <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--bg-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-editorial)' }}>
-              <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', marginBottom: '4px' }}>SLOW HOURS WINDOW</div>
-              {formData.slowHours || 'Weekday afternoons'}
-            </div>
+          <div style={{ fontSize: '12.5px', color: '#E2E8F0', lineHeight: '1.6', background: 'var(--bg-input)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '4px' }}>TARGET WINDOW</div>
+            {formData.slowHours || 'Weekday afternoons'}
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { api } from '../../lib/api';
 import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent } from '../../engine/briefing/opportunityEngine';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../components/UsageMeter';
-import { Plus, ArrowRight, Calendar, Store, Clock, ChevronRight } from 'lucide-react';
+import { Plus, ArrowRight, Calendar, Store, Clock, Zap, Sparkles } from 'lucide-react';
 
 interface DashboardPageProps {
   businessId: string;
@@ -42,110 +42,123 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   return (
     <div>
-      {/* Top Breadcrumb & Actions Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '32px', paddingBottom: '16px', borderBottom: '1px solid var(--border-editorial)' }}>
+      {/* Top Header Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            DAILY WORKSPACE &bull; {briefing.dateString}
+          <span className="section-eyebrow">
+            STUDIO WORKSPACE &bull; {briefing.dateString.toUpperCase()}
           </span>
-          <h1 className="notebook-greeting" style={{ fontSize: '36px', marginTop: '2px' }}>
+          <h1 className="section-title">
             {briefing.greeting}
           </h1>
-          <p className="notebook-sub" style={{ fontSize: '15px' }}>
+          <p className="section-subtitle">
             {briefing.subtitle}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button className="btn-secondary" onClick={() => navigate('app/campaigns')}>
-            Campaign Vault ({campaigns.length})
+            Vault ({campaigns.length})
           </button>
           <button className="btn-primary" onClick={() => navigate('app/create')}>
-            <Plus size={14} /> Create promotion
+            <Plus size={15} /> Create Campaign
           </button>
         </div>
       </div>
 
-      {/* Expansive 2-Column Space-Utilizing Grid */}
+      {/* 2-Column Responsive Workspace */}
       <div className="workspace-grid-2col">
-        {/* Left Column: Personal Marketing Notebook & Actions */}
-        <div>
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-editorial)', borderRadius: 'var(--radius-sm)', padding: '32px', boxShadow: 'var(--shadow-paper)', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px', paddingBottom: '14px', borderBottom: '1px solid var(--border-editorial)' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                PRIORITY PROMOTIONS TO DROP
-              </span>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>
-                {briefing.opportunities.length} opportunities detected
+        {/* Left Column: High-Impact Opportunities & Active Campaigns */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Opportunities Section */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '14px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={16} color="var(--accent-emerald)" />
+                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>
+                  Recommended Opportunities
+                </h3>
+              </div>
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>
+                {briefing.opportunities.length} Active
               </span>
             </div>
 
             {briefing.opportunities.length > 0 ? (
-              briefing.opportunities.map((opp, idx) => (
-                <div key={opp.id} className="notebook-entry" style={{ padding: idx === 0 ? '0 0 28px' : '28px 0', borderBottom: idx === briefing.opportunities.length - 1 ? 'none' : '1px solid var(--border-editorial)' }}>
-                  <div className="notebook-num">
-                    0{idx + 1}
-                  </div>
-
-                  <div className="notebook-body">
-                    <div style={{ marginBottom: '4px' }}>
-                      <span className="notebook-tag">{opp.tag}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {briefing.opportunities.map((opp, idx) => (
+                  <div
+                    key={opp.id}
+                    style={{
+                      background: 'var(--bg-surface-elevated)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '20px',
+                      transition: 'var(--transition-fast)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent-sky)', background: 'var(--accent-sky-subtle)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>
+                        {opp.tag}
+                      </span>
+                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                        OPP 0{idx + 1}
+                      </span>
                     </div>
 
-                    <h3 className="notebook-title" style={{ fontSize: '20px' }}>{opp.title}</h3>
-                    <p className="notebook-desc" style={{ maxWidth: '100%', marginBottom: '16px' }}>{opp.description}</p>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', padding: '10px 14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-editorial)' }}>
-                      <div style={{ fontSize: '12.5px', color: 'var(--color-ink)' }}>
-                        <span style={{ color: 'var(--color-muted)' }}>Suggested Offer:</span> <strong>{opp.preset.offer.title}</strong> &bull; {opp.preset.schedule.timingLabel}
+                    <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
+                      {opp.title}
+                    </h4>
+                    <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: '1.5' }}>
+                      {opp.description}
+                    </p>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input)', padding: '10px 14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: '10px' }}>
+                      <div style={{ fontSize: '12.5px', color: '#FFFFFF' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Suggested:</span> {opp.preset.offer.title} ({opp.preset.schedule.timingLabel})
                       </div>
                       <button
                         className="btn-primary"
-                        style={{ fontSize: '12.5px', padding: '6px 14px' }}
+                        style={{ fontSize: '12px', padding: '6px 14px' }}
                         onClick={() => onLaunchPreset(opp)}
                       >
-                        {opp.actionLabel}
+                        {opp.actionLabel} &rarr;
                       </button>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <div style={{ padding: '36px 0', textAlign: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '6px' }}>
-                  Your store marketing has active coverage
-                </h3>
-                <p style={{ fontSize: '14px', color: 'var(--color-muted)' }}>
-                  All upcoming time windows and festivals are covered by active campaign packs in your vault.
-                </p>
+              <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                All current store windows are covered by active campaigns.
               </div>
             )}
           </div>
 
-            {/* Expansive Recent Campaign Drops Archive */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-editorial)', borderRadius: 'var(--radius-sm)', padding: '28px', boxShadow: 'var(--shadow-paper)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid var(--border-editorial)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>
-                Active Campaign Vault
+          {/* Active Vault Grid */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>
+                Recent Campaign Drops
               </h3>
-              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => navigate('app/campaigns')}>
+              <button className="btn-ghost" style={{ fontSize: '12.5px' }} onClick={() => navigate('app/campaigns')}>
                 View all in vault ({campaigns.length}) &rarr;
               </button>
             </div>
 
             {campaigns.length === 0 ? (
-              <p style={{ fontSize: '13.5px', color: 'var(--color-muted)', padding: '16px 0' }}>
-                No campaign drops yet. Click 'Create promotion' to draft your first 4-channel pack.
+              <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', padding: '16px 0' }}>
+                No campaign drops yet. Click 'Create Campaign' to generate your first 4-channel pack.
               </p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
                 {campaigns.slice(0, 4).map((item) => (
                   <div
                     key={item.campaign.id}
                     style={{
-                      background: 'var(--bg-elevated)',
-                      border: '1px solid var(--border-editorial)',
-                      borderRadius: 'var(--radius-xs)',
+                      background: 'var(--bg-surface-elevated)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
                       padding: '16px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -155,19 +168,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', textTransform: 'uppercase' }}>
+                        <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                           {item.campaign.type.replace(/_/g, ' ')}
                         </span>
                         <CampaignStatusBadge status={item.campaign.status} size="sm" />
                       </div>
-                      <h4 style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--color-ink)', lineHeight: '1.4' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF', lineHeight: '1.4' }}>
                         {item.campaign.offer.title || item.campaign.offer.description}
                       </h4>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-muted)', paddingTop: '8px', borderTop: '1px solid var(--border-editorial)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--text-muted)', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
                       <span>{item.campaign.schedule.timingLabel || 'Active'}</span>
-                      <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => navigate('app/campaigns')}>
+                      <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--accent-emerald)' }} onClick={() => navigate('app/campaigns')}>
                         Proofs &rarr;
                       </button>
                     </div>
@@ -178,28 +191,31 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Store Memory, Usage & Festival Calendar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Right Column: Store Context, Live Quota & Festival Calendar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Store Snapshot Card */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-editorial)' }}>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', textTransform: 'uppercase' }}>
-                STORE CONTEXT
-              </span>
-              <button className="btn-ghost" style={{ fontSize: '11.5px', padding: 0, color: 'var(--color-primary)' }} onClick={() => navigate('app/business')}>
-                Edit Memory &rarr;
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Store size={15} color="var(--accent-emerald)" />
+                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                  STORE MEMORY
+                </span>
+              </div>
+              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--accent-emerald)' }} onClick={() => navigate('app/business')}>
+                Edit &rarr;
               </button>
             </div>
 
-            <div style={{ fontSize: '17px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
               {profile?.name || 'The Roasted Bean'}
             </div>
-            <div style={{ fontSize: '12.5px', color: 'var(--color-muted)', marginTop: '2px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px', marginBottom: '14px' }}>
               {profile?.neighborhood ? `${profile.neighborhood}, ${profile.city}` : 'Indiranagar, Bengaluru'}
             </div>
 
-            <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.5', background: 'var(--bg-elevated)', padding: '10px 12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-editorial)' }}>
-              <div style={{ color: 'var(--color-muted)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>TARGET CUSTOMER</div>
+            <div style={{ background: 'var(--bg-input)', padding: '12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', fontSize: '12.5px', color: '#E2E8F0', lineHeight: '1.5' }}>
+              <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '3px' }}>TARGET AUDIENCE</div>
               {profile?.targetCustomer || 'Working professionals, freelancers, and local residents'}
             </div>
           </div>
@@ -207,15 +223,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           {/* Live Quota Meter */}
           <UsageMeter usage={usage} onUpgrade={onOpenUpgrade} />
 
-          {/* Database Festival & Season Calendar */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-editorial)' }}>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-warm-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                UPCOMING FESTIVAL CALENDAR
-              </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)' }}>
-                Database
-              </span>
+          {/* Festival Calendar */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Calendar size={14} color="var(--accent-amber)" />
+                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent-amber)', textTransform: 'uppercase' }}>
+                  UPCOMING FESTIVALS
+                </span>
+              </div>
+              <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Realtime</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -223,19 +240,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <div
                   key={f.id}
                   style={{
-                    background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border-editorial)',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-xs)',
                     padding: '10px 12px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <strong style={{ fontSize: '13px', color: 'var(--color-ink)' }}>{f.name}</strong>
-                    <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)' }}>
+                    <strong style={{ fontSize: '13px', color: '#FFFFFF' }}>{f.name}</strong>
+                    <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)' }}>
                       {new Date(f.starts_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
-                  <div style={{ fontSize: '11.5px', color: 'var(--color-muted)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     {f.suggested_offer || f.marketing_relevance}
                   </div>
                 </div>

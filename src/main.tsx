@@ -21,6 +21,7 @@ import { BusinessPage } from './pages/app/BusinessPage';
 import { CreateCampaignPage } from './pages/app/CreateCampaignPage';
 import { CampaignVaultPage } from './pages/app/CampaignVaultPage';
 import { SettingsPage } from './pages/app/SettingsPage';
+import { LayoutDashboard, Sparkles, FolderArchive, Store, Settings } from 'lucide-react';
 
 function App() {
   const { session, signOut } = useAuth();
@@ -112,14 +113,14 @@ function App() {
         </main>
       ) : (
         <div className="workspace-layout">
-          {/* Restrained Quiet Workspace Sidebar */}
+          {/* Modern Workspace Sidebar */}
           <aside className="sidebar">
             <div className="sidebar-nav">
               <button
                 className={`sidebar-link ${route === 'app/dashboard' ? 'active' : ''}`}
                 onClick={() => navigate('app/dashboard')}
               >
-                Today
+                <LayoutDashboard size={16} /> Dashboard
               </button>
 
               <button
@@ -129,37 +130,37 @@ function App() {
                   navigate('app/create');
                 }}
               >
-                Create
+                <Sparkles size={16} /> Create Campaign
               </button>
 
               <button
                 className={`sidebar-link ${route === 'app/campaigns' ? 'active' : ''}`}
                 onClick={() => navigate('app/campaigns')}
               >
-                Campaigns
+                <FolderArchive size={16} /> Vault Archive
               </button>
 
               <button
                 className={`sidebar-link ${route === 'app/business' ? 'active' : ''}`}
                 onClick={() => navigate('app/business')}
               >
-                Store Memory
+                <Store size={16} /> Store Memory
               </button>
             </div>
 
             <div>
               <button
                 className={`sidebar-link ${route === 'app/settings' ? 'active' : ''}`}
-                style={{ fontSize: '12.5px', color: 'var(--color-muted)', marginBottom: '16px' }}
+                style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}
                 onClick={() => navigate('app/settings')}
               >
-                Settings & Ledger
+                <Settings size={15} /> Settings & Quota
               </button>
 
               <div className="sidebar-tenant-card">
                 <div className="sidebar-tenant-name">{profile?.name || 'The Roasted Bean'}</div>
                 <div className="sidebar-tenant-sub">
-                  {profile?.neighborhood || 'Indiranagar'}
+                  {profile?.neighborhood ? `${profile.neighborhood}` : 'ACTIVE STORE'}
                 </div>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 interface CreateCampaignPageProps {
   businessId: string;
@@ -104,49 +104,51 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
 
   return (
     <div>
-      {/* Editorial Header */}
+      {/* Modern Header */}
       <div className="section-header">
-        <span className="section-eyebrow">CAMPAIGN CREATOR</span>
-        <h1 className="section-title">Create a promotion</h1>
+        <span className="section-eyebrow">CAMPAIGN ENGINE</span>
+        <h1 className="section-title">Create Multi-Channel Promotion</h1>
         <p className="section-subtitle">
-          Turn your counter special into coordinated proofs across all 4 store channels.
+          Turn your counter special into synchronized proofs across Google, Instagram, WhatsApp, and in-store QR card.
         </p>
       </div>
 
       {isQuotaExceeded && (
-        <div style={{ background: 'var(--color-terracotta-faint)', border: '1px solid var(--color-terracotta)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-terracotta)', fontSize: '13.5px', fontWeight: 600 }}>
-            <AlertCircle size={16} /> You have reached your monthly limit of {usage?.monthlyLimit} campaign packs.
+        <div style={{ background: 'var(--accent-rose-subtle)', border: '1px solid var(--accent-rose)', borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-rose)', fontSize: '13.5px', fontWeight: 600 }}>
+            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} packs). Upgrade for unlimited campaigns.
           </div>
           <button className="btn-secondary" onClick={onOpenUpgrade}>
-            Upgrade quota &rarr;
+            Upgrade Tier &rarr;
           </button>
         </div>
       )}
 
       {generationError && (
-        <div style={{ background: 'var(--color-terracotta-faint)', border: '1px solid var(--color-terracotta)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', color: 'var(--color-terracotta)', fontSize: '13px' }}>
+        <div style={{ background: 'var(--accent-rose-subtle)', border: '1px solid var(--accent-rose)', borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: '24px', color: 'var(--accent-rose)', fontSize: '13px' }}>
           <strong>Error:</strong> {generationError}
         </div>
       )}
 
       {/* Step Numbers Bar */}
-      <div style={{ display: 'flex', gap: '32px', marginBottom: '32px', borderBottom: '1px solid var(--border-editorial)', paddingBottom: '14px' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px', flexWrap: 'wrap' }}>
         {[
-          { num: 1, title: '01 Store Moment' },
-          { num: 2, title: '02 Primary Goal' },
-          { num: 3, title: '03 The Offer' },
-          { num: 4, title: '04 4-Channel Proofs' },
+          { num: 1, title: '1. Store Moment' },
+          { num: 2, title: '2. Primary Goal' },
+          { num: 3, title: '3. Offer & Parameters' },
+          { num: 4, title: '4. Multi-Channel Proofs' },
         ].map((s) => (
           <span
             key={s.num}
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '12.5px',
-              fontWeight: step === s.num ? 600 : 400,
-              color: step === s.num ? 'var(--color-ink)' : 'var(--color-muted)',
-              borderBottom: step === s.num ? '2px solid var(--color-primary)' : 'none',
-              paddingBottom: '4px',
+              fontWeight: step === s.num ? 700 : 500,
+              color: step === s.num ? 'var(--accent-emerald)' : 'var(--text-muted)',
+              background: step === s.num ? 'var(--accent-emerald-subtle)' : 'transparent',
+              padding: '4px 12px',
+              borderRadius: 'var(--radius-full)',
+              border: step === s.num ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
             }}
           >
             {s.title}
@@ -154,41 +156,42 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
         ))}
       </div>
 
-      {/* STEP 1: What's Happening? (Expansive 3-Column Grid) */}
+      {/* STEP 1: What's Happening? */}
       {step === 1 && (
         <div className="card">
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
             What is happening at your store?
           </h3>
-          <p style={{ fontSize: '14.5px', color: 'var(--color-muted)', marginBottom: '28px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
             Select the local trigger or moment you want to promote.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '36px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {[
-              { type: 'WEEKDAY_BOOST' as CampaignType, title: 'Quiet weekday', desc: 'Promote slow afternoon or morning hours with special pairing perks' },
-              { type: 'MENU_LAUNCH' as CampaignType, title: 'New dish or menu item', desc: 'Introduce a fresh single-origin brew, bakery drop, or chef special' },
-              { type: 'WEEKEND_MAGNET' as CampaignType, title: 'Weekend special', desc: 'Capture brunch crowds, family table reservations & unhurried dining' },
-              { type: 'FESTIVAL_SPECIAL' as CampaignType, title: 'Holiday or festival', desc: 'Local festival celebration, gift boxes, and seasonal menus' },
-              { type: 'REVIEW_SPOTLIGHT' as CampaignType, title: 'Bring customers back', desc: 'Spotlight 5-star neighborhood love & win back inactive regulars' },
-              { type: 'FLASH_OFFER' as CampaignType, title: 'Flash promotion', desc: 'Time-sensitive counter incentive for immediate walk-ins' },
+              { type: 'WEEKDAY_BOOST' as CampaignType, title: 'Quiet Weekday Afternoon', desc: 'Promote slow 3–6 PM hours with special pairing perks' },
+              { type: 'MENU_LAUNCH' as CampaignType, title: 'New Dish or Item Launch', desc: 'Introduce a single-origin brew, bakery drop, or seasonal special' },
+              { type: 'WEEKEND_MAGNET' as CampaignType, title: 'Weekend Rush Special', desc: 'Capture brunch crowds, table reservations & unhurried dining' },
+              { type: 'FESTIVAL_SPECIAL' as CampaignType, title: 'Holiday or Local Festival', desc: 'Seasonal festive celebration, gift packs, and special menus' },
+              { type: 'REVIEW_SPOTLIGHT' as CampaignType, title: 'Re-engage Inactive Regulars', desc: 'Spotlight 5-star neighborhood love to drive repeat visits' },
+              { type: 'FLASH_OFFER' as CampaignType, title: 'Flash Counter Promotion', desc: 'Time-sensitive counter incentive for immediate local walk-ins' },
             ].map((ct) => (
               <div
                 key={ct.type}
                 onClick={() => setType(ct.type)}
                 style={{
                   padding: '20px',
-                  borderRadius: 'var(--radius-xs)',
-                  background: type === ct.type ? 'var(--bg-paper-dark)' : 'var(--bg-elevated)',
-                  border: type === ct.type ? '1.5px solid var(--color-ink)' : '1px solid var(--border-editorial)',
+                  borderRadius: 'var(--radius-sm)',
+                  background: type === ct.type ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
+                  border: type === ct.type ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
                   cursor: 'pointer',
+                  boxShadow: type === ct.type ? 'var(--shadow-glow-emerald)' : 'none',
                   transition: 'var(--transition-fast)',
                 }}
               >
-                <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '4px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
                   {ct.title}
                 </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--color-muted)', lineHeight: '1.5' }}>
+                <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
                   {ct.desc}
                 </div>
               </div>
@@ -197,39 +200,40 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button className="btn-primary" onClick={() => setStep(2)}>
-              Next: Define Goal &rarr;
+              Next: Define Goal <ArrowRight size={14} />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 2: What Do You Want? (Expansive 3-Column Grid) */}
+      {/* STEP 2: What Do You Want? */}
       {step === 2 && (
         <div className="card">
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--color-ink)', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
             What is your primary goal?
           </h3>
-          <p style={{ fontSize: '14.5px', color: 'var(--color-muted)', marginBottom: '28px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
             This shapes the call-to-action on Google, Instagram, WhatsApp, and in-store poster.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '36px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {[
-              { obj: 'MORE_WALK_INS' as CampaignObjective, label: 'More walk-ins', desc: 'Encourage locals and neighbors to drop by your counter today' },
-              { obj: 'MORE_ORDERS' as CampaignObjective, label: 'More takeaway orders', desc: 'Drive counter takeaways and direct parcel orders' },
-              { obj: 'MORE_BOOKINGS' as CampaignObjective, label: 'More table reservations', desc: 'Secure advance table bookings for lunch, dinner or brunch' },
-              { obj: 'REPEAT_VISITS' as CampaignObjective, label: 'Bring back regulars', desc: 'Re-engage nearby customers who haven’t visited in 14+ days' },
-              { obj: 'INCREASE_AWARENESS' as CampaignObjective, label: 'Neighborhood discovery', desc: 'Introduce your store to new residents and office workers nearby' },
+              { obj: 'MORE_WALK_INS' as CampaignObjective, label: 'More Counter Walk-ins', desc: 'Encourage locals and neighbors to drop by your counter today' },
+              { obj: 'MORE_ORDERS' as CampaignObjective, label: 'More Takeaway Orders', desc: 'Drive counter takeaways and direct parcel orders' },
+              { obj: 'MORE_BOOKINGS' as CampaignObjective, label: 'Table Reservations', desc: 'Secure advance table bookings for lunch, dinner or brunch' },
+              { obj: 'REPEAT_VISITS' as CampaignObjective, label: 'Bring Back Regulars', desc: 'Re-engage nearby customers who haven’t visited in 14+ days' },
+              { obj: 'INCREASE_AWARENESS' as CampaignObjective, label: 'Neighborhood Discovery', desc: 'Introduce your store to new residents and office workers nearby' },
             ].map((o) => (
               <div
                 key={o.obj}
                 onClick={() => setObjective(o.obj)}
                 style={{
                   padding: '20px',
-                  borderRadius: 'var(--radius-xs)',
-                  background: objective === o.obj ? 'var(--bg-paper-dark)' : 'var(--bg-elevated)',
-                  border: objective === o.obj ? '1.5px solid var(--color-ink)' : '1px solid var(--border-editorial)',
+                  borderRadius: 'var(--radius-sm)',
+                  background: objective === o.obj ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
+                  border: objective === o.obj ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
                   cursor: 'pointer',
+                  boxShadow: objective === o.obj ? 'var(--shadow-glow-emerald)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -237,35 +241,35 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>{o.label}</div>
-                  <div style={{ fontSize: '12.5px', color: 'var(--color-muted)', marginTop: '4px', lineHeight: '1.5' }}>{o.desc}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>{o.label}</div>
+                  <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.5' }}>{o.desc}</div>
                 </div>
-                {objective === o.obj && <CheckCircle2 size={16} color="var(--color-primary)" />}
+                {objective === o.obj && <CheckCircle2 size={16} color="var(--accent-emerald)" />}
               </div>
             ))}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <button className="btn-secondary" onClick={() => setStep(1)}>
-              &larr; Back
+              <ArrowLeft size={14} /> Back
             </button>
             <button className="btn-primary" onClick={() => setStep(3)}>
-              Next: The Offer &rarr;
+              Next: The Offer <ArrowRight size={14} />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 3: The Offer (Expansive 2-Column Split Layout) */}
+      {/* STEP 3: The Offer Form */}
       {step === 3 && (
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'start' }}>
           {/* Left: Input Form */}
           <div className="card">
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', marginBottom: '8px' }}>
-              The counter offer & timing
+            <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
+              The Offer & Schedule
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-muted)', marginBottom: '24px' }}>
-              Define the exact promotion for {profile?.name || 'your store'}.
+            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+              Define the exact promotion parameters for {profile?.name || 'your store'}.
             </p>
 
             <div className="form-group">
@@ -305,7 +309,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
               </div>
 
               <div className="form-group">
-                <label className="form-label">Schedule / Time Window</label>
+                <label className="form-label">Schedule / Timing</label>
                 <input
                   type="text"
                   className="form-input"
@@ -317,75 +321,71 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
             </div>
 
             <div className="form-group">
-              <label className="form-label">Redemption Instruction</label>
+              <label className="form-label">Redemption Terms</label>
               <input
                 type="text"
                 className="form-input"
                 value={offerTerms}
                 onChange={(e) => setOfferTerms(e.target.value)}
-                placeholder="e.g. Show message at counter to redeem. Dine-in only."
+                placeholder="e.g. Flash message at counter to redeem. Dine-in only."
               />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '28px' }}>
               <button className="btn-secondary" onClick={() => setStep(2)}>
-                &larr; Back
+                <ArrowLeft size={14} /> Back
               </button>
               <button
                 className="btn-primary"
                 onClick={handleGenerate}
                 disabled={isGenerating || Boolean(isQuotaExceeded)}
               >
-                {isGenerating ? 'Generating Proofs...' : 'Generate 4 Campaign Proofs'}
+                <Sparkles size={14} /> {isGenerating ? 'Generating Proofs...' : 'Generate 4 Campaign Proofs'}
               </button>
             </div>
           </div>
 
-          {/* Right: Live Draft Proof Preview */}
-          <div className="card" style={{ background: 'var(--bg-elevated)' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              LIVE PROMOTION DRAFT
-            </span>
-            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '8px' }}>
+          {/* Right: Live Draft Preview */}
+          <div className="card" style={{ background: 'var(--bg-surface-elevated)' }}>
+            <span className="section-eyebrow">LIVE DRAFT PREVIEW</span>
+            <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
               {profile?.name || 'The Roasted Bean'}
             </h4>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: '16px' }}>
               {profile?.neighborhood || 'Indiranagar'}, {profile?.city || 'Bengaluru'}
             </div>
 
-            <div style={{ padding: '16px', background: 'var(--bg-surface)', border: '1px solid var(--border-editorial)', borderRadius: 'var(--radius-xs)', marginBottom: '16px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)' }}>
+            <div style={{ padding: '16px', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', marginBottom: '16px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
                 {offerTitle || 'Afternoon Promotion'}
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                 {offerDesc || 'Special promotional pairing for local neighborhood visitors.'}
               </div>
-              <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginTop: '10px' }}>
+              <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', marginTop: '10px' }}>
                 {timingLabel || 'Valid during specified window'} &bull; {offerValue || 'Special Perk'}
               </div>
             </div>
 
-            <div style={{ fontSize: '12px', color: 'var(--color-muted)', lineHeight: '1.5' }}>
-              Clicking generate will simultaneously produce synchronized Google, Instagram, WhatsApp, and in-store poster copy.
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+              Clicking generate will simultaneously create synchronized Google, Instagram, WhatsApp, and in-store poster copy.
             </div>
           </div>
         </div>
       )}
 
-      {/* STEP 4: Campaign Proofs (Expansive 2x2 Simultaneous Grid) */}
+      {/* STEP 4: 2x2 Simultaneous Multi-Channel Proofs */}
       {step === 4 && generatedPack && (
         <div>
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-dark)', padding: '20px 24px', borderRadius: 'var(--radius-sm)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-medium)', padding: '20px 24px', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
-                CAMPAIGN PROOFS READY &bull; SAVED TO VAULT
-              </span>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginTop: '2px' }}>
+              <span className="section-eyebrow">CAMPAIGN PROOFS READY &bull; SAVED TO VAULT</span>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
                 {generatedPack.campaign.offer.title || generatedPack.campaign.offer.description}
               </h3>
             </div>
             <button className="btn-secondary" onClick={() => navigate('app/campaigns')}>
-              Open vault archive &rarr;
+              Open Vault &rarr;
             </button>
           </div>
 

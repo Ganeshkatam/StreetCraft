@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlanTier } from '../types/billing';
 import { PLANS } from '../lib/entitlements';
-import { X, Check } from 'lucide-react';
+import { X, Check, Zap } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -38,23 +38,23 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" style={{ maxWidth: '720px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="section-eyebrow">STORE SUBSCRIPTION</span>
-            <h3 className="modal-title">Upgrade Promotion Quota</h3>
+            <span className="section-eyebrow">STORE QUOTA</span>
+            <h3 className="modal-title">Upgrade Campaign Tier</h3>
           </div>
           <button className="btn-ghost" onClick={onClose}>
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
         {successNotice ? (
-          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-faint)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-sm)', margin: '20px 0' }}>
-            <h4 style={{ color: 'var(--color-primary-dark)', fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>
-              Subscription Updated
+          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--accent-emerald-subtle)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-sm)', margin: '20px 0' }}>
+            <h4 style={{ color: 'var(--accent-emerald)', fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>
+              Subscription Synchronized
             </h4>
-            <p style={{ color: 'var(--color-ink)', fontSize: '14px' }}>{successNotice}</p>
+            <p style={{ color: '#FFFFFF', fontSize: '14px' }}>{successNotice}</p>
           </div>
         ) : (
           <>
@@ -66,31 +66,32 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <div
                     key={tierKey}
                     style={{
-                      background: isPro ? 'var(--bg-elevated)' : 'var(--bg-surface)',
-                      border: isPro ? '1.5px solid var(--color-primary)' : '1px solid var(--border-editorial)',
-                      borderRadius: 'var(--radius-xs)',
+                      background: isPro ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
+                      border: isPro ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
                       padding: '20px',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
+                      boxShadow: isPro ? 'var(--shadow-glow-emerald)' : 'none',
                     }}
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--color-ink)' }}>{plan.name}</span>
-                        {isPro && <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>POPULAR</span>}
+                        <span style={{ fontWeight: 700, fontSize: '15px', color: '#FFFFFF' }}>{plan.name}</span>
+                        {isPro && <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '1px 6px', borderRadius: '4px' }}>POPULAR</span>}
                       </div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', margin: '8px 0 4px', color: 'var(--color-ink)' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 4px', color: '#FFFFFF' }}>
                         {plan.priceINR === 0 ? 'Free' : `₹${plan.priceINR}`}
-                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}>/mo</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>/mo</span>
                       </div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-muted)', marginBottom: '14px' }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--accent-emerald)', marginBottom: '14px' }}>
                         {plan.monthlyPackLimit} packs / month
                       </div>
-                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-muted)' }}>
+                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
                         {plan.features.slice(0, 3).map((f, i) => (
                           <li key={i} style={{ display: 'flex', gap: '6px' }}>
-                            <Check size={12} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <Check size={12} color="var(--accent-emerald)" style={{ flexShrink: 0, marginTop: '2px' }} />
                             <span>{f}</span>
                           </li>
                         ))}
@@ -110,7 +111,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               })}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
               <button className="btn-secondary" onClick={onClose}>
                 Close
               </button>

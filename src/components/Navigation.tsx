@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserSession } from '../types/business';
 import { UsageSummary } from '../types/billing';
-import { ArrowRight, LogOut, LogIn } from 'lucide-react';
+import { ArrowRight, LogOut, Zap } from 'lucide-react';
 
 interface NavigationProps {
   currentRoute: string;
@@ -26,99 +26,100 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <header className="main-header">
-      <div className="brand-wrapper">
-        <button
+      <div className="header-container">
+        <div
+          className="brand-wrapper"
           onClick={() => navigate(session.isAuthenticated ? 'app/dashboard' : 'home')}
-          style={{ display: 'flex', alignItems: 'baseline' }}
         >
-          <span className="brand-wordmark">
-            STREETCRAFT
-            <span>Local Studio</span>
+          <div className="brand-logo-icon">S</div>
+          <span className="brand-logo-text">
+            StreetCraft <span className="brand-badge-pill">AI STUDIO</span>
           </span>
-        </button>
-      </div>
+        </div>
 
-      <nav className="nav-links">
-        {!isAppView ? (
-          <>
-            <button
-              className={`nav-item ${currentRoute === 'home' ? 'active' : ''}`}
-              onClick={() => navigate('home')}
-            >
-              How it works
-            </button>
-            <button
-              className={`nav-item ${currentRoute === 'free-tool' ? 'active' : ''}`}
-              onClick={() => navigate('free-tool')}
-            >
-              Free tool
-            </button>
-            <button
-              className={`nav-item ${currentRoute === 'pricing' ? 'active' : ''}`}
-              onClick={() => navigate('pricing')}
-            >
-              Pricing
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              className={`nav-item ${currentRoute === 'app/dashboard' ? 'active' : ''}`}
-              onClick={() => navigate('app/dashboard')}
-            >
-              Today
-            </button>
-            <button
-              className={`nav-item ${currentRoute === 'app/create' ? 'active' : ''}`}
-              onClick={() => navigate('app/create')}
-            >
-              Create
-            </button>
-            <button
-              className={`nav-item ${currentRoute === 'app/campaigns' ? 'active' : ''}`}
-              onClick={() => navigate('app/campaigns')}
-            >
-              Campaigns
-            </button>
-            <button
-              className={`nav-item ${currentRoute === 'app/business' ? 'active' : ''}`}
-              onClick={() => navigate('app/business')}
-            >
-              Store Memory
-            </button>
-          </>
-        )}
-      </nav>
-
-      <div className="header-actions">
-        {session.isAuthenticated ? (
-          <>
-            {usage && (
-              <div className="usage-pill" onClick={onOpenUpgrade} style={{ cursor: 'pointer' }}>
-                <span>{usage.remainingPacks} packs left</span>
-              </div>
-            )}
-
-            {!isAppView ? (
-              <button className="btn-primary" onClick={() => navigate('app/dashboard')}>
-                Open Workspace <ArrowRight size={13} />
+        <nav className="header-nav-links">
+          {!isAppView ? (
+            <>
+              <button
+                className={`nav-item ${currentRoute === 'home' ? 'active' : ''}`}
+                onClick={() => navigate('home')}
+              >
+                Studio
               </button>
-            ) : (
-              <button className="btn-ghost" onClick={onSignOut}>
-                <LogOut size={13} /> Sign out
+              <button
+                className={`nav-item ${currentRoute === 'free-tool' ? 'active' : ''}`}
+                onClick={() => navigate('free-tool')}
+              >
+                Free Generator
               </button>
-            )}
-          </>
-        ) : (
-          <>
-            <button className="btn-ghost" onClick={onOpenAuth}>
-              Sign In
-            </button>
-            <button className="btn-primary" onClick={() => navigate('free-tool')}>
-              Start creating &rarr;
-            </button>
-          </>
-        )}
+              <button
+                className={`nav-item ${currentRoute === 'pricing' ? 'active' : ''}`}
+                onClick={() => navigate('pricing')}
+              >
+                Pricing
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className={`nav-item ${currentRoute === 'app/dashboard' ? 'active' : ''}`}
+                onClick={() => navigate('app/dashboard')}
+              >
+                Dashboard
+              </button>
+              <button
+                className={`nav-item ${currentRoute === 'app/create' ? 'active' : ''}`}
+                onClick={() => navigate('app/create')}
+              >
+                Create Campaign
+              </button>
+              <button
+                className={`nav-item ${currentRoute === 'app/campaigns' ? 'active' : ''}`}
+                onClick={() => navigate('app/campaigns')}
+              >
+                Vault
+              </button>
+              <button
+                className={`nav-item ${currentRoute === 'app/business' ? 'active' : ''}`}
+                onClick={() => navigate('app/business')}
+              >
+                Store Memory
+              </button>
+            </>
+          )}
+        </nav>
+
+        <div className="header-actions">
+          {session.isAuthenticated ? (
+            <>
+              {usage && (
+                <button className="usage-pill" onClick={onOpenUpgrade}>
+                  <Zap size={13} />
+                  <span><strong>{usage.remainingPacks}</strong> packs left</span>
+                </button>
+              )}
+
+              {!isAppView ? (
+                <button className="btn-primary" onClick={() => navigate('app/dashboard')}>
+                  Open Studio <ArrowRight size={14} />
+                </button>
+              ) : (
+                <button className="btn-ghost" onClick={onSignOut}>
+                  <LogOut size={14} /> Sign out
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <button className="btn-ghost" onClick={onOpenAuth}>
+                Sign In
+              </button>
+              <button className="btn-primary" onClick={() => navigate('free-tool')}>
+                Start Creating <ArrowRight size={14} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

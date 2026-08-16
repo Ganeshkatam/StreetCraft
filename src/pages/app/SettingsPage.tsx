@@ -3,6 +3,7 @@ import { useUsage } from '../../hooks/useUsage';
 import { useBusiness } from '../../hooks/useBusiness';
 import { UserSession } from '../../types/business';
 import { UsageMeter } from '../../components/UsageMeter';
+import { ShieldCheck, History, User } from 'lucide-react';
 
 interface SettingsPageProps {
   businessId: string;
@@ -17,10 +18,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
   return (
     <div>
       <div className="section-header">
-        <span className="section-eyebrow">STORE LEDGER &bull; QUOTA ACCOUNTING</span>
-        <h1 className="section-title">Settings & Ledger</h1>
+        <span className="section-eyebrow">USAGE & SETTINGS &bull; AUDIT TRAIL</span>
+        <h1 className="section-title">Settings & Quota Ledger</h1>
         <p className="section-subtitle">
-          Subscription quota, active store membership, and generation audit ledger.
+          Subscription quota, active store membership, and server-side generation audit ledger.
         </p>
       </div>
 
@@ -31,59 +32,74 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
         {/* Tenant Information Card */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', textTransform: 'uppercase' }}>ACCOUNT</span>
-            <div style={{ fontSize: '14px', color: 'var(--color-ink)', marginTop: '8px', marginBottom: '6px' }}>
-              Logged in as: <strong>{session.email}</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <User size={16} color="var(--accent-indigo)" />
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#FFFFFF' }}>Account Details</h3>
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginBottom: '6px' }}>
-              Role: <span style={{ textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 600 }}>{session.role}</span>
+            <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Logged in as: <strong style={{ color: '#FFFFFF' }}>{session.email}</strong>
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--color-muted)' }}>
-              Store: <strong style={{ color: 'var(--color-ink)' }}>{profile?.name || 'Store'}</strong>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Role: <span style={{ textTransform: 'uppercase', color: 'var(--accent-emerald)', fontWeight: 700 }}>{session.role}</span>
+            </div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              Store: <strong style={{ color: '#FFFFFF' }}>{profile?.name || 'Store'}</strong>
             </div>
           </div>
 
-          <div style={{ paddingTop: '12px', borderTop: '1px solid var(--border-editorial)', fontSize: '11px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
-            Protected by PostgreSQL Row-Level Security
+          <div style={{ padding: '10px 12px', background: 'var(--bg-input)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShieldCheck size={14} color="var(--accent-emerald)" />
+            <span>Enforced by PostgreSQL Row-Level Security</span>
           </div>
         </div>
       </div>
 
       {/* Append-Only Ledger Table */}
       <div className="card">
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-          Generation Ledger (Audit Trail)
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+          <History size={16} color="var(--accent-amber)" />
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>
+            Generation Ledger (Audit Trail)
+          </h3>
+        </div>
 
         {events.length === 0 ? (
-          <p style={{ fontSize: '13px', color: 'var(--color-muted)', padding: '20px 0', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', padding: '20px 0', textAlign: 'center' }}>
             No campaign packs have been generated yet for this billing cycle.
           </p>
         ) : (
-          <table className="ledger-table">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Event</th>
-                <th>Units</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((e) => (
-                <tr key={e.id}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px' }}>{new Date(e.createdAt).toLocaleString('en-IN')}</td>
-                  <td>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-primary)', background: 'var(--color-primary-faint)', padding: '2px 6px', borderRadius: '2px' }}>
-                      {e.eventType}
-                    </span>
-                  </td>
-                  <td style={{ fontFamily: 'var(--font-mono)' }}>{e.units > 0 ? `+${e.units}` : e.units}</td>
-                  <td style={{ fontSize: '13px' }}>{e.description || 'Campaign generation event'}</td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
+                  <th style={{ padding: '10px 12px' }}>TIMESTAMP</th>
+                  <th style={{ padding: '10px 12px' }}>EVENT</th>
+                  <th style={{ padding: '10px 12px' }}>UNITS</th>
+                  <th style={{ padding: '10px 12px' }}>DESCRIPTION</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {events.map((e) => (
+                  <tr key={e.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {new Date(e.createdAt).toLocaleString('en-IN')}
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>
+                        {e.eventType}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)', color: '#FFFFFF' }}>
+                      {e.units > 0 ? `+${e.units}` : e.units}
+                    </td>
+                    <td style={{ padding: '12px', color: 'var(--text-primary)' }}>
+                      {e.description || 'Campaign generation event'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
