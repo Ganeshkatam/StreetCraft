@@ -32,7 +32,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
     },
     {
       q: 'Can I start for free without a credit card?',
-      a: 'Yes. The Neighborhood Starter tier includes 5 complete 4-channel campaign packs every month, Store Memory, and the Daily Opportunity Radar. No payment card is required.',
+      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete 4-channel campaign packs every month, Store Memory, and the Daily Opportunity Radar. No payment card is required.`,
     },
     {
       q: 'Can I upgrade or cancel my plan at any time?',
@@ -134,7 +134,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
               How 3 Extra Customers Cover Your Entire Month
             </h3>
             <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.6' }}>
-              If your average customer ticket is ₹350, just 3 extra walk-ins generated from a single Tuesday afternoon drop completely pays for the Pro Plan (₹799/mo). Every additional table cover is 100% net revenue.
+              If your average customer ticket is ₹350, just 3 extra walk-ins generated from a single Tuesday afternoon drop completely pays for the Pro Plan (₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399}/mo). Every additional table cover is 100% net revenue.
             </p>
           </div>
 
@@ -145,11 +145,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
               <span style={{ color: 'var(--color-ink-muted)' }}>High-Street Pro Monthly:</span>
-              <strong style={{ color: 'var(--color-primary)' }}>₹799</strong>
+              <strong style={{ color: 'var(--color-primary)' }}>₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', fontSize: '13.5px' }}>
               <span style={{ fontWeight: 600, color: 'var(--color-ink)' }}>Breakeven Required:</span>
-              <strong style={{ color: 'var(--color-accent)' }}>2.3 walk-in covers / month</strong>
+              <strong style={{ color: 'var(--color-accent)' }}>{((plans.find(p => p.id === 'PRO')?.price_inr ?? 399) / 350).toFixed(1)} walk-in covers / month</strong>
             </div>
           </div>
         </div>
@@ -169,14 +169,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             <thead>
               <tr style={{ background: 'var(--color-surface-raised)', borderBottom: '1px solid var(--color-border)' }}>
                 <th style={{ padding: '14px 20px', color: 'var(--color-ink-muted)', fontWeight: 600 }}>Capability</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Starter (₹0)</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-primary)', fontWeight: 700 }}>Pro (₹799)</th>
-                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Growth (₹1499)</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Starter (₹{plans.find(p => p.id === 'FREE')?.price_inr ?? 0})</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-primary)', fontWeight: 700 }}>Pro (₹{plans.find(p => p.id === 'PRO')?.price_inr ?? 399})</th>
+                <th style={{ padding: '14px 20px', color: 'var(--color-ink)', fontWeight: 600 }}>Growth (₹{plans.find(p => p.id === 'GROWTH')?.price_inr ?? 799})</th>
               </tr>
             </thead>
             <tbody>
               {[
-                { feature: 'Monthly Campaign Packs', starter: '5 packs', pro: '100 packs', growth: '300 packs' },
+                { feature: 'Monthly Campaign Packs', starter: `${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} packs`, pro: `${plans.find(p => p.id === 'PRO')?.monthly_pack_limit ?? 100} packs`, growth: `${plans.find(p => p.id === 'GROWTH')?.monthly_pack_limit ?? 300} packs` },
                 { feature: 'Google Search & Maps Local Updates', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'Instagram Reel Hook & Stories', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'WhatsApp Broadcast Copy', starter: 'Included', pro: 'Included', growth: 'Included' },

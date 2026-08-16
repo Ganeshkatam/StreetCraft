@@ -10,10 +10,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     name: 'Neighborhood Starter',
     priceINR: 0,
     annualPriceINR: 0,
-    monthlyPackLimit: 5,
+    monthlyPackLimit: 3,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     features: [
-      '5 multi-channel campaign packs / month',
+      '3 multi-channel campaign packs / month',
       'Google Business, Instagram & WhatsApp copy',
       'Basic business profile memory',
       'One-click clipboard export',
@@ -22,8 +22,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   PRO: {
     id: 'PRO',
     name: 'High-Street Pro',
-    priceINR: 799,
-    annualPriceINR: 7990,
+    priceINR: 399,
+    annualPriceINR: 3990,
     monthlyPackLimit: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
@@ -38,8 +38,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   GROWTH: {
     id: 'GROWTH',
     name: 'Multi-Store Growth',
-    priceINR: 1499,
-    annualPriceINR: 14990,
+    priceINR: 799,
+    annualPriceINR: 7990,
     monthlyPackLimit: 300,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
@@ -54,7 +54,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
 
 export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
   FREE: {
-    campaignPacks: 5,
+    campaignPacks: 3,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     dailyBriefing: true,
     businessMemory: true,

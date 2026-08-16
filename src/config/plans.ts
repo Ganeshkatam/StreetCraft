@@ -16,11 +16,11 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
   FREE: {
     id: 'FREE',
     name: 'Neighborhood Starter',
-    monthlyPackLimit: 5,
+    monthlyPackLimit: 3,
     priceINR: 0,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     features: [
-      '5 Coordinated Campaign Packs / mo',
+      '3 Coordinated Campaign Packs / mo',
       'Google Business Profile Updates',
       'Instagram Post & Reels Generator',
       'WhatsApp Broadcast Copy',
@@ -32,7 +32,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     id: 'PRO',
     name: 'High-Street Pro',
     monthlyPackLimit: 100,
-    priceINR: 799,
+    priceINR: 399,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       '100 Coordinated Campaign Packs / mo',
@@ -47,7 +47,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     id: 'GROWTH',
     name: 'Multi-Store Growth',
     monthlyPackLimit: 300,
-    priceINR: 1499,
+    priceINR: 799,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       '300 Coordinated Campaign Packs / mo',
