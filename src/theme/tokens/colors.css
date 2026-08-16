@@ -1,0 +1,35 @@
+/* ==========================================================================
+   STREETCRAFT AI — FOUNDATION TOKENS: COLORS
+   Core palette definitions and semantic color roles.
+   ========================================================================== */
+
+:root {
+  /* Default StreetCraft Paper Palette Primitive Constants */
+  --raw-paper-canvas: #F7F5EF;
+  --raw-paper-surface: #FBFAF6;
+  --raw-paper-surface-2: #F2EFE7;
+  --raw-paper-raised: #FFFDF8;
+  
+  --raw-ink-primary: #171714;
+  --raw-ink-soft: #3F3E38;
+  --raw-ink-muted: #77746C;
+  --raw-ink-subtle: #A39F95;
+  
+  --raw-border: #E2DED4;
+  --raw-border-soft: #ECE8DF;
+  --raw-border-dark: #C8C3B6;
+  
+  --raw-evergreen: #176B4D;
+  --raw-evergreen-hover: #0F4E38;
+  --raw-evergreen-subtle: rgba(23, 107, 77, 0.08);
+  --raw-evergreen-border: rgba(23, 107, 77, 0.22);
+  
+  --raw-terracotta: #C96B32;
+  --raw-terracotta-subtle: rgba(201, 107, 50, 0.08);
+  --raw-ochre: #E8C96A;
+  
+  --raw-danger: #A8433B;
+  --raw-danger-subtle: rgba(168, 67, 59, 0.08);
+  --raw-success: #176B4D;
+  --raw-info: #2B6CB0;
+}

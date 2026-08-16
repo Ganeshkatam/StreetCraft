@@ -1,0 +1,26 @@
+/* ==========================================================================
+   STREETCRAFT AI — FOUNDATION TOKENS: SPACING & LAYOUT
+   Editorial spacing scale and layout boundaries.
+   ========================================================================== */
+
+:root {
+  /* Editorial Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+
+  /* Semantic Layout Tokens */
+  --layout-page-max: 1400px;
+  --layout-reading-max: 720px;
+  --layout-sidebar-width: 250px;
+  --layout-header-height: 68px;
+  --layout-content-gutter: var(--space-7);
+  --layout-card-padding: var(--space-6);
+  --layout-grid-gap: var(--space-6);
+}

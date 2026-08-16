@@ -1,0 +1,40 @@
+/* ==========================================================================
+   STREETCRAFT AI — THEME: PAPER (DEFAULT)
+   Warm Paper, Soft Ivory, Dark Ink, Evergreen, and Terracotta.
+   ========================================================================== */
+
+:root,
+[data-theme="paper"] {
+  /* Page & Surface Layers */
+  --color-page: var(--raw-paper-canvas);
+  --color-surface: var(--raw-paper-surface);
+  --color-surface-2: var(--raw-paper-surface-2);
+  --color-surface-raised: var(--raw-paper-raised);
+  --color-surface-hover: #F5F2EB;
+  --color-input: #FFFFFF;
+
+  /* Ink & Typography Hierarchy */
+  --color-ink: var(--raw-ink-primary);
+  --color-ink-soft: var(--raw-ink-soft);
+  --color-ink-muted: var(--raw-ink-muted);
+  --color-ink-subtle: var(--raw-ink-subtle);
+
+  /* Hairline Borders */
+  --color-border: var(--raw-border);
+  --color-border-soft: var(--raw-border-soft);
+  --color-border-dark: var(--raw-border-dark);
+
+  /* Brand Accents */
+  --color-primary: var(--raw-evergreen);
+  --color-primary-hover: var(--raw-evergreen-hover);
+  --color-primary-subtle: var(--raw-evergreen-subtle);
+  --color-primary-border: var(--raw-evergreen-border);
+
+  --color-accent: var(--raw-terracotta);
+  --color-accent-subtle: var(--raw-terracotta-subtle);
+  --color-highlight: var(--raw-ochre);
+
+  --color-danger: var(--raw-danger);
+  --color-danger-subtle: var(--raw-danger-subtle);
+  --color-success: var(--raw-success);
+}

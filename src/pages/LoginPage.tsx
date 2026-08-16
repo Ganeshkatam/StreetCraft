@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { ArrowRight, ShieldCheck, Lock } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface LoginPageProps {
   navigate: (route: string) => void;
@@ -47,20 +47,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '60px auto 80px', padding: '0 20px' }}>
+    <div style={{ maxWidth: '420px', margin: '60px auto 80px', padding: '0 20px' }}>
       <div className="card" style={{ padding: '36px 32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div className="brand-logo-icon" style={{ margin: '0 auto 12px', width: '36px', height: '36px', fontSize: '16px' }}>S</div>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>STREETCRAFT</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', marginTop: '2px' }}>
             {isSignUp ? 'Create Store Account' : 'Sign In to Studio'}
           </h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
             {claimToken ? 'Sign up to claim and save your generated promotion.' : 'Access your store memory and live campaign studio.'}
           </p>
         </div>
 
         {errorMsg && (
-          <div style={{ padding: '10px 14px', background: 'var(--accent-rose-subtle)', border: '1px solid var(--accent-rose)', borderRadius: 'var(--radius-xs)', color: 'var(--accent-rose)', fontSize: '13px', marginBottom: '20px' }}>
+          <div style={{ padding: '10px 14px', background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', color: 'var(--color-danger)', fontSize: '13px', marginBottom: '20px' }}>
             {errorMsg}
           </div>
         )}
@@ -118,8 +118,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
             />
           </div>
 
-          <div style={{ background: 'var(--bg-input)', padding: '10px 12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            <ShieldCheck size={14} color="var(--accent-emerald)" />
+          <div style={{ background: 'var(--color-surface-raised)', padding: '10px 12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', color: 'var(--color-ink-muted)' }}>
+            <ShieldCheck size={14} color="var(--color-primary)" />
             <span>Supabase Auth &bull; PostgreSQL Row-Level Security</span>
           </div>
 
@@ -133,14 +133,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
           {isSignUp ? (
             <span>
               Already have an account?{' '}
               <button
                 type="button"
                 className="btn-ghost"
-                style={{ padding: '0 4px', color: 'var(--accent-emerald)', textDecoration: 'underline' }}
+                style={{ padding: '0 4px', color: 'var(--color-primary)', textDecoration: 'underline' }}
                 onClick={() => setIsSignUp(false)}
               >
                 Sign In
@@ -152,7 +152,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
               <button
                 type="button"
                 className="btn-ghost"
-                style={{ padding: '0 4px', color: 'var(--accent-emerald)', textDecoration: 'underline' }}
+                style={{ padding: '0 4px', color: 'var(--color-primary)', textDecoration: 'underline' }}
                 onClick={() => setIsSignUp(true)}
               >
                 Create Account

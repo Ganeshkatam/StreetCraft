@@ -1,0 +1,40 @@
+/* ==========================================================================
+   STREETCRAFT AI — THEME: PAPER DARK
+   "Ink and paper at night" — Warm charcoal paper, light ink, evergreen, and clay.
+   Never generic cold developer dark console.
+   ========================================================================== */
+
+[data-theme="paper-dark"] {
+  /* Page & Surface Layers */
+  --color-page: #191814;
+  --color-surface: #232119;
+  --color-surface-2: #2B2921;
+  --color-surface-raised: #333027;
+  --color-surface-hover: #3B382F;
+  --color-input: #1C1B17;
+
+  /* Ink & Typography Hierarchy */
+  --color-ink: #F3EFE5;
+  --color-ink-soft: #D6D0C2;
+  --color-ink-muted: #9E998B;
+  --color-ink-subtle: #736E61;
+
+  /* Hairline Borders */
+  --color-border: #39362D;
+  --color-border-soft: #2F2D24;
+  --color-border-dark: #4A463B;
+
+  /* Brand Accents */
+  --color-primary: #4E9B76;
+  --color-primary-hover: #62B38D;
+  --color-primary-subtle: rgba(78, 155, 118, 0.12);
+  --color-primary-border: rgba(78, 155, 118, 0.3);
+
+  --color-accent: #D6814D;
+  --color-accent-subtle: rgba(214, 129, 77, 0.12);
+  --color-highlight: #E5C365;
+
+  --color-danger: #D9534F;
+  --color-danger-subtle: rgba(217, 83, 79, 0.12);
+  --color-success: #4E9B76;
+}

@@ -104,19 +104,19 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
 
   return (
     <div>
-      {/* Modern Header */}
+      {/* Editorial Header */}
       <div className="section-header">
-        <span className="section-eyebrow">CAMPAIGN ENGINE</span>
-        <h1 className="section-title">Create Multi-Channel Promotion</h1>
+        <span className="section-eyebrow">CAMPAIGN COMPOSER &bull; STEP {step} OF 4</span>
+        <h1 className="section-title">Compose Multi-Channel Campaign</h1>
         <p className="section-subtitle">
-          Turn your counter special into synchronized proofs across Google, Instagram, WhatsApp, and in-store QR card.
+          Turn your counter special into synchronized proofs across Google, Instagram, WhatsApp, and in-store QR poster.
         </p>
       </div>
 
       {isQuotaExceeded && (
-        <div style={{ background: 'var(--accent-rose-subtle)', border: '1px solid var(--accent-rose)', borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-rose)', fontSize: '13.5px', fontWeight: 600 }}>
-            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} packs). Upgrade for unlimited campaigns.
+        <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', fontSize: '13.5px', fontWeight: 600 }}>
+            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} packs). Upgrade for additional quota.
           </div>
           <button className="btn-secondary" onClick={onOpenUpgrade}>
             Upgrade Tier &rarr;
@@ -125,30 +125,30 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       )}
 
       {generationError && (
-        <div style={{ background: 'var(--accent-rose-subtle)', border: '1px solid var(--accent-rose)', borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: '24px', color: 'var(--accent-rose)', fontSize: '13px' }}>
+        <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', color: 'var(--color-danger)', fontSize: '13px' }}>
           <strong>Error:</strong> {generationError}
         </div>
       )}
 
-      {/* Step Numbers Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px', flexWrap: 'wrap' }}>
+      {/* Step Indicator Bar */}
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px', flexWrap: 'wrap' }}>
         {[
           { num: 1, title: '1. Store Moment' },
           { num: 2, title: '2. Primary Goal' },
-          { num: 3, title: '3. Offer & Parameters' },
-          { num: 4, title: '4. Multi-Channel Proofs' },
+          { num: 3, title: '3. The Offer & Timing' },
+          { num: 4, title: '4. Campaign Proofs' },
         ].map((s) => (
           <span
             key={s.num}
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '12.5px',
-              fontWeight: step === s.num ? 700 : 500,
-              color: step === s.num ? 'var(--accent-emerald)' : 'var(--text-muted)',
-              background: step === s.num ? 'var(--accent-emerald-subtle)' : 'transparent',
+              fontWeight: step === s.num ? 700 : 400,
+              color: step === s.num ? 'var(--color-primary)' : 'var(--color-ink-muted)',
+              background: step === s.num ? 'var(--color-primary-subtle)' : 'transparent',
               padding: '4px 12px',
-              borderRadius: 'var(--radius-full)',
-              border: step === s.num ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+              borderRadius: 'var(--radius-xs)',
+              border: step === s.num ? '1px solid var(--color-primary-border)' : '1px solid transparent',
             }}
           >
             {s.title}
@@ -159,10 +159,10 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       {/* STEP 1: What's Happening? */}
       {step === 1 && (
         <div className="card">
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '6px' }}>
             What is happening at your store?
           </h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px' }}>
             Select the local trigger or moment you want to promote.
           </p>
 
@@ -181,17 +181,17 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 style={{
                   padding: '20px',
                   borderRadius: 'var(--radius-sm)',
-                  background: type === ct.type ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
-                  border: type === ct.type ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                  background: type === ct.type ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                  border: type === ct.type ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
                   cursor: 'pointer',
-                  boxShadow: type === ct.type ? 'var(--shadow-glow-emerald)' : 'none',
-                  transition: 'var(--transition-fast)',
+                  boxShadow: type === ct.type ? 'var(--shadow-paper)' : 'none',
+                  transition: 'var(--motion-fast)',
                 }}
               >
-                <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '4px' }}>
                   {ct.title}
                 </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                <div style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', lineHeight: '1.5' }}>
                   {ct.desc}
                 </div>
               </div>
@@ -209,10 +209,10 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       {/* STEP 2: What Do You Want? */}
       {step === 2 && (
         <div className="card">
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '6px' }}>
             What is your primary goal?
           </h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px' }}>
             This shapes the call-to-action on Google, Instagram, WhatsApp, and in-store poster.
           </p>
 
@@ -230,21 +230,21 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 style={{
                   padding: '20px',
                   borderRadius: 'var(--radius-sm)',
-                  background: objective === o.obj ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
-                  border: objective === o.obj ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                  background: objective === o.obj ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                  border: objective === o.obj ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
                   cursor: 'pointer',
-                  boxShadow: objective === o.obj ? 'var(--shadow-glow-emerald)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '10px',
+                  boxShadow: objective === o.obj ? 'var(--shadow-paper)' : 'none',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>{o.label}</div>
-                  <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.5' }}>{o.desc}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)' }}>{o.label}</div>
+                  <div style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '4px', lineHeight: '1.5' }}>{o.desc}</div>
                 </div>
-                {objective === o.obj && <CheckCircle2 size={16} color="var(--accent-emerald)" />}
+                {objective === o.obj && <CheckCircle2 size={16} color="var(--color-primary)" />}
               </div>
             ))}
           </div>
@@ -265,10 +265,10 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'start' }}>
           {/* Left: Input Form */}
           <div className="card">
-            <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '6px' }}>
               The Offer & Schedule
             </h3>
-            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', marginBottom: '24px' }}>
               Define the exact promotion parameters for {profile?.name || 'your store'}.
             </p>
 
@@ -340,34 +340,34 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 onClick={handleGenerate}
                 disabled={isGenerating || Boolean(isQuotaExceeded)}
               >
-                <Sparkles size={14} /> {isGenerating ? 'Generating Proofs...' : 'Generate 4 Campaign Proofs'}
+                {isGenerating ? 'Generating proofs...' : 'Generate 4 Campaign Proofs'}
               </button>
             </div>
           </div>
 
           {/* Right: Live Draft Preview */}
-          <div className="card" style={{ background: 'var(--bg-surface-elevated)' }}>
-            <span className="section-eyebrow">LIVE DRAFT PREVIEW</span>
-            <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
+          <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
+            <span className="section-eyebrow">DRAFT PARAMETERS</span>
+            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginTop: '4px' }}>
               {profile?.name || 'The Roasted Bean'}
             </h4>
-            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
               {profile?.neighborhood || 'Indiranagar'}, {profile?.city || 'Bengaluru'}
             </div>
 
-            <div style={{ padding: '16px', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', marginBottom: '16px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
+            <div style={{ padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', marginBottom: '16px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)' }}>
                 {offerTitle || 'Afternoon Promotion'}
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
                 {offerDesc || 'Special promotional pairing for local neighborhood visitors.'}
               </div>
-              <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', marginTop: '10px' }}>
+              <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginTop: '10px' }}>
                 {timingLabel || 'Valid during specified window'} &bull; {offerValue || 'Special Perk'}
               </div>
             </div>
 
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+            <div style={{ fontSize: '12px', color: 'var(--color-ink-subtle)', lineHeight: '1.5' }}>
               Clicking generate will simultaneously create synchronized Google, Instagram, WhatsApp, and in-store poster copy.
             </div>
           </div>
@@ -377,10 +377,10 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       {/* STEP 4: 2x2 Simultaneous Multi-Channel Proofs */}
       {step === 4 && generatedPack && (
         <div>
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-medium)', padding: '20px 24px', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '20px 24px', borderRadius: 'var(--radius-sm)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <span className="section-eyebrow">CAMPAIGN PROOFS READY &bull; SAVED TO VAULT</span>
-              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '2px' }}>
                 {generatedPack.campaign.offer.title || generatedPack.campaign.offer.description}
               </h3>
             </div>

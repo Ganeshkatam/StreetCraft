@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlanTier } from '../types/billing';
 import { PLANS } from '../lib/entitlements';
-import { X, Check, Zap } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -16,7 +16,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onPlanUpdated,
   onSuccess,
 }) => {
-  const [, setSelectedPlan] = useState<PlanTier>('PRO');
   const [isProcessing, setIsProcessing] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -50,11 +49,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         </div>
 
         {successNotice ? (
-          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--accent-emerald-subtle)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-sm)', margin: '20px 0' }}>
-            <h4 style={{ color: 'var(--accent-emerald)', fontSize: '18px', fontWeight: 800, marginBottom: '8px' }}>
+          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', margin: '20px 0' }}>
+            <h4 style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-display)', fontSize: '20px', marginBottom: '8px' }}>
               Subscription Synchronized
             </h4>
-            <p style={{ color: '#FFFFFF', fontSize: '14px' }}>{successNotice}</p>
+            <p style={{ color: 'var(--color-ink)', fontSize: '14px' }}>{successNotice}</p>
           </div>
         ) : (
           <>
@@ -66,32 +65,32 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <div
                     key={tierKey}
                     style={{
-                      background: isPro ? 'var(--bg-surface-elevated)' : 'var(--bg-input)',
-                      border: isPro ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-sm)',
+                      background: isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                      border: isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-xs)',
                       padding: '20px',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      boxShadow: isPro ? 'var(--shadow-glow-emerald)' : 'none',
+                      boxShadow: isPro ? 'var(--shadow-paper)' : 'none',
                     }}
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 700, fontSize: '15px', color: '#FFFFFF' }}>{plan.name}</span>
-                        {isPro && <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', background: 'var(--accent-emerald-subtle)', padding: '1px 6px', borderRadius: '4px' }}>POPULAR</span>}
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)' }}>{plan.name}</span>
+                        {isPro && <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '1px 6px', borderRadius: '2px' }}>POPULAR</span>}
                       </div>
-                      <div style={{ fontSize: '24px', fontWeight: 800, margin: '8px 0 4px', color: '#FFFFFF' }}>
+                      <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '8px 0 4px', color: 'var(--color-ink)' }}>
                         {plan.priceINR === 0 ? 'Free' : `₹${plan.priceINR}`}
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>/mo</span>
+                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}>/mo</span>
                       </div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--accent-emerald)', marginBottom: '14px' }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px' }}>
                         {plan.monthlyPackLimit} packs / month
                       </div>
-                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-ink-soft)' }}>
                         {plan.features.slice(0, 3).map((f, i) => (
                           <li key={i} style={{ display: 'flex', gap: '6px' }}>
-                            <Check size={12} color="var(--accent-emerald)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <Check size={12} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
                             <span>{f}</span>
                           </li>
                         ))}
@@ -111,7 +110,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               })}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
               <button className="btn-secondary" onClick={onClose}>
                 Close
               </button>

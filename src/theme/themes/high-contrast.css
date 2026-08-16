@@ -1,0 +1,39 @@
+/* ==========================================================================
+   STREETCRAFT AI — THEME: HIGH CONTRAST
+   Maximum contrast for accessibility (WCAG AAA compliant).
+   ========================================================================== */
+
+[data-theme="high-contrast"] {
+  /* Page & Surface Layers */
+  --color-page: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F0F0F0;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-hover: #E8E8E8;
+  --color-input: #FFFFFF;
+
+  /* Ink & Typography Hierarchy */
+  --color-ink: #000000;
+  --color-ink-soft: #1A1A1A;
+  --color-ink-muted: #333333;
+  --color-ink-subtle: #555555;
+
+  /* High Contrast Borders */
+  --color-border: #000000;
+  --color-border-soft: #444444;
+  --color-border-dark: #000000;
+
+  /* Brand Accents */
+  --color-primary: #0A5C36;
+  --color-primary-hover: #053D24;
+  --color-primary-subtle: #E6F3EC;
+  --color-primary-border: #0A5C36;
+
+  --color-accent: #8F3D10;
+  --color-accent-subtle: #FDF2EB;
+  --color-highlight: #9E7404;
+
+  --color-danger: #801815;
+  --color-danger-subtle: #FCE8E8;
+  --color-success: #0A5C36;
+}

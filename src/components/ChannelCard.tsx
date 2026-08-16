@@ -23,13 +23,13 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   const getChannelIcon = () => {
     switch (channel) {
       case 'GOOGLE_BUSINESS':
-        return <Newspaper size={16} color="#60A5FA" />;
+        return <Newspaper size={16} color="var(--color-primary)" />;
       case 'INSTAGRAM':
-        return <Image size={16} color="#F472B6" />;
+        return <Image size={16} color="var(--color-accent)" />;
       case 'WHATSAPP':
-        return <MessageSquare size={16} color="#4ADE80" />;
+        return <MessageSquare size={16} color="var(--color-primary)" />;
       case 'IN_STORE_POSTER':
-        return <Send size={16} color="#FBBF24" />;
+        return <Send size={16} color="var(--color-accent)" />;
     }
   };
 
@@ -49,16 +49,16 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
     if (status === 'generating') {
       return (
         <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <div className="spin-animate" style={{ display: 'inline-block', width: '28px', height: '28px', border: '2px solid rgba(16, 185, 129, 0.2)', borderTopColor: 'var(--accent-emerald)', borderRadius: '50%', marginBottom: '12px' }} />
-          <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Generating {meta?.displayName}...</div>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Enforcing character limits and local neighborhood context</p>
+          <div className="spin-animate" style={{ display: 'inline-block', width: '28px', height: '28px', border: '2px solid var(--color-border)', borderTopColor: 'var(--color-primary)', borderRadius: '50%', marginBottom: '12px' }} />
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>Generating {meta?.displayName}...</div>
+          <p style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>Injecting local cues and enforcing Zod character constraints</p>
         </div>
       );
     }
 
     if (status === 'pending') {
       return (
-        <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+        <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--color-ink-muted)', fontSize: '13px' }}>
           Queued in multi-channel sequence...
         </div>
       );
@@ -72,24 +72,22 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
       return (
         <div>
-          <div style={{ background: '#0B1220', border: '1px solid rgba(96, 165, 250, 0.25)', borderRadius: 'var(--radius-sm)', padding: '18px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#93C5FD' }}>Google Search & Maps Update</span>
-              </div>
-              <span style={{ fontSize: '10.5px', background: 'rgba(96, 165, 250, 0.15)', color: '#60A5FA', padding: '2px 8px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>VERIFIED LISTING</span>
+          <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '18px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid var(--color-border)', paddingBottom: '10px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-ink)' }}>Google Business Profile Update</span>
+              <span style={{ fontSize: '10.5px', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: 'var(--radius-xs)', fontFamily: 'var(--font-mono)' }}>VERIFIED</span>
             </div>
 
-            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', lineHeight: '1.4' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-ink)', marginBottom: '8px', lineHeight: '1.4' }}>
               {headline}
             </div>
 
-            <div style={{ fontSize: '13px', color: '#CBD5E1', lineHeight: '1.6', whiteSpace: 'pre-wrap', marginBottom: '14px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--color-ink-soft)', lineHeight: '1.65', whiteSpace: 'pre-wrap', marginBottom: '14px' }}>
               {body}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
-              <span style={{ fontSize: '12px', color: '#93C5FD', fontWeight: 600 }}>{offerSummary}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-surface)', padding: '10px 14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>{offerSummary}</span>
               <button
                 className="btn-primary"
                 style={{ padding: '6px 12px', fontSize: '12px' }}
@@ -111,11 +109,11 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
       return (
         <div>
-          <div style={{ background: 'linear-gradient(135deg, rgba(244, 114, 182, 0.1) 0%, #0B1220 100%)', border: '1px solid rgba(244, 114, 182, 0.25)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: '14px' }}>
-            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#F472B6', textTransform: 'uppercase' }}>
+          <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: '14px' }}>
+            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-accent)', textTransform: 'uppercase' }}>
               REEL / STORY HOOK
             </span>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)', marginTop: '4px', fontStyle: 'italic' }}>
               "{reelHook}"
             </div>
           </div>
@@ -123,8 +121,8 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
           {storyFrames.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${storyFrames.length}, 1fr)`, gap: '8px', marginBottom: '14px' }}>
               {storyFrames.map((frame, idx) => (
-                <div key={idx} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)', padding: '10px', fontSize: '11.5px', color: '#E2E8F0', lineHeight: '1.4' }}>
-                  <span style={{ display: 'block', fontSize: '9.5px', fontFamily: 'var(--font-mono)', color: '#F472B6', marginBottom: '2px' }}>STORY 0{idx + 1}</span>
+                <div key={idx} style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', padding: '10px', fontSize: '11.5px', color: 'var(--color-ink)', lineHeight: '1.4' }}>
+                  <span style={{ display: 'block', fontSize: '9.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', marginBottom: '2px' }}>STORY 0{idx + 1}</span>
                   {frame}
                 </div>
               ))}
@@ -132,7 +130,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
           )}
 
           <div className="channel-content-preview">
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '6px' }}>POST CAPTION</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)', marginBottom: '6px' }}>POST CAPTION</div>
             {caption}
           </div>
 
@@ -160,19 +158,19 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
       return (
         <div>
-          <div style={{ background: '#081414', border: '1px solid rgba(74, 222, 128, 0.25)', borderRadius: 'var(--radius-sm)', padding: '16px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#4ADE80' }}>WhatsApp Broadcast</span>
-              <span style={{ fontSize: '10px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ADE80', padding: '2px 8px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>DIRECT PUSH</span>
+          <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '16px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-ink)' }}>WhatsApp Broadcast</span>
+              <span style={{ fontSize: '10px', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: 'var(--radius-xs)', fontFamily: 'var(--font-mono)' }}>DIRECT PUSH</span>
             </div>
 
-            <div style={{ background: '#07362E', borderRadius: '8px 8px 8px 2px', padding: '12px 14px', color: '#E9EDEF', fontSize: '13.5px', lineHeight: '1.6', whiteSpace: 'pre-wrap', marginBottom: '10px' }}>
+            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', padding: '12px 14px', color: 'var(--color-ink)', fontSize: '13.5px', lineHeight: '1.6', whiteSpace: 'pre-wrap', marginBottom: '10px' }}>
               {broadcastMessage}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              <span>CTA: <strong>{cta}</strong></span>
-              <button className="btn-ghost" style={{ fontSize: '11px', color: '#4ADE80' }} onClick={() => handleCopy(broadcastMessage)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--color-ink-muted)' }}>
+              <span>CTA: <strong style={{ color: 'var(--color-ink)' }}>{cta}</strong></span>
+              <button className="btn-ghost" style={{ fontSize: '11px', color: 'var(--color-primary)' }} onClick={() => handleCopy(broadcastMessage)}>
                 Copy text
               </button>
             </div>
@@ -189,21 +187,21 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
       return (
         <div>
-          <div style={{ background: 'linear-gradient(135deg, #1A1A12 0%, #0F1626 100%)', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: 'var(--radius-sm)', padding: '20px', textAlign: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#FBBF24', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '20px', textAlign: 'center', marginBottom: '12px' }}>
+            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-accent)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               {headline}
             </span>
 
-            <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', margin: '6px 0 8px' }}>
+            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', margin: '6px 0 8px' }}>
               {subheading}
             </h4>
 
-            <p style={{ fontSize: '13px', color: '#CBD5E1', maxWidth: '400px', margin: '0 auto 14px', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-soft)', maxWidth: '400px', margin: '0 auto 14px', lineHeight: '1.5' }}>
               {body}
             </p>
 
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '6px 14px', borderRadius: 'var(--radius-xs)', fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#FFFFFF' }}>
-              <QrCode size={13} color="#FBBF24" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-xs)', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink)' }}>
+              <QrCode size={13} color="var(--color-accent)" />
               <span>{cta}</span>
             </div>
           </div>
@@ -262,7 +260,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
                 style={{ fontSize: '11.5px', padding: '4px 10px' }}
                 onClick={() => handleCopy(getFullCopyText())}
               >
-                {copied ? <Check size={12} color="var(--accent-emerald)" /> : <Copy size={12} />}
+                {copied ? <Check size={12} color="var(--color-primary)" /> : <Copy size={12} />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
@@ -274,7 +272,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
 
       <div className="channel-meta-bar">
         <span>{meta?.description || 'Validated schema'}</span>
-        <span style={{ color: status === 'ready' ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
+        <span style={{ color: status === 'ready' ? 'var(--color-primary)' : 'var(--color-ink-muted)' }}>
           {status === 'ready' ? 'READY' : status.toUpperCase()}
         </span>
       </div>

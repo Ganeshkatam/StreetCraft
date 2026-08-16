@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserSession } from '../types/business';
 import { UsageSummary } from '../types/billing';
-import { ArrowRight, LogOut, Zap } from 'lucide-react';
+import { ArrowRight, LogOut } from 'lucide-react';
 
 interface NavigationProps {
   currentRoute: string;
@@ -31,9 +31,9 @@ export const Navigation: React.FC<NavigationProps> = ({
           className="brand-wrapper"
           onClick={() => navigate(session.isAuthenticated ? 'app/dashboard' : 'home')}
         >
-          <div className="brand-logo-icon">S</div>
-          <span className="brand-logo-text">
-            StreetCraft <span className="brand-badge-pill">AI STUDIO</span>
+          <span className="brand-wordmark">
+            STREETCRAFT
+            <span className="brand-subtitle">Local Studio</span>
           </span>
         </div>
 
@@ -44,13 +44,13 @@ export const Navigation: React.FC<NavigationProps> = ({
                 className={`nav-item ${currentRoute === 'home' ? 'active' : ''}`}
                 onClick={() => navigate('home')}
               >
-                Studio
+                How it works
               </button>
               <button
                 className={`nav-item ${currentRoute === 'free-tool' ? 'active' : ''}`}
                 onClick={() => navigate('free-tool')}
               >
-                Free Generator
+                Free tool
               </button>
               <button
                 className={`nav-item ${currentRoute === 'pricing' ? 'active' : ''}`}
@@ -65,19 +65,19 @@ export const Navigation: React.FC<NavigationProps> = ({
                 className={`nav-item ${currentRoute === 'app/dashboard' ? 'active' : ''}`}
                 onClick={() => navigate('app/dashboard')}
               >
-                Dashboard
+                Today
               </button>
               <button
                 className={`nav-item ${currentRoute === 'app/create' ? 'active' : ''}`}
                 onClick={() => navigate('app/create')}
               >
-                Create Campaign
+                Create
               </button>
               <button
                 className={`nav-item ${currentRoute === 'app/campaigns' ? 'active' : ''}`}
                 onClick={() => navigate('app/campaigns')}
               >
-                Vault
+                Campaigns
               </button>
               <button
                 className={`nav-item ${currentRoute === 'app/business' ? 'active' : ''}`}
@@ -93,19 +93,18 @@ export const Navigation: React.FC<NavigationProps> = ({
           {session.isAuthenticated ? (
             <>
               {usage && (
-                <button className="usage-pill" onClick={onOpenUpgrade}>
-                  <Zap size={13} />
+                <button className="usage-pill" onClick={onOpenUpgrade} title="View quota and subscription">
                   <span><strong>{usage.remainingPacks}</strong> packs left</span>
                 </button>
               )}
 
               {!isAppView ? (
                 <button className="btn-primary" onClick={() => navigate('app/dashboard')}>
-                  Open Studio <ArrowRight size={14} />
+                  Open Workspace <ArrowRight size={13} />
                 </button>
               ) : (
                 <button className="btn-ghost" onClick={onSignOut}>
-                  <LogOut size={14} /> Sign out
+                  <LogOut size={13} /> Sign out
                 </button>
               )}
             </>
@@ -115,7 +114,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 Sign In
               </button>
               <button className="btn-primary" onClick={() => navigate('free-tool')}>
-                Start Creating <ArrowRight size={14} />
+                Start creating &rarr;
               </button>
             </>
           )}

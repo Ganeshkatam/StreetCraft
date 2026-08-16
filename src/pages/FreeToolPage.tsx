@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { CampaignType, FullCampaignPack } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
 import { ChannelCard } from '../components/ChannelCard';
-import { ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface FreeToolPageProps {
   navigate: (route: string) => void;
@@ -78,19 +78,19 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
   };
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '48px 32px 80px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 80px' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <span className="section-eyebrow">NO SIGNUP REQUIRED &bull; INSTANT GENERATOR</span>
+        <span className="section-eyebrow">NO SIGNUP REQUIRED &bull; FREE DEMONSTRATION</span>
         <h1 className="section-title">Free Campaign Proof Generator</h1>
         <p className="section-subtitle" style={{ margin: '8px auto 0' }}>
           Enter your offer and neighborhood to generate a coordinated 4-channel campaign proof in real time.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '36px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '32px', alignItems: 'start' }}>
         {/* Input Parameters Form */}
         <form onSubmit={handleGenerate} className="card">
-          <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
             Store Details
           </h3>
 
@@ -189,34 +189,31 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
             style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}
             disabled={isGenerating}
           >
-            <Sparkles size={14} /> {isGenerating ? 'Generating Proofs...' : 'Generate 4-Channel Pack'}
+            {isGenerating ? 'Generating proofs...' : 'Generate 4-Channel Pack'}
           </button>
         </form>
 
         {/* Live Output Section */}
         <div>
           {!generatedPack ? (
-            <div className="card" style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-surface)' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <Sparkles size={24} />
-              </div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>
+            <div className="card" style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--color-surface)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '8px' }}>
                 Ready to Generate
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', maxWidth: '420px', margin: '0 auto' }}>
+              <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', maxWidth: '420px', margin: '0 auto' }}>
                 Fill in your store name and counter offer to preview live Google, Instagram, WhatsApp, and in-store poster copy.
               </p>
             </div>
           ) : (
             <div>
               {/* Claim Notice Bar */}
-              <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-md)', padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-emerald)', fontWeight: 700, fontSize: '14px' }}>
-                    <CheckCircle2 size={16} /> Campaign Proofs Generated Successfully
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontWeight: 600, fontSize: '14px' }}>
+                    <CheckCircle2 size={16} /> Campaign Proofs Generated
                   </div>
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    Save this campaign to your permanent Store Memory and access the full Studio.
+                  <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
+                    Claim this campaign to save it to your permanent Store Memory and open the studio.
                   </p>
                 </div>
                 <button
@@ -234,7 +231,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
                 </button>
               </div>
 
-              {/* 4 Channels (2x2 Expansive Proofs Grid) */}
+              {/* 4 Channels (2x2 Proofs Grid) */}
               <div className="proofs-grid-2x2">
                 <ChannelCard
                   channel="GOOGLE_BUSINESS"

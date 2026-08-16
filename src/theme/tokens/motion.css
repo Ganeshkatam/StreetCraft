@@ -1,0 +1,20 @@
+/* ==========================================================================
+   STREETCRAFT AI — FOUNDATION TOKENS: MOTION
+   Purposeful, subtle transitions respecting accessibility preferences.
+   ========================================================================== */
+
+:root {
+  --motion-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-standard: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-emphasis: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-standard: 0.01ms;
+    --motion-slow: 0.01ms;
+    --motion-emphasis: 0.01ms;
+  }
+}

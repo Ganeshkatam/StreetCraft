@@ -1,0 +1,13 @@
+/* ==========================================================================
+   STREETCRAFT AI — FOUNDATION TOKENS: RADIUS
+   Restrained corner geometry (no excessive balloon cards).
+   ========================================================================== */
+
+:root {
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}

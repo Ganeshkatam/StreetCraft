@@ -1,0 +1,44 @@
+/* ==========================================================================
+   STREETCRAFT AI — FOUNDATION TOKENS: TYPOGRAPHY
+   Semantic type roles and modular type scale.
+   ========================================================================== */
+
+:root {
+  /* Font Family Stacks */
+  --font-display: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'DM Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Typography Scale */
+  --type-display-xl-size: 48px;
+  --type-display-xl-leading: 1.15;
+  --type-display-xl-tracking: -0.02em;
+
+  --type-display-lg-size: 34px;
+  --type-display-lg-leading: 1.2;
+  --type-display-lg-tracking: -0.015em;
+
+  --type-heading-size: 24px;
+  --type-heading-leading: 1.3;
+  --type-heading-tracking: -0.01em;
+
+  --type-title-size: 18px;
+  --type-title-leading: 1.4;
+  --type-title-tracking: -0.005em;
+
+  --type-body-size: 14.5px;
+  --type-body-leading: 1.65;
+  --type-body-tracking: 0;
+
+  --type-body-small-size: 13px;
+  --type-body-small-leading: 1.55;
+  --type-body-small-tracking: 0;
+
+  --type-caption-size: 11.5px;
+  --type-caption-leading: 1.4;
+  --type-caption-tracking: 0.04em;
+
+  --type-mono-size: 11.5px;
+  --type-mono-leading: 1.4;
+  --type-mono-tracking: 0.08em;
+}

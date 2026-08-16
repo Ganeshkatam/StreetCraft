@@ -223,7 +223,13 @@ function App() {
   );
 }
 
+import { ThemeProvider } from './theme/ThemeProvider';
+
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  createRoot(rootElement).render(<App />);
+  createRoot(rootElement).render(
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
 }

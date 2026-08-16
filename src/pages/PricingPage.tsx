@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { DatabasePlan } from '../types/billing';
-import { Check, Zap, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface PricingPageProps {
   navigate: (route: string) => void;
@@ -20,9 +20,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
   }, []);
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '60px 24px 96px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '60px 24px 96px' }}>
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <span className="section-eyebrow">TRANSPARENT PLANS</span>
+        <span className="section-eyebrow">STRAIGHTFORWARD RATES</span>
         <h1 className="section-title">
           Scale Your Local Marketing
         </h1>
@@ -31,7 +31,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
         {plans.map((p) => {
           const isPro = p.id === 'PRO';
           return (
@@ -42,33 +42,32 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate, onOpenUpgrad
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                border: isPro ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
-                boxShadow: isPro ? 'var(--shadow-glow-emerald)' : 'var(--shadow-md)',
-                background: isPro ? 'var(--bg-surface-elevated)' : 'var(--bg-surface)',
+                border: isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                background: isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
                 position: 'relative',
               }}
             >
               <div>
                 {isPro && (
-                  <div style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: '#000', fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 800, padding: '2px 10px', borderRadius: 'var(--radius-full)', textTransform: 'uppercase' }}>
-                    MOST POPULAR
+                  <div style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: 'var(--color-primary)', color: '#FFFFFF', fontSize: '10.5px', fontFamily: 'var(--font-mono)', fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-xs)', textTransform: 'uppercase' }}>
+                    POPULAR FOR CAFES
                   </div>
                 )}
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginTop: isPro ? '8px' : 0 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginTop: isPro ? '8px' : 0 }}>
                   {p.name}
                 </h3>
-                <div style={{ fontSize: '36px', fontWeight: 800, color: '#FFFFFF', margin: '14px 0 6px', letterSpacing: '-0.02em' }}>
+                <div style={{ fontSize: '36px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', margin: '14px 0 6px' }}>
                   ₹{p.price_inr}
-                  <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}> / month</span>
+                  <span style={{ fontSize: '14px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}> / month</span>
                 </div>
-                <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--accent-emerald)', marginBottom: '24px' }}>
+                <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginBottom: '24px' }}>
                   {p.monthly_pack_limit} campaign packs monthly
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
                   {p.features.map((feat, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      <Check size={14} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--color-ink-soft)' }}>
+                      <Check size={14} color="var(--color-primary)" style={{ flexShrink: 0 }} />
                       <span>{feat}</span>
                     </div>
                   ))}
