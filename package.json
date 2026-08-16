@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tree": "node scripts/generate-project-tree.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
