@@ -28,7 +28,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
   };
 
   return (
-    <div style={{ maxWidth: '880px' }}>
+    <div>
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <div>
           <span className="section-eyebrow">STORE CAMPAIGN ARCHIVE</span>
@@ -166,7 +166,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
 
                 {/* Expanded 4 Channels */}
                 {isExpanded && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
+                  <div className="proofs-grid-2x2" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-editorial)' }}>
                     <ChannelCard
                       channel="GOOGLE_BUSINESS"
                       status="ready"

@@ -78,7 +78,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '48px 32px 80px' }}>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '48px 32px 80px' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <span className="section-eyebrow">NO SIGNUP REQUIRED &bull; INSTANT PROOFS</span>
         <h1 className="section-title">Free Campaign Refiner</h1>
@@ -87,7 +87,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '36px' }}>
         {/* Input Parameters Form */}
         <form onSubmit={handleGenerate} className="card">
           <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '16px' }}>
@@ -224,32 +224,34 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
                 </button>
               </div>
 
-              {/* 4 Channels */}
-              <ChannelCard
-                channel="GOOGLE_BUSINESS"
-                status="ready"
-                content={generatedPack.outputs.googleBusiness as unknown as Record<string, unknown>}
-              />
-
-              <ChannelCard
-                channel="INSTAGRAM"
-                status="ready"
-                content={generatedPack.outputs.instagram as unknown as Record<string, unknown>}
-              />
-
-              <ChannelCard
-                channel="WHATSAPP"
-                status="ready"
-                content={generatedPack.outputs.whatsapp as unknown as Record<string, unknown>}
-              />
-
-              {generatedPack.outputs.poster && (
+              {/* 4 Channels (2x2 Expansive Proofs Grid) */}
+              <div className="proofs-grid-2x2">
                 <ChannelCard
-                  channel="IN_STORE_POSTER"
+                  channel="GOOGLE_BUSINESS"
                   status="ready"
-                  content={generatedPack.outputs.poster as unknown as Record<string, unknown>}
+                  content={generatedPack.outputs.googleBusiness as unknown as Record<string, unknown>}
                 />
-              )}
+
+                <ChannelCard
+                  channel="INSTAGRAM"
+                  status="ready"
+                  content={generatedPack.outputs.instagram as unknown as Record<string, unknown>}
+                />
+
+                <ChannelCard
+                  channel="WHATSAPP"
+                  status="ready"
+                  content={generatedPack.outputs.whatsapp as unknown as Record<string, unknown>}
+                />
+
+                {generatedPack.outputs.poster && (
+                  <ChannelCard
+                    channel="IN_STORE_POSTER"
+                    status="ready"
+                    content={generatedPack.outputs.poster as unknown as Record<string, unknown>}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>

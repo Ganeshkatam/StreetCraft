@@ -96,6 +96,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
           />
           <div className="photo-caption">Quiet afternoon tables</div>
         </div>
+
+        <div className="photo-card" style={{ height: '320px' }}>
+          <img
+            src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80"
+            alt="Warm artisanal bakes and sourdough pastries"
+          />
+          <div className="photo-caption">Fresh bakery counter</div>
+        </div>
       </section>
 
       {/* Physical Campaign Proof Card */}

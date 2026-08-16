@@ -15,7 +15,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ businessId, session,
   const { profile } = useBusiness(businessId);
 
   return (
-    <div style={{ maxWidth: '820px' }}>
+    <div>
       <div className="section-header">
         <span className="section-eyebrow">STORE LEDGER &bull; QUOTA ACCOUNTING</span>
         <h1 className="section-title">Settings & Ledger</h1>
