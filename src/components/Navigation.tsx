@@ -33,7 +33,6 @@ export const Navigation: React.FC<NavigationProps> = ({
         >
           <span className="brand-wordmark">
             STREETCRAFT
-            <span className="brand-subtitle">Local Studio</span>
           </span>
         </div>
 

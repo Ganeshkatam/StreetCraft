@@ -39,7 +39,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
       'All 4 Marketing Channels Included',
       'Print-Ready In-Store Poster Layouts',
       'Advanced Festival & Holiday Strategy',
-      'Permanent Business Memory Studio',
+      'Permanent Business Memory Engine',
       'Priority Generation Latency',
     ],
   },

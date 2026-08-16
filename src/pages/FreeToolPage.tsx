@@ -213,7 +213,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ navigate, onOpenAuth
                     <CheckCircle2 size={16} /> Campaign Proofs Generated
                   </div>
                   <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                    Claim this campaign to save it to your permanent Store Memory and open the studio.
+                    Claim this campaign to save it to your permanent Store Memory and open your workspace.
                   </p>
                 </div>
                 <button

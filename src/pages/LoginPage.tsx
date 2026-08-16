@@ -64,7 +64,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', borderRadius: 'var(--radius-xs)', marginBottom: '20px' }}>
             <Store size={13} color="var(--color-primary)" />
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-primary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              STREETCRAFT LOCAL STUDIO
+              STREETCRAFT
             </span>
           </div>
 
@@ -237,8 +237,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate, claimToken, onSu
               {isSubmitting
                 ? 'Authenticating...'
                 : isSignUp
-                ? 'Create Store Account & Open Studio'
-                : 'Sign In to Studio'}{' '}
+                ? 'Create Store Account & Open Workspace'
+                : 'Sign In'}{' '}
               <ArrowRight size={14} />
             </button>
           </form>

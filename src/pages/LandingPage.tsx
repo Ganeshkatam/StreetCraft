@@ -60,7 +60,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate, onOpenAuth }
             Try free tool &rarr;
           </button>
           <button className="btn-secondary" style={{ padding: '12px 24px', fontSize: '14.5px' }} onClick={onOpenAuth}>
-            Sign in to studio
+            Sign in
           </button>
         </div>
       </section>
