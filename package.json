@@ -1,8 +1,13 @@
 {
-  "name": "streetcraft-ai",
+  "name": "streetcraft",
   "private": true,
   "version": "1.0.0",
+  "description": "StreetCraft — Turn one business opportunity into everything customers need to see. A growth engine for physical businesses across Google, Instagram, WhatsApp, and counter print.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ganeshkatam/StreetCraft.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
