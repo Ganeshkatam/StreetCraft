@@ -18,6 +18,22 @@ import { PlanTier, UsageEvent, UsageSummary, DatabasePlan } from '../types/billi
 import { generateCampaignPack, CampaignGenerationInput } from '../engine/campaignEngine';
 
 class RealtimeApiClient {
+  private async requireActiveSession(): Promise<{ userId: string; email: string }> {
+    if (!isSupabaseConfigured) {
+      const sess = await this.getSession();
+      if (!sess.isAuthenticated || !sess.userId) {
+        throw new Error('Authentication required: Session is compulsory.');
+      }
+      return { userId: sess.userId, email: sess.email };
+    }
+
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session || !session.user) {
+      throw new Error('Authentication required: Active session is compulsory. Please sign in to continue.');
+    }
+    return { userId: session.user.id, email: session.user.email || '' };
+  }
+
   // 1. AUTHENTICATION (Supabase Auth as Single Source of Truth)
   public async getSession(): Promise<UserSession> {
     if (!isSupabaseConfigured) {
@@ -87,10 +103,12 @@ class RealtimeApiClient {
 
   // 1b. USER PROFILE (public.profiles)
   public async getUserProfile(userId?: UUID): Promise<UserProfile | null> {
+    const { userId: currentUserId } = await this.requireActiveSession();
+
     if (!isSupabaseConfigured) {
       const sess = await this.getSession();
       return {
-        id: sess.userId || 'usr_local',
+        id: sess.userId || currentUserId,
         fullName: sess.name || 'Store Operator',
         phone: sess.phone || '',
         notificationPreferences: {
@@ -103,7 +121,7 @@ class RealtimeApiClient {
       };
     }
 
-    const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+    const targetUserId = userId || currentUserId;
     if (!targetUserId) return null;
 
     const { data, error } = await (supabase.from('profiles') as any)
@@ -150,6 +168,11 @@ class RealtimeApiClient {
       notificationPreferences?: { email: boolean; whatsapp: boolean; weeklyDigest: boolean };
     }
   ): Promise<UserProfile | null> {
+    const { userId: authUserId } = await this.requireActiveSession();
+    if (userId !== authUserId) {
+      throw new Error('Unauthorized: Cannot modify profile for another user.');
+    }
+
     if (!isSupabaseConfigured) {
       return this.getUserProfile(userId);
     }
@@ -173,16 +196,15 @@ class RealtimeApiClient {
   }
 
   public async getMyBusinesses(): Promise<Array<{ id: UUID; name: string }>> {
+    const { userId } = await this.requireActiveSession();
+
     if (!isSupabaseConfigured) {
       return [{ id: 'biz_local', name: 'My Business' }];
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !session.user) return [];
-
     const { data } = await (supabase.from('business_members') as any)
       .select('business_id, businesses(id, name)')
-      .eq('user_id', session.user.id);
+      .eq('user_id', userId);
 
     if (!data) return [];
 
@@ -196,13 +218,12 @@ class RealtimeApiClient {
   }
 
   public async getAccountLimits(): Promise<{ limit: number }> {
+    const { userId } = await this.requireActiveSession();
     if (!isSupabaseConfigured) return { limit: 2 };
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { limit: 2 };
 
     const { data: sub } = await (supabase.from('subscriptions') as any)
       .select('plan_id')
-      .eq('user_id', session.user.id)
+      .eq('user_id', userId)
       .in('status', ['ACTIVE', 'TRIALING'])
       .order('created_at', { ascending: false })
       .limit(1);
@@ -224,6 +245,8 @@ class RealtimeApiClient {
     city: string,
     phone: string
   ): Promise<UserSession> {
+    await this.requireActiveSession();
+
     if (!isSupabaseConfigured) {
       const sess = await this.getSession();
       const newBizId = 'biz_' + Date.now();
@@ -358,6 +381,8 @@ class RealtimeApiClient {
   }
 
   public async cancelSubscription(businessId?: UUID): Promise<{ success: boolean; status: string }> {
+    await this.requireActiveSession();
+
     if (!isSupabaseConfigured) {
       return { success: true, status: 'CANCELLED' };
     }
@@ -383,6 +408,8 @@ class RealtimeApiClient {
     if (!businessId) {
       return this._getEmptyProfile('');
     }
+
+    await this.requireActiveSession();
 
     if (!isSupabaseConfigured) {
       const stored = localStorage.getItem(`sc_profile_${businessId}`);
@@ -422,6 +449,7 @@ class RealtimeApiClient {
 
   public async updateBusinessProfile(businessId: UUID, updates: Partial<BusinessProfile>): Promise<BusinessProfile> {
     if (!businessId) throw new Error('Business ID is required to update profile.');
+    await this.requireActiveSession();
 
     if (!isSupabaseConfigured) {
       const current = await this.getBusinessProfile(businessId);
@@ -461,6 +489,9 @@ class RealtimeApiClient {
 
   // 4. USAGE & SUBSCRIPTION SUMMARY (Live from Postgres)
   public async getUsageSummary(businessId: UUID): Promise<UsageSummary> {
+    if (businessId) {
+      await this.requireActiveSession();
+    }
     const plans = await this.getPlans();
     if (plans.length === 0) throw new Error('No plans found in database. Check Supabase connection.');
 
@@ -519,6 +550,8 @@ class RealtimeApiClient {
 
   public async getUsageEvents(businessId: UUID): Promise<UsageEvent[]> {
     if (!businessId || !isSupabaseConfigured) return [];
+    await this.requireActiveSession();
+
     const { data } = await (supabase.from('usage_events') as any)
       .select('*')
       .eq('business_id', businessId)
@@ -546,14 +579,13 @@ class RealtimeApiClient {
       throw new Error('Cannot create campaigns without an active business. Please select or create a business storefront first.');
     }
 
-    if (isSupabaseConfigured) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !session.user) throw new Error('Not authenticated.');
+    const { userId } = await this.requireActiveSession();
 
+    if (isSupabaseConfigured) {
       const { data: members, error: memError } = await (supabase.from('business_members') as any)
         .select('id')
         .eq('business_id', businessId)
-        .eq('user_id', session.user.id);
+        .eq('user_id', userId);
 
       if (memError || !members || members.length === 0) {
         throw new Error('Unauthorized: You do not have access to this business context.');
@@ -707,6 +739,7 @@ class RealtimeApiClient {
   // 7. CAMPAIGN VAULT CRUD & REALTIME QUERIES
   public async getCampaigns(businessId: UUID): Promise<FullCampaignPack[]> {
     if (!businessId || !isSupabaseConfigured) return [];
+    await this.requireActiveSession();
 
     const { data: campaignRows, error } = await (supabase.from('campaigns') as any)
       .select('*')
@@ -756,6 +789,7 @@ class RealtimeApiClient {
 
   public async getCampaign(campaignId: UUID): Promise<FullCampaignPack | null> {
     if (!campaignId || !isSupabaseConfigured) return null;
+    await this.requireActiveSession();
 
     const { data: c, error } = await (supabase.from('campaigns') as any)
       .select('*')
@@ -805,6 +839,8 @@ class RealtimeApiClient {
     performanceNotes?: string
   ): Promise<void> {
     if (!campaignId || !isSupabaseConfigured) return;
+    await this.requireActiveSession();
+
     const payload: { status: string; performance_notes?: string; updated_at: string } = {
       status,
       updated_at: new Date().toISOString(),
@@ -817,6 +853,8 @@ class RealtimeApiClient {
 
   public async deleteCampaign(campaignId: UUID): Promise<void> {
     if (!campaignId || !isSupabaseConfigured) return;
+    await this.requireActiveSession();
+
     await (supabase.from('campaigns') as any).delete().eq('id', campaignId);
   }
 
@@ -827,6 +865,8 @@ class RealtimeApiClient {
     planId: string,
     billingCycle: string
   ): Promise<{ success: boolean; plan: string; billingCycle: string; status: string; business_limit: number; monthly_campaign_limit: number }> {
+    await this.requireActiveSession();
+
     if (!isSupabaseConfigured) {
       return {
         success: true,
