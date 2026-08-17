@@ -324,7 +324,6 @@ function AppLayout() {
                   <ProtectedRoute requireAuth requireBusiness requireRole="admin">
                     <BillingSettingsPage
                       businessId={session.activeBusinessId}
-                      session={session}
                       onOpenUpgrade={() => setUpgradeModalOpen(true)}
                     />
                   </ProtectedRoute>
@@ -348,7 +347,6 @@ function AppLayout() {
                   <ProtectedRoute requireAuth requireBusiness requireRole="admin">
                     <BillingSettingsPage
                       businessId={session.activeBusinessId}
-                      session={session}
                       onOpenUpgrade={() => setUpgradeModalOpen(true)}
                     />
                   </ProtectedRoute>

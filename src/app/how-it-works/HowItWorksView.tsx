@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PublicHeader } from '../components/PublicHeader';
 import { ServerFooter } from '../components/ServerFooter';

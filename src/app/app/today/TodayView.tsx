@@ -11,14 +11,15 @@ import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent, resolveUpco
 import { CampaignStatusBadge } from '../../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../../components/UsageMeter';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { Plus, Calendar, Sparkles, Store } from 'lucide-react';
+import { ErrorStateCard } from '../../../components/ErrorStateCard';
+import { Plus, Store } from 'lucide-react';
 
 export function TodayView() {
   const router = useRouter();
   const { session } = useAuth();
   const businessId = session.activeBusinessId || '';
 
-  const { profile, loading } = useBusiness(businessId);
+  const { profile, loading, error: businessError, refreshProfile } = useBusiness(businessId);
   const { campaigns } = useCampaign(businessId);
   const { usage } = useUsage(businessId);
   const [festivals, setFestivals] = useState<FestivalEvent[]>([]);
@@ -34,6 +35,19 @@ export function TodayView() {
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
           Loading daily workspace...
         </div>
+      </div>
+    );
+  }
+
+  if (businessError && !profile && businessId) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <ErrorStateCard
+          title="Unable to load daily workspace"
+          message="We encountered an issue connecting to your store profile. Please check your connection and try again."
+          onRetry={refreshProfile}
+          actionLabel="Retry Loading"
+        />
       </div>
     );
   }

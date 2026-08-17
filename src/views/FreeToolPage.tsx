@@ -6,6 +6,8 @@ import { BusinessProfile } from '../types/business';
 import { ChannelCard } from '../components/ChannelCard';
 import { CustomSelect, SelectOption } from '../components/CustomSelect';
 import { CalendarPicker } from '../components/CalendarPicker';
+import { ErrorStateCard } from '../components/ErrorStateCard';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import {
   CheckCircle2,
   RefreshCw
@@ -29,6 +31,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
 
   // Generation & View State
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
   const [claimToken, setClaimToken] = useState<string | null>(null);
   const [activeChannelView, setActiveChannelView] = useState<'ALL' | 'GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER'>('ALL');
@@ -116,27 +119,31 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
     const targetType = customType || type;
     const targetTiming = customTiming || timing;
 
-    if (!targetName || !targetOffer) return;
+    if (!targetName || !targetOffer) {
+      setGenerationError("Please provide both a business name and promotional offer to generate campaign proofs.");
+      return;
+    }
 
     setIsGenerating(true);
+    setGenerationError(null);
     try {
       const ephemeralProfile: BusinessProfile = {
         businessId: '00000000-0000-0000-0000-000000000000',
         name: targetName,
-        category: targetCategory,
-        neighborhood: targetNeighborhood || 'Neighborhood',
-        city: targetCity || 'City',
-        landmarks: 'Near neighborhood central park and transit hub',
-        targetCustomer: 'Neighborhood residents, remote workers, and food enthusiasts',
-        styleVoice: 'Warm, contemporary, artisanal yet unpretentious',
-        signatureItems: 'Signature items and fresh daily offerings',
-        primaryGoal: 'Increase walk-in foot traffic',
-        peakHours: '08:00 - 11:00',
-        slowHours: targetTiming || '15:00 - 18:00',
+        category: targetCategory || 'Retail Store',
+        neighborhood: targetNeighborhood || '',
+        city: targetCity || '',
+        landmarks: '',
+        targetCustomer: '',
+        styleVoice: '',
+        signatureItems: '',
+        primaryGoal: '',
+        peakHours: '',
+        slowHours: targetTiming || '',
         defaultOffer: targetOffer,
-        avgTicketINR: 350,
-        targetMonthlyCustomers: 500,
-        phoneWhatsApp: '+91 98765 43210',
+        avgTicketINR: 0,
+        targetMonthlyCustomers: 0,
+        phoneWhatsApp: '',
         updatedAt: new Date().toISOString(),
       };
 
@@ -144,12 +151,12 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
         {
           type: targetType,
           objective: 'MORE_WALK_INS',
-          audience: 'Neighborhood customers and nearby office workers',
+          audience: targetNeighborhood ? `Nearby customers in ${targetNeighborhood}` : 'Local neighborhood customers',
           offer: {
             title: targetOffer,
             description: targetOffer,
             value: targetOffer,
-            terms: 'Flash message at counter to redeem.',
+            terms: 'Show message at counter to redeem.',
           },
           schedule: {
             startsAt: new Date().toISOString(),
@@ -164,6 +171,8 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
       if (result.claimToken) {
         setClaimToken(result.claimToken);
       }
+    } catch (err: unknown) {
+      setGenerationError(getUserFacingErrorMessage(err, "Failed to generate campaign proofs. Please check your inputs and try again."));
     } finally {
       setIsGenerating(false);
     }
@@ -446,7 +455,14 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
           )}
 
           {/* Render Proofs */}
-          {generatedPack ? (
+          {generationError ? (
+            <ErrorStateCard
+              title="Unable to generate campaign proofs"
+              message={generationError}
+              onRetry={() => handleExecuteGeneration()}
+              actionLabel="Retry Generation"
+            />
+          ) : generatedPack ? (
             <div>
               {activeChannelView === 'ALL' ? (
                 <div className="proofs-grid-2x2">

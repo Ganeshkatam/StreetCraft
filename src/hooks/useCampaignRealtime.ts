@@ -32,7 +32,7 @@ export function useCampaignRealtime(campaignId: UUID | null) {
 
     if (isSupabaseConfigured) {
       const channel = supabase
-        .channel(`realtime:campaign_outputs:${campaignId}`)
+        .channel(`outputs_${campaignId}_${Math.random().toString(36).slice(2, 9)}`)
         .on(
           'postgres_changes',
           {

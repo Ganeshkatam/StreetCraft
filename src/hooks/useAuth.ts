@@ -19,8 +19,8 @@ export function useAuth() {
     try {
       const current = await api.getSession();
       setSession(current);
-    } catch {
-      // fallback
+    } catch (err) {
+      console.warn('Failed to refresh authentication session:', err);
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,8 @@ export function useAuth() {
     try {
       const list = await api.getMyBusinesses();
       return Array.isArray(list) ? list : [];
-    } catch {
+    } catch (err) {
+      console.warn('Failed to fetch businesses for user:', err);
       return [];
     }
   };
@@ -71,7 +72,8 @@ export function useAuth() {
     try {
       const res = await api.getAccountLimits();
       return res && typeof res.limit === 'number' ? res : { limit: 2 };
-    } catch {
+    } catch (err) {
+      console.warn('Failed to fetch account limits:', err);
       return { limit: 2 };
     }
   };

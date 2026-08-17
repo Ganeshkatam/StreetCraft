@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, ArrowLeft, LayoutDashboard, Store } from 'lucide-react';
+import { ShieldAlert, LayoutDashboard, Store } from 'lucide-react';
 
 export const UnauthorizedPage: React.FC = () => {
   const navigate = useNavigate();

@@ -23,8 +23,8 @@ export function useUsage(businessId: UUID) {
       ]);
       setUsage(u);
       setEvents(e);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('Failed to fetch usage periods and events:', err);
     } finally {
       setLoading(false);
     }
@@ -35,7 +35,7 @@ export function useUsage(businessId: UUID) {
 
     if (isSupabaseConfigured && businessId) {
       const channel = supabase
-        .channel(`realtime:usage:${businessId}`)
+        .channel(`usage_${businessId}_${Math.random().toString(36).slice(2, 9)}`)
         .on(
           'postgres_changes',
           {

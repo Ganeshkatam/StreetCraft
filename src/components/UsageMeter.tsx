@@ -1,6 +1,6 @@
 import React from 'react';
 import { UsageSummary } from '../types/billing';
-import { Zap, ArrowUpRight } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 interface UsageMeterProps {
   usage: UsageSummary | null;

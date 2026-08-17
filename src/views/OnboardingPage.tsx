@@ -19,7 +19,7 @@ interface OnboardingPageProps {
 
 export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSuccess }) => {
   const navigate = useNavigate();
-  const { createBusiness, signOut } = useAuth();
+  const { createBusiness } = useAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [storeName, setStoreName] = useState('');
@@ -37,7 +37,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!storeName || !neighborhood || !category || !city) return;
-    toast.success('Store identity saved.');
+    toast.success('Store details saved.');
     setStep(2);
   };
 
@@ -78,7 +78,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
       if (onSuccess) onSuccess();
       setStep(3);
     } catch (err: unknown) {
-      toast.error(getUserFacingErrorMessage(err, 'Failed to save store profile. Please review your details and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save store preferences. Please review your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -104,13 +104,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
           </div>
 
           <button
+            type="button"
             className="auth-back-btn"
-            onClick={async () => {
-              await signOut();
-              navigate('/login');
-            }}
+            onClick={() => navigate('/app/today')}
           >
-            Sign out
+            Set up later
           </button>
         </header>
 
@@ -284,13 +282,24 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
-                      className="auth-submit-btn"
-                    >
-                      {isSubmitting ? 'Saving store...' : 'Save & Continue'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/app/today')}
+                        className="btn-secondary"
+                        style={{ padding: '10px 16px', fontSize: '13px' }}
+                      >
+                        Set up later
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
+                        className="auth-submit-btn"
+                        style={{ flex: 1 }}
+                      >
+                        {isSubmitting ? 'Saving store...' : 'Save & Continue'}
+                      </button>
+                    </div>
                   </form>
                 </div>
               )}
@@ -364,6 +373,14 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
                         style={{ padding: '10px 16px', fontSize: '13px' }}
                       >
                         Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/app/today')}
+                        className="btn-secondary"
+                        style={{ padding: '10px 16px', fontSize: '13px' }}
+                      >
+                        Set up later
                       </button>
                       <button
                         type="submit"

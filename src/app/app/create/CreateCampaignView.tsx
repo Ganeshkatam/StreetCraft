@@ -11,7 +11,7 @@ import { CampaignType, CampaignObjective, FullCampaignPack } from '../../../type
 import { ChannelCard } from '../../../components/ChannelCard';
 import { CalendarPicker } from '../../../components/CalendarPicker';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Printer, FileText, Code, Store, Plus } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Printer, FileText, Code, Store, Plus, RefreshCw } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -39,6 +39,18 @@ export function CreateCampaignView() {
   const [customNotes, setCustomNotes] = useState<string>('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Generation & Realtime progress state
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
+
+  const [channelProgress, setChannelProgress] = useState<Record<string, 'pending' | 'generating' | 'ready' | 'failed'>>({
+    GOOGLE_BUSINESS: 'pending',
+    INSTAGRAM: 'pending',
+    WHATSAPP: 'pending',
+    IN_STORE_POSTER: 'pending',
+  });
+
   // Check for preset in sessionStorage
   useEffect(() => {
     const rawPreset = sessionStorage.getItem('sc_launched_preset');
@@ -55,8 +67,8 @@ export function CreateCampaignView() {
         if (parsed.customNotes) setCustomNotes(parsed.customNotes);
         setStep(3);
         sessionStorage.removeItem('sc_launched_preset');
-      } catch {
-        // Fall through
+      } catch (parseErr) {
+        console.warn('Failed to parse pre-loaded opportunity preset from storage:', parseErr);
       }
     }
   }, []);
@@ -65,7 +77,7 @@ export function CreateCampaignView() {
     return (
       <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
-          Loading campaign studio...
+          Loading campaign composer...
         </div>
       </div>
     );
@@ -105,44 +117,9 @@ export function CreateCampaignView() {
     }
   }, [profile]);
 
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [channelProgress, setChannelProgress] = useState<Record<string, 'pending' | 'generating' | 'ready' | 'failed'>>({
-    GOOGLE_BUSINESS: 'pending',
-    INSTAGRAM: 'pending',
-    WHATSAPP: 'pending',
-    IN_STORE_POSTER: 'pending',
-  });
-
-  if (!businessId || !businessId.trim()) {
-    return (
-      <div className="card" style={{ maxWidth: '580px', margin: '60px auto', padding: '48px 32px', textAlign: 'center', boxShadow: 'var(--shadow-overlay)' }}>
-        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--color-primary)' }}>
-          <Store size={28} />
-        </div>
-        <span className="section-eyebrow" style={{ marginBottom: '8px' }}>STORE CONTEXT REQUIRED</span>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', marginBottom: '12px' }}>
-          Connect a Business First
-        </h2>
-        <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '28px' }}>
-          Campaigns require your physical store context, products, and operating schedule. Please set up your first business to begin creating marketing campaigns.
-        </p>
-        <button className="btn-primary" onClick={() => router.push('/setup')} style={{ margin: '0 auto' }}>
-          Set Up Storefront
-        </button>
-      </div>
-    );
-  }
-
   const handleGenerate = async () => {
-    if (!businessId) {
-      setGenerationError("A business must be selected before creating a campaign.");
-      return;
-    }
-
-    if (!offerTitle.trim() && !offerDesc.trim()) {
-      setGenerationError("Please provide an offer headline or description before creating the campaign.");
+    if (!businessId || !profile) {
+      setGenerationError("A storefront must be selected before creating a campaign.");
       return;
     }
 
@@ -151,32 +128,34 @@ export function CreateCampaignView() {
 
     setChannelProgress({
       GOOGLE_BUSINESS: 'generating',
-      INSTAGRAM: 'pending',
-      WHATSAPP: 'pending',
-      IN_STORE_POSTER: 'pending',
+      INSTAGRAM: 'generating',
+      WHATSAPP: 'generating',
+      IN_STORE_POSTER: 'generating',
     });
 
     try {
+      const input = {
+        type,
+        objective,
+        audience: audience || profile.targetCustomer || 'Neighborhood residents and visitors',
+        offer: {
+          title: offerTitle || profile.defaultOffer || 'Featured Special',
+          description: offerDesc || offerTitle || 'Featured seasonal special',
+          value: offerValue || 'Special Promotional Value',
+          terms: offerTerms || 'Show message at counter to redeem.',
+        },
+        schedule: {
+          startsAt: new Date().toISOString(),
+          endsAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+          timingLabel: timingLabel || 'Valid this week',
+        },
+        customNotes,
+      };
+
       const result = await api.generateAndSaveCampaign(
         businessId,
-        {
-          type,
-          objective,
-          audience: audience || 'Neighborhood customers and visitors',
-          offer: {
-            title: offerTitle || offerDesc,
-            description: offerDesc || offerTitle,
-            value: offerValue || 'Special Promotion',
-            terms: offerTerms || 'Valid during specified window',
-          },
-          schedule: {
-            startsAt: new Date().toISOString(),
-            endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
-            timingLabel: timingLabel || 'This week',
-          },
-          customNotes,
-        },
-        (channel, status) => {
+        input,
+        (channel: string, status: 'pending' | 'generating' | 'ready' | 'failed') => {
           setChannelProgress((prev) => ({
             ...prev,
             [channel]: status,
@@ -218,8 +197,21 @@ export function CreateCampaignView() {
       )}
 
       {generationError && (
-        <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', color: 'var(--color-danger)', fontSize: '13px' }}>
-          <strong>Error:</strong> {generationError}
+        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: 'var(--shadow-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-ink)', fontSize: '13.5px' }}>
+            <AlertCircle size={18} color="#C53030" style={{ flexShrink: 0 }} />
+            <span>{generationError}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <RefreshCw size={12} className={isGenerating ? 'spin' : ''} />
+            Try Again
+          </button>
         </div>
       )}
 

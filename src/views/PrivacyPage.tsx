@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Lock, Eye, FileText, ArrowLeft } from 'lucide-react';
 
 export const PrivacyPage: React.FC = () => {
   const navigate = useNavigate();

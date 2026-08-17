@@ -7,14 +7,14 @@ import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
-import { CalendarPicker } from '../../components/CalendarPicker';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Download, Printer, FileText, Code, Store } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Printer, FileText, Code, Store, RefreshCw } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
   downloadFullCampaignPackJson,
   triggerPrintPoster,
 } from '../../utils/exportUtils';
+import { CalendarPicker } from '@/src/components/CalendarPicker';
 
 interface CreateCampaignPageProps {
   businessId: string;
@@ -80,6 +80,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       setOfferTerms('');
       setTimingLabel(profile?.slowHours || '');
       setAudience(profile?.targetCustomer || '');
+      setCustomNotes('');
     }
   }, [businessId]);
 
@@ -177,8 +178,21 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       )}
 
       {generationError && (
-        <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', color: 'var(--color-danger)', fontSize: '13px' }}>
-          <strong>Error:</strong> {generationError}
+        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: 'var(--shadow-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-ink)', fontSize: '13.5px' }}>
+            <AlertCircle size={18} color="#C53030" style={{ flexShrink: 0 }} />
+            <span>{generationError}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <RefreshCw size={12} className={isGenerating ? 'spin' : ''} />
+            Try Again
+          </button>
         </div>
       )}
 
@@ -363,7 +377,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
               <CalendarPicker
                 label="Target Time Window"
                 value={timingLabel}
-                onChange={(newTiming) => setTimingLabel(newTiming)}
+                onChange={(newTiming: string) => setTimingLabel(newTiming)}
                 placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
               />
             </div>

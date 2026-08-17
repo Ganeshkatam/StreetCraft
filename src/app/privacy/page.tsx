@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import { PublicHeader } from '../components/PublicHeader';
 import { ServerFooter } from '../components/ServerFooter';
-import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

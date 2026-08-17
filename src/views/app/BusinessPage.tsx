@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useBusiness } from '../../hooks/useBusiness';
 import { api } from '../../lib/api';
 import { BusinessProfile } from '../../types/business';
+import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { toast } from 'sonner';
 import { Save, Store, Plus } from 'lucide-react';
 
@@ -75,13 +76,15 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId: propBusi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData) return;
     setIsSaving(true);
     try {
+      const currentData = { ...formData };
       if (!businessId) {
         const newSess = await createBusiness(
           currentData.name || 'My Store',
-          currentData.category || 'Café & Bakery',
-          currentData.neighborhood || '',
+          currentData.category || 'Specialty Cafe & Bakery',
+          currentData.neighborhood || 'Indiranagar',
           currentData.city || '',
           currentData.phoneWhatsApp || ''
         );
@@ -92,8 +95,8 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId: propBusi
         await updateProfile(currentData);
       }
       toast.success('Business profile updated successfully.');
-    } catch {
-      toast.error('Failed to update business profile. Please try again.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Failed to update business profile. Please try again.'));
     } finally {
       setIsSaving(false);
     }

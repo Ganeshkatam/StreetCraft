@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DatabasePlan } from '../types/billing';
 import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ErrorStateCard } from '../components/ErrorStateCard';
 
 interface PricingPageProps {
   onOpenUpgrade?: () => void;
@@ -12,21 +13,31 @@ interface PricingPageProps {
 export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [founderAllocation, setFounderAllocation] = useState<{ total_slots: number; claimed_slots: number } | null>(null);
 
+  const loadPricingData = async () => {
+    setError(false);
+    try {
+      const [plansData, founderData] = await Promise.all([
+        api.getPlans(),
+        api.getFounderAllocation(),
+      ]);
+      setPlans(plansData);
+      setFounderAllocation(founderData);
+    } catch (err: unknown) {
+      console.warn('Failed to load pricing plans and founder allocation:', err);
+      setError(true);
+    }
+  };
+
   useEffect(() => {
-    api.getPlans().then((data) => {
-      setPlans(data);
-      setLoading(false);
-    });
-    
-    api.getFounderAllocation().then(setFounderAllocation);
+    loadPricingData();
 
     if (isSupabaseConfigured) {
-      const channel = supabase.channel('founder_allocation_changes')
+      const channel = supabase.channel(`founder_pricing_${Math.random().toString(36).slice(2, 9)}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'founder_allocation' }, (payload) => {
           if (payload.new) {
             setFounderAllocation(payload.new as any);
@@ -38,6 +49,23 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
       };
     }
   }, []);
+
+  if (error && plans.length === 0) {
+    return (
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px var(--space-gutter) 100px' }}>
+        <ErrorStateCard
+          title="Unable to load pricing options"
+          message="We encountered an issue retrieving our real-time subscription tiers. Please check your connection and try again."
+          onRetry={loadPricingData}
+          actionLabel="Retry Loading"
+          secondaryAction={{
+            label: 'Return to Home',
+            onClick: () => navigate('/'),
+          }}
+        />
+      </div>
+    );
+  }
 
   const pricingFaqs = [
     {
@@ -144,7 +172,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
 
         const isSoldOut = founderAllocation.claimed_slots >= founderAllocation.total_slots;
         const placesRemaining = Math.max(0, founderAllocation.total_slots - founderAllocation.claimed_slots);
-        const proPlan = plans.find((p) => p.id === 'PRO');
         
         return (
           <div style={{ marginBottom: '48px', background: 'var(--color-surface)', border: '2px solid var(--color-ink)', borderRadius: 'var(--radius-sm)', padding: '36px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>

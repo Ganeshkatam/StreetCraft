@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '../../components/Logo';
 import { useAuth } from '../../hooks/useAuth';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export function PublicHeader() {
   const pathname = usePathname();

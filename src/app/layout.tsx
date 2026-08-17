@@ -44,7 +44,9 @@ export default function RootLayout({
                   if (saved && (saved === 'paper' || saved === 'paper-dark' || saved === 'high-contrast')) {
                     document.documentElement.setAttribute('data-theme', saved);
                   }
-                } catch(e) {}
+                } catch(e) {
+                  console.warn('Unable to access localStorage for theme preference:', e);
+                }
               })();
             `,
           }}

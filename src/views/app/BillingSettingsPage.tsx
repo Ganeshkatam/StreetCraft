@@ -2,27 +2,24 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsage } from '../../hooks/useUsage';
 import { useBusiness } from '../../hooks/useBusiness';
-import { UserSession } from '../../types/business';
 import { UsageMeter } from '../../components/UsageMeter';
-import { CreditCard, Sparkles, AlertCircle, History, ShieldCheck, CheckCircle2, Store, Plus } from 'lucide-react';
+import { CreditCard, Sparkles, History, Store, Plus } from 'lucide-react';
 import { api } from '../../lib/api';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { useDialog } from '../../context/DialogContext';
 
 interface BillingSettingsPageProps {
   businessId: string;
-  session: UserSession;
   onOpenUpgrade: () => void;
 }
 
 export const BillingSettingsPage: React.FC<BillingSettingsPageProps> = ({
   businessId,
-  session,
   onOpenUpgrade,
 }) => {
   const navigate = useNavigate();
   const { usage, events, refreshUsage } = useUsage(businessId);
-  const { profile, refreshProfile } = useBusiness(businessId);
+  const { refreshProfile } = useBusiness(businessId);
   const dialog = useDialog();
   const [cancelling, setCancelling] = useState(false);
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);

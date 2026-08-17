@@ -7,6 +7,7 @@ import { api } from '../../lib/api';
 import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent, resolveUpcomingFestivals } from '../../engine/briefing/opportunityEngine';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../components/UsageMeter';
+import { ErrorStateCard } from '../../components/ErrorStateCard';
 import { Plus, Store } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -21,7 +22,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onOpenUpgrade,
 }) => {
   const navigate = useNavigate();
-  const { profile, loading } = useBusiness(businessId);
+  const { profile, loading, error: businessError, refreshProfile } = useBusiness(businessId);
   const { campaigns } = useCampaign(businessId);
   const { usage } = useUsage(businessId);
   const [festivals, setFestivals] = useState<FestivalEvent[]>([]);
@@ -36,6 +37,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
           Loading daily workspace...
         </div>
+      </div>
+    );
+  }
+
+  if (businessError && !profile && businessId) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <ErrorStateCard
+          title="Unable to load daily workspace"
+          message="We encountered an issue connecting to your store profile. Please check your connection and try again."
+          onRetry={refreshProfile}
+          actionLabel="Retry Loading"
+        />
       </div>
     );
   }

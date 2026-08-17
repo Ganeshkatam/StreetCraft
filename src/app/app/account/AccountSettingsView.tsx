@@ -19,9 +19,6 @@ import {
   CreditCard,
   Copy,
   Bell,
-  Sparkles,
-  Smartphone,
-  ExternalLink,
 } from 'lucide-react';
 
 export function AccountSettingsView() {
@@ -131,7 +128,8 @@ export function AccountSettingsView() {
       await signOut();
       toast.success('Signed out from all active devices.');
       router.push('/login');
-    } catch {
+    } catch (err: unknown) {
+      console.warn('Global signout error, proceeding with local signout:', err);
       await signOut();
       router.push('/login');
     }

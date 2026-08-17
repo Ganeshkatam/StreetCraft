@@ -5,14 +5,10 @@
 
 import {
   Campaign,
-  CampaignType,
-  CampaignObjective,
   GoogleBusinessOutput,
   InstagramOutput,
   WhatsAppOutput,
   PosterOutput,
-  StructuredOffer,
-  StructuredSchedule,
   CampaignGenerationInput,
 } from '../types/campaign';
 import { BusinessProfile } from '../types/business';

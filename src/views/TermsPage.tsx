@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
 
 export const TermsPage: React.FC = () => {
   const navigate = useNavigate();

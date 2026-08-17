@@ -1,7 +1,7 @@
 import React from 'react';
 import { requireAuth, getUserClaims } from '../../../lib/supabase/auth';
 import { Logo } from '../../../components/Logo';
-import { ShieldCheck, UserCheck, Key, Lock, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, UserCheck, Key, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 // Strict: Prevent any static or ISR caching on authenticated routes

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, ArrowLeft, RotateCw, CheckCircle2, Store } from 'lucide-react';
+import { Mail, RotateCw, CheckCircle2, Store } from 'lucide-react';
 import { api } from '../lib/api';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import { toast } from 'sonner';
 
 export const VerifyEmailPage: React.FC = () => {
@@ -34,8 +35,8 @@ export const VerifyEmailPage: React.FC = () => {
       await api.resendConfirmationEmail(email);
       toast.success(`Verification email resent to ${email}. Please check your inbox.`);
       setCooldown(60);
-    } catch {
-      toast.error('Unable to resend verification email. Please verify the address and try again.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Unable to resend verification email. Please verify the address and try again.'));
     } finally {
       setIsResending(false);
     }

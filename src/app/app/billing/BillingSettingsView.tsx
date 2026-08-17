@@ -17,7 +17,7 @@ export function BillingSettingsView() {
   const { session } = useAuth();
   const businessId = session.activeBusinessId || '';
 
-  const { usage, events, loading: usageLoading, refreshUsage } = useUsage(businessId);
+  const { usage, events, refreshUsage } = useUsage(businessId);
   const { refreshProfile } = useBusiness(businessId);
   const dialog = useDialog();
   const [cancelling, setCancelling] = useState(false);

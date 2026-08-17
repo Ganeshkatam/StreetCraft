@@ -4,7 +4,7 @@ import { useCampaign } from '../../hooks/useCampaign';
 import { CampaignStatus } from '../../types/campaign';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../components/ChannelCard';
-import { ArrowLeft, Check, Edit3, Calendar, Target, Users, Clock, ShieldCheck, Download, Printer, FileText, Code } from 'lucide-react';
+import { Check, Edit3, Target, Users, Clock, Download, Printer, FileText, Code } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -12,6 +12,8 @@ import {
   triggerPrintPoster,
 } from '../../utils/exportUtils';
 import { useBusiness } from '../../hooks/useBusiness';
+import { getUserFacingErrorMessage } from '../../lib/userFacingError';
+import { toast } from 'sonner';
 
 interface CampaignDetailPageProps {
   businessId: string;
@@ -45,8 +47,9 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
       setIsEditingNotes(false);
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2000);
-    } catch {
-      // ignore
+      toast.success('Notes saved successfully.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save notes.'));
     } finally {
       setIsSaving(false);
     }

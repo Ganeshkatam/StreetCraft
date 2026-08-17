@@ -41,8 +41,8 @@ class RealtimeApiClient {
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch {
-          // ignore
+        } catch (err) {
+          console.warn('Failed to parse local stored session:', err);
         }
       }
       return {
@@ -200,13 +200,14 @@ class RealtimeApiClient {
     try {
       const sess = await this.requireActiveSession();
       currentUserId = sess.userId;
-    } catch {
+    } catch (err) {
+      console.warn('Failed to retrieve active session for businesses query, checking local cache:', err);
       const stored = localStorage.getItem('sc_local_session');
       if (stored) {
         try {
           currentUserId = JSON.parse(stored).userId;
-        } catch {
-          // ignore
+        } catch (parseErr) {
+          console.warn('Failed to parse local stored session in getMyBusinesses:', parseErr);
         }
       }
     }
@@ -240,7 +241,8 @@ class RealtimeApiClient {
         id,
         name: 'My Store',
       }));
-    } catch {
+    } catch (err) {
+      console.warn('Failed to query user business memberships from database:', err);
       return [];
     }
   }
@@ -283,7 +285,7 @@ class RealtimeApiClient {
       return sess;
     }
 
-    const { data, error } = await (supabase as any).rpc('create_business_atomically', {
+    const { error } = await (supabase as any).rpc('create_business_atomically', {
       p_name: name,
       p_category: category,
       p_neighborhood: neighborhood,
@@ -422,7 +424,7 @@ class RealtimeApiClient {
     return data;
   }
 
-  public async cancelSubscription(businessId?: UUID): Promise<{ success: boolean; status: string }> {
+  public async cancelSubscription(_businessId?: UUID): Promise<{ success: boolean; status: string }> {
     await this.requireActiveSession();
 
     if (!isSupabaseConfigured) {
@@ -519,8 +521,8 @@ class RealtimeApiClient {
 
     try {
       await this.requireActiveSession();
-    } catch {
-      // Allow fallback if session is initializing
+    } catch (err) {
+      console.warn('Session check warning during getBusinessProfile:', err);
     }
 
     if (!isSupabaseConfigured) {
@@ -528,8 +530,8 @@ class RealtimeApiClient {
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch {
-          // ignore
+        } catch (err) {
+          console.warn(`Failed to parse local profile for ${businessId}:`, err);
         }
       }
       return this._getEmptyProfile(businessId);
@@ -574,7 +576,8 @@ class RealtimeApiClient {
         phoneWhatsApp: data.phone_whatsapp || '',
         updatedAt: data.updated_at || new Date().toISOString(),
       };
-    } catch {
+    } catch (err) {
+      console.warn('Failed to fetch business profile from database:', businessId, err);
       return this._getEmptyProfile(businessId);
     }
   }
@@ -610,7 +613,7 @@ class RealtimeApiClient {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase.from('business_profiles') as any)
+    const { error } = await (supabase.from('business_profiles') as any)
       .upsert(payload)
       .select('*')
       .single();
@@ -797,7 +800,7 @@ class RealtimeApiClient {
     profile: BusinessProfile
   ): Promise<{ campaignId: string; claimToken: string; pack: FullCampaignPack }> {
     const claimToken = crypto.randomUUID();
-    const { campaignData, outputs, validationStatus } = generateCampaignPack(profile, input);
+    const { outputs, validationStatus } = generateCampaignPack(profile, input);
     const campaignId = 'cmp_anon_' + Date.now();
     const now = new Date().toISOString();
 
@@ -847,8 +850,8 @@ class RealtimeApiClient {
           ]);
           return { campaignId: dbCampaignId, claimToken, pack };
         }
-      } catch {
-        // Graceful fallback to client-side pack
+      } catch (err) {
+        console.warn('Failed to persist anonymous campaign to database, using client-side pack:', err);
       }
     }
 

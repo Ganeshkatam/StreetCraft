@@ -8,6 +8,8 @@ import { FullCampaignPack, CampaignType } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
 import { DatabasePlan } from '../types/billing';
 import { ChannelCard } from '../components/ChannelCard';
+import { ErrorStateCard } from '../components/ErrorStateCard';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import {
   CheckCircle2,
   ChevronDown,
@@ -35,6 +37,7 @@ export const LandingView: React.FC = () => {
   const [timingLabel, setTimingLabel] = useState('Monday–Thursday, 3:00 PM – 6:00 PM');
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [livePack, setLivePack] = useState<FullCampaignPack | null>(null);
   const [claimToken, setClaimToken] = useState<string | null>(null);
   const [activeChannel, setActiveChannel] = useState<'GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER'>('GOOGLE_BUSINESS');
@@ -42,26 +45,28 @@ export const LandingView: React.FC = () => {
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  const fetchAssets = async () => {
+    try {
+      const [plansData, festivalData, founderData] = await Promise.all([
+        api.getPlans(),
+        api.getFestivalCalendar(),
+        api.getFounderAllocation(),
+      ]);
+      setPlans(plansData);
+      setFestivals(festivalData || []);
+      setFounderAllocation(founderData);
+    } catch (err: unknown) {
+      console.warn('Failed to load landing page assets (plans, festivals, founder allocation):', err);
+    }
+  };
+
   // 1. Fetch Real Database Assets (Plans, Festivals, Founder Allocation)
   useEffect(() => {
     let isMounted = true;
-
-    Promise.all([
-      api.getPlans(),
-      api.getFestivalCalendar(),
-      api.getFounderAllocation(),
-    ]).then(([plansData, festivalData, founderData]) => {
-      if (isMounted) {
-        setPlans(plansData);
-        setFestivals(festivalData || []);
-        setFounderAllocation(founderData);
-      }
-    }).catch(() => {
-      // Graceful fallback without hardcoded fake data
-    });
+    fetchAssets();
 
     if (isSupabaseConfigured) {
-      const channel = supabase.channel('landing_founder_changes')
+      const channel = supabase.channel(`founder_landing_${Math.random().toString(36).slice(2, 9)}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'founder_allocation' }, (payload) => {
           if (payload.new && isMounted) {
             setFounderAllocation(payload.new as any);
@@ -88,6 +93,7 @@ export const LandingView: React.FC = () => {
     customNeighborhood?: string
   ) => {
     setIsGenerating(true);
+    setGenerationError(null);
     try {
       const targetType = customType || campaignType;
       const targetOffer = customOffer || offerTitle;
@@ -96,38 +102,38 @@ export const LandingView: React.FC = () => {
 
       const liveProfile: BusinessProfile = {
         businessId: '00000000-0000-0000-0000-000000000000',
-        name: targetStore,
-        category: selectedCategory,
-        neighborhood: targetNeighborhood,
-        city: city,
-        landmarks: landmarks,
-        targetCustomer: 'Neighborhood residents, nearby office workers, and visitors',
-        styleVoice: 'Warm, artisan, welcoming',
-        signatureItems: 'Single-Origin Pour Overs, Almond Croissants, Handmade Sourdough',
-        primaryGoal: 'Drive quiet hour walk-ins',
-        peakHours: '08:00 - 11:00',
-        slowHours: '15:00 - 18:00',
-        defaultOffer: '20% off pour-overs',
-        avgTicketINR: 200,
-        targetMonthlyCustomers: 500,
-        phoneWhatsApp: '+91 98765 43210',
+        name: targetStore || 'Local Business',
+        category: selectedCategory || 'Retail Store',
+        neighborhood: targetNeighborhood || 'Neighborhood',
+        city: city || 'City',
+        landmarks: landmarks || '',
+        targetCustomer: '',
+        styleVoice: '',
+        signatureItems: '',
+        primaryGoal: '',
+        peakHours: '',
+        slowHours: timingLabel || '',
+        defaultOffer: targetOffer || 'Special in-store offer',
+        avgTicketINR: 0,
+        targetMonthlyCustomers: 0,
+        phoneWhatsApp: '',
         updatedAt: new Date().toISOString(),
       };
 
       const input = {
         type: targetType,
         objective: 'MORE_WALK_INS' as const,
-        audience: 'Neighborhood residents, nearby office workers, and visitors',
+        audience: targetNeighborhood ? `Nearby customers in ${targetNeighborhood}` : 'Local neighborhood customers',
         offer: {
-          title: targetOffer,
-          description: targetOffer,
+          title: targetOffer || 'Special In-Store Offer',
+          description: targetOffer || 'Exclusive neighborhood promotion',
           value: 'Special Promotional Perk',
-          terms: 'Flash message at counter to redeem.',
+          terms: 'Show message at counter to redeem.',
         },
         schedule: {
           startsAt: new Date().toISOString(),
           endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
-          timingLabel,
+          timingLabel: timingLabel || 'Valid this week',
         },
       };
 
@@ -140,7 +146,7 @@ export const LandingView: React.FC = () => {
           claimToken: 'demo_claim_token',
           type: targetType,
           objective: 'MORE_WALK_INS',
-          audience: 'Neighborhood residents, nearby office workers, and visitors',
+          audience: input.audience,
           offer: input.offer,
           schedule: input.schedule,
           status: 'ready',
@@ -154,6 +160,8 @@ export const LandingView: React.FC = () => {
 
       setLivePack(demoFullPack);
       setClaimToken('demo_token_' + Date.now());
+    } catch (err: unknown) {
+      setGenerationError(getUserFacingErrorMessage(err, 'Failed to generate campaign preview. Please check your inputs and try again.'));
     } finally {
       setIsGenerating(false);
     }
@@ -671,7 +679,15 @@ export const LandingView: React.FC = () => {
                 </div>
               </div>
 
-              {livePack && (
+              {/* Active Proof Render */}
+              {generationError ? (
+                <ErrorStateCard
+                  title="Unable to generate campaign preview"
+                  message={generationError}
+                  onRetry={() => executeDemoGeneration()}
+                  actionLabel="Retry Generation"
+                />
+              ) : livePack ? (
                 <div>
                   <ChannelCard
                     channel={activeChannel}
@@ -703,7 +719,7 @@ export const LandingView: React.FC = () => {
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
             </div>
 
           </div>

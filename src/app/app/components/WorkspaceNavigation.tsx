@@ -7,7 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUsage } from '../../../hooks/useUsage';
 import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { LogOut, ChevronDown, Plus, Store, User, Settings, CreditCard, ShieldCheck } from 'lucide-react';
+import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ShieldCheck } from 'lucide-react';
 
 export const WorkspaceNavigation: React.FC = () => {
   const router = useRouter();

@@ -6,6 +6,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useBusiness } from '../../../hooks/useBusiness';
 import { api } from '../../../lib/api';
 import { BusinessProfile } from '../../../types/business';
+import { getUserFacingErrorMessage } from '../../../lib/userFacingError';
 import { toast } from 'sonner';
 import { Save, Store, Plus } from 'lucide-react';
 
@@ -90,8 +91,8 @@ export function BusinessView() {
         await updateProfile(currentData);
       }
       toast.success('Business profile updated successfully.');
-    } catch {
-      toast.error('Failed to update business profile. Please try again.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Failed to update business profile. Please try again.'));
     } finally {
       setIsSaving(false);
     }

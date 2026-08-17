@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Sparkles, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SmartOpportunity {
   day: number;
@@ -640,7 +640,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
                             {preset.detail}
                           </div>
                         </div>
-                        <ChevronRightIcon size={14} style={{ color: isActive ? '#1A4D2E' : 'var(--color-ink-muted)', flexShrink: 0 }} />
+                        <ChevronRight size={14} style={{ color: isActive ? '#1A4D2E' : 'var(--color-ink-muted)', flexShrink: 0 }} />
                       </button>
                     );
                   })}

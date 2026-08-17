@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlanTier, DatabasePlan } from '../types/billing';
+import { DatabasePlan } from '../types/billing';
 import { api } from '../lib/api';
 import { X, Check } from 'lucide-react';
 import { getUserFacingErrorMessage } from '../lib/userFacingError';

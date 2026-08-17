@@ -7,18 +7,22 @@ import { UUID } from '../types/common';
 export function useCampaign(businessId: UUID) {
   const [campaigns, setCampaigns] = useState<FullCampaignPack[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchCampaigns = async () => {
     if (!businessId) {
       setCampaigns([]);
       setLoading(false);
+      setError(false);
       return;
     }
+    setError(false);
     try {
       const list = await api.getCampaigns(businessId);
       setCampaigns(list);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('Failed to fetch campaigns for business:', businessId, err);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -29,7 +33,7 @@ export function useCampaign(businessId: UUID) {
 
     if (isSupabaseConfigured && businessId) {
       const channel = supabase
-        .channel(`realtime:campaigns:${businessId}`)
+        .channel(`campaigns_${businessId}_${Math.random().toString(36).slice(2, 9)}`)
         .on(
           'postgres_changes',
           {
@@ -63,6 +67,7 @@ export function useCampaign(businessId: UUID) {
   return {
     campaigns,
     loading,
+    error,
     refreshCampaigns: fetchCampaigns,
     updateStatus,
     deleteCampaign,

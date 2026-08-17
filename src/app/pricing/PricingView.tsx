@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '../../lib/api';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
@@ -9,25 +8,36 @@ import { DatabasePlan } from '../../types/billing';
 import { PublicHeader } from '../components/PublicHeader';
 import { ServerFooter } from '../components/ServerFooter';
 import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ErrorStateCard } from '../../components/ErrorStateCard';
 
 export function PricingView() {
   const router = useRouter();
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
-  const [, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [founderAllocation, setFounderAllocation] = useState<{ total_slots: number; claimed_slots: number } | null>(null);
 
+  const loadPricingData = async () => {
+    setError(false);
+    try {
+      const [plansData, founderData] = await Promise.all([
+        api.getPlans(),
+        api.getFounderAllocation(),
+      ]);
+      setPlans(plansData);
+      setFounderAllocation(founderData);
+    } catch (err: unknown) {
+      console.warn('Failed to load pricing plans and founder allocation:', err);
+      setError(true);
+    }
+  };
+
   useEffect(() => {
-    api.getPlans().then((data) => {
-      setPlans(data);
-      setLoading(false);
-    });
-    
-    api.getFounderAllocation().then(setFounderAllocation);
+    loadPricingData();
 
     if (isSupabaseConfigured) {
-      const channel = supabase.channel('founder_allocation_changes_pricing')
+      const channel = supabase.channel(`founder_pricing_${Math.random().toString(36).slice(2, 9)}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'founder_allocation' }, (payload) => {
           if (payload.new) {
             setFounderAllocation(payload.new as any);
@@ -39,6 +49,27 @@ export function PricingView() {
       };
     }
   }, []);
+
+  if (error && plans.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-page)' }}>
+        <PublicHeader />
+        <main style={{ flex: 1, padding: '60px var(--space-gutter) 100px' }}>
+          <ErrorStateCard
+            title="Unable to load pricing options"
+            message="We encountered an issue retrieving our real-time subscription tiers. Please check your connection and try again."
+            onRetry={loadPricingData}
+            actionLabel="Retry Loading"
+            secondaryAction={{
+              label: 'Return to Home',
+              onClick: () => router.push('/'),
+            }}
+          />
+        </main>
+        <ServerFooter />
+      </div>
+    );
+  }
 
   const pricingFaqs = [
     {

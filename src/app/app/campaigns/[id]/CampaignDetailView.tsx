@@ -8,7 +8,9 @@ import { useBusiness } from '../../../../hooks/useBusiness';
 import { CampaignStatus } from '../../../../types/campaign';
 import { CampaignStatusBadge } from '../../../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../../../components/ChannelCard';
-import { ArrowLeft, Check, Edit3, Target, Users, Clock, Download, Printer, FileText, Code } from 'lucide-react';
+import { getUserFacingErrorMessage } from '../../../../lib/userFacingError';
+import { toast } from 'sonner';
+import { Check, Edit3, Target, Users, Clock, Download, Printer, FileText, Code } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -47,8 +49,9 @@ export function CampaignDetailView() {
       setIsEditingNotes(false);
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2000);
-    } catch {
-      // ignore
+      toast.success('Notes saved successfully.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save notes.'));
     } finally {
       setIsSaving(false);
     }

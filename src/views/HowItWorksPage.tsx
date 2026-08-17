@@ -3,23 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   Store,
   Layers,
-  Sparkles,
-  MapPin,
   Clock,
-  Send,
-  Printer,
   CheckCircle2,
-  ArrowRight,
   ShieldCheck,
-  TrendingUp,
-  FileText,
-  Sliders
 } from 'lucide-react';
 
 export const HowItWorksPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [activeChannelTab, setActiveChannelTab] = useState<'google' | 'instagram' | 'whatsapp' | 'poster'>('google');
 
   const steps = [
     {

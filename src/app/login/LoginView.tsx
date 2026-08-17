@@ -39,7 +39,7 @@ function LoginContent() {
       } else if (errorParam === 'auth_exchange_failed') {
         toast.error('Authentication session exchange failed. Please sign in again.');
       } else {
-        toast.error(decodeURIComponent(errorParam));
+        toast.error(getUserFacingErrorMessage(decodeURIComponent(errorParam), 'Authentication was not completed. Please sign in again.'));
       }
     }
   }, [searchParams]);

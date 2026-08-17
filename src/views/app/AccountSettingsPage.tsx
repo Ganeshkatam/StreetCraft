@@ -132,7 +132,8 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ sessio
       await signOut();
       toast.success('Signed out from all active devices.');
       navigate('/login');
-    } catch {
+    } catch (err: unknown) {
+      console.warn('Global signout error, proceeding with local signout:', err);
       await signOut();
       navigate('/login');
     }

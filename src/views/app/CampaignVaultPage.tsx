@@ -4,6 +4,8 @@ import { useCampaign } from '../../hooks/useCampaign';
 import { CampaignStatus } from '../../types/campaign';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../components/ChannelCard';
+import { ErrorStateCard } from '../../components/ErrorStateCard';
+import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { Edit3, Plus, Store } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,7 +15,7 @@ interface CampaignVaultPageProps {
 
 export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId }) => {
   const navigate = useNavigate();
-  const { campaigns, loading, updateStatus } = useCampaign(businessId);
+  const { campaigns, loading, error, refreshCampaigns, updateStatus } = useCampaign(businessId);
   const [filter, setFilter] = useState<'ALL' | 'PUBLISHED' | 'COMPLETED' | 'ARCHIVED'>('ALL');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
@@ -25,6 +27,19 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
           Loading campaign vault...
         </div>
+      </div>
+    );
+  }
+
+  if (error && campaigns.length === 0) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <ErrorStateCard
+          title="Unable to load campaign history"
+          message="We could not retrieve your past campaigns due to a temporary network issue."
+          onRetry={refreshCampaigns}
+          actionLabel="Retry Loading"
+        />
       </div>
     );
   }
@@ -63,8 +78,8 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
       await updateStatus(campaignId, currentStatus, tempNotes);
       toast.success('Notes saved successfully.');
       setEditingNotesId(null);
-    } catch {
-      toast.error('Failed to save notes.');
+    } catch (err: unknown) {
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save notes.'));
     }
   };
 
@@ -149,6 +164,14 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      className="btn-secondary"
+                      style={{ fontSize: '12px', padding: '5px 12px' }}
+                      onClick={() => setExpandedId(isExpanded ? null : item.campaign.id)}
+                    >
+                      {isExpanded ? 'Hide Proofs' : 'View Proofs'}
+                    </button>
+
                     <button
                       className="btn-primary"
                       style={{ fontSize: '12px', padding: '5px 12px' }}

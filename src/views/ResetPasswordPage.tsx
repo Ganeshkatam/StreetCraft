@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { KeyRound, Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 import { getUserFacingErrorMessage } from '../lib/userFacingError';
 

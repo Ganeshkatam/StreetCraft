@@ -18,7 +18,7 @@ function SetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const claimToken = searchParams.get('claim');
-  const { session, createBusiness, signOut } = useAuth();
+  const { session, createBusiness } = useAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(session.activeBusinessId || null);
@@ -59,8 +59,8 @@ function SetupContent() {
             }
           }
         })
-        .catch(() => {
-          // Fallback to Step 1 if profile fetch fails
+        .catch((err) => {
+          console.warn('Failed to pre-populate existing store setup profile:', err);
         })
         .finally(() => {
           setIsResuming(false);
@@ -98,10 +98,10 @@ function SetupContent() {
           phoneWhatsApp: phone,
         });
       }
-      toast.success('Store identity saved.');
+      toast.success('Store details saved.');
       setStep(2);
     } catch (err: unknown) {
-      toast.error(getUserFacingErrorMessage(err, 'Failed to save store identity. Please check your connection and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save store details. Please check your connection and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -181,13 +181,11 @@ function SetupContent() {
           </div>
 
           <button
+            type="button"
             className="auth-back-btn"
-            onClick={async () => {
-              await signOut();
-              router.push('/');
-            }}
+            onClick={() => router.push('/app/today')}
           >
-            Sign out
+            Set up later
           </button>
         </header>
 
@@ -363,13 +361,24 @@ function SetupContent() {
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
-                      className="auth-submit-btn"
-                    >
-                      {isSubmitting ? 'Saving store...' : 'Save & Continue'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => router.push('/app/today')}
+                        className="btn-secondary"
+                        style={{ padding: '10px 16px', fontSize: '13px' }}
+                      >
+                        Set up later
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
+                        className="auth-submit-btn"
+                        style={{ flex: 1 }}
+                      >
+                        {isSubmitting ? 'Saving store...' : 'Save & Continue'}
+                      </button>
+                    </div>
                   </form>
                 </div>
               )}
@@ -443,6 +452,14 @@ function SetupContent() {
                         style={{ padding: '10px 16px', fontSize: '13px' }}
                       >
                         Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => router.push('/app/today')}
+                        className="btn-secondary"
+                        style={{ padding: '10px 16px', fontSize: '13px' }}
+                      >
+                        Set up later
                       </button>
                       <button
                         type="submit"
