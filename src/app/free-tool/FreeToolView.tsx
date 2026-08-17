@@ -390,7 +390,7 @@ export function FreeToolView() {
                 <button
                   className="btn-primary"
                   style={{ fontSize: '13.5px', padding: '8px 18px' }}
-                  onClick={() => router.push('/login')}
+                  onClick={() => router.push(`/signup?claim=${claimToken}`)}
                 >
                   Save to Workspace &rarr;
                 </button>
