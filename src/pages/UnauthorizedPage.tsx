@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, Compass } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, LayoutDashboard, Store } from 'lucide-react';
 
-export const NotFoundPage: React.FC = () => {
+export const UnauthorizedPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -30,20 +30,20 @@ export const NotFoundPage: React.FC = () => {
             width: '56px',
             height: '56px',
             borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-primary-subtle)',
-            border: '1px solid var(--color-primary-border)',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px',
-            color: 'var(--color-primary)',
+            color: '#b91c1c',
           }}
         >
-          <Compass size={28} />
+          <ShieldAlert size={28} />
         </div>
 
-        <span className="section-eyebrow" style={{ marginBottom: '8px' }}>
-          404 &bull; PAGE NOT FOUND
+        <span className="section-eyebrow" style={{ marginBottom: '8px', color: '#b91c1c' }}>
+          403 &bull; ACCESS RESTRICTED
         </span>
 
         <h1
@@ -54,7 +54,7 @@ export const NotFoundPage: React.FC = () => {
             marginBottom: '12px',
           }}
         >
-          Lost on the Street?
+          Permission Required
         </h1>
 
         <p
@@ -65,12 +65,15 @@ export const NotFoundPage: React.FC = () => {
             marginBottom: '28px',
           }}
         >
-          The page or campaign document you are looking for does not exist or has been relocated.
+          You do not have permission to view or manage this storefront resource. Please verify your active store workspace or sign in with an authorized account.
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-secondary" onClick={() => navigate(-1)}>
             <ArrowLeft size={15} /> Go Back
+          </button>
+          <button className="btn-secondary" onClick={() => navigate('/app/business')}>
+            <Store size={15} /> Storefronts
           </button>
           <button className="btn-primary" onClick={() => navigate('/app/today')}>
             <LayoutDashboard size={15} /> Today&apos;s Briefing

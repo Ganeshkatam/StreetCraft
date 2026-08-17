@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, Compass } from 'lucide-react';
+import { AlertCircle, RefreshCw, LayoutDashboard } from 'lucide-react';
 
-export const NotFoundPage: React.FC = () => {
+export const ErrorPage: React.FC<{ message?: string }> = ({ message }) => {
   const navigate = useNavigate();
 
   return (
@@ -30,20 +30,20 @@ export const NotFoundPage: React.FC = () => {
             width: '56px',
             height: '56px',
             borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-primary-subtle)',
-            border: '1px solid var(--color-primary-border)',
+            background: 'var(--color-surface-raised)',
+            border: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px',
-            color: 'var(--color-primary)',
+            color: 'var(--color-ink-muted)',
           }}
         >
-          <Compass size={28} />
+          <AlertCircle size={28} />
         </div>
 
         <span className="section-eyebrow" style={{ marginBottom: '8px' }}>
-          404 &bull; PAGE NOT FOUND
+          SYSTEM &bull; UNEXPECTED STATE
         </span>
 
         <h1
@@ -54,7 +54,7 @@ export const NotFoundPage: React.FC = () => {
             marginBottom: '12px',
           }}
         >
-          Lost on the Street?
+          Something Went Wrong
         </h1>
 
         <p
@@ -65,12 +65,12 @@ export const NotFoundPage: React.FC = () => {
             marginBottom: '28px',
           }}
         >
-          The page or campaign document you are looking for does not exist or has been relocated.
+          {message || 'An unexpected error occurred while loading this page. Your store data and campaigns remain safe and untouched.'}
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button className="btn-secondary" onClick={() => navigate(-1)}>
-            <ArrowLeft size={15} /> Go Back
+          <button className="btn-secondary" onClick={() => window.location.reload()}>
+            <RefreshCw size={15} /> Refresh Page
           </button>
           <button className="btn-primary" onClick={() => navigate('/app/today')}>
             <LayoutDashboard size={15} /> Today&apos;s Briefing
