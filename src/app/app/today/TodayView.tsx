@@ -1,58 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusiness } from '../../../hooks/useBusiness';
-import { useCampaign } from '../../../hooks/useCampaign';
-import { useUsage } from '../../../hooks/useUsage';
-import { api } from '../../../lib/api';
-import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent, resolveUpcomingFestivals } from '../../../engine/briefing/opportunityEngine';
+import { generateDynamicBriefing, DynamicOpportunity, resolveUpcomingFestivals } from '../../../engine/briefing/opportunityEngine';
 import { CampaignStatusBadge } from '../../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../../components/UsageMeter';
 import { UpgradeModal } from '../../../components/UpgradeModal';
 import { ErrorStateCard } from '../../../components/ErrorStateCard';
 import { Plus, Store } from 'lucide-react';
+import { WorkspaceTodayViewModel } from '../../../lib/server/workspace/getWorkspaceTodayData';
+import { FestivalEvent } from '../../../engine/briefing/opportunityEngine'; // Need to cast from backend format
 
-export function TodayView() {
+export function TodayView({ initialData }: { initialData: WorkspaceTodayViewModel | null }) {
   const router = useRouter();
-  const { session } = useAuth();
-  const businessId = session.activeBusinessId || '';
-
-  const { profile, loading, error: businessError, refreshProfile } = useBusiness(businessId);
-  const { campaigns } = useCampaign(businessId);
-  const { usage } = useUsage(businessId);
-  const [festivals, setFestivals] = useState<FestivalEvent[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  useEffect(() => {
-    api.getFestivalCalendar().then((data) => setFestivals(Array.isArray(data) ? (data as FestivalEvent[]) : []));
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
-          Loading daily workspace...
-        </div>
-      </div>
-    );
-  }
-
-  if (businessError && !profile && businessId) {
-    return (
-      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
-        <ErrorStateCard
-          title="Unable to load daily workspace"
-          message="We encountered an issue connecting to your store profile. Please check your connection and try again."
-          onRetry={refreshProfile}
-          actionLabel="Retry Loading"
-        />
-      </div>
-    );
-  }
-
-  if (!businessId || !profile) {
+  if (!initialData) {
     return (
       <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
         <div className="card" style={{ maxWidth: '560px', margin: '60px auto', textAlign: 'center', padding: '48px 36px' }}>
@@ -63,7 +26,7 @@ export function TodayView() {
             No Storefront Selected
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
-            You haven&apos;t set up a store profile yet. Complete the quick onboarding setup to activate your daily workspace and AI campaign briefing.
+            You haven't set up a store profile yet. Complete the quick onboarding setup to activate your daily workspace and AI campaign briefing.
           </p>
           <button
             onClick={() => router.push('/setup')}
@@ -78,10 +41,39 @@ export function TodayView() {
     );
   }
 
-  const upcomingFestivalsList = resolveUpcomingFestivals(Array.isArray(festivals) ? festivals : [], new Date(), 3);
+  const { profile, usagePeriod, campaigns, festivals } = initialData;
 
-  const rawCampaigns = Array.isArray(campaigns) ? campaigns.map((c) => c.campaign) : [];
-  const briefing = generateDynamicBriefing(profile, rawCampaigns, Array.isArray(festivals) ? festivals : []);
+  // The backend models are slightly different from the old frontend models.
+  // Opportunity engine expects certain formats. 
+  // Map backend models back to what the engine expects if needed.
+  // Engine expects profile to have signatureItems, etc.
+  const mappedProfile = profile ? {
+    name: profile.name,
+    neighborhood: profile.neighborhood,
+    city: profile.city,
+    signatureItems: profile.signature_items, // Map snake_case back
+  } : null;
+
+  // Engine expects FestivalEvent to have id, name, starts_at, ends_at, marketing_relevance, suggested_offer
+  const mappedFestivals: FestivalEvent[] = festivals.map(f => ({
+    id: f.id,
+    name: f.name,
+    region: f.region,
+    starts_at: f.starts_at,
+    ends_at: f.ends_at,
+    marketing_relevance: f.marketing_relevance,
+    suggested_offer: f.suggested_offer
+  }));
+
+  const upcomingFestivalsList = resolveUpcomingFestivals(mappedFestivals, new Date(), 3);
+
+  // generateDynamicBriefing expects profile, rawCampaigns, festivals
+  // rawCampaigns expects { type, status, offer, schedule }
+  const briefing = generateDynamicBriefing(
+    mappedProfile as any,
+    campaigns as any,
+    mappedFestivals
+  );
 
   const handleLaunchPreset = (opportunity: DynamicOpportunity) => {
     sessionStorage.setItem('sc_launched_preset', JSON.stringify(opportunity.preset));
@@ -197,40 +189,44 @@ export function TodayView() {
               </p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
-                {campaigns.slice(0, 4).map((item) => (
-                  <div
-                    key={item.campaign.id}
-                    style={{
-                      background: 'var(--color-surface-raised)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-xs)',
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase' }}>
-                          {item.campaign.type.replace(/_/g, ' ')}
-                        </span>
-                        <CampaignStatusBadge status={item.campaign.status} size="sm" />
+                {campaigns.slice(0, 4).map((c: any) => {
+                  // Type casting since we bypassed standard models
+                  const cpn = c as any;
+                  return (
+                    <div
+                      key={c.id}
+                      style={{
+                        background: 'var(--color-surface-raised)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-xs)',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase' }}>
+                            {c.type.replace(/_/g, ' ')}
+                          </span>
+                          <CampaignStatusBadge status={c.status} size="sm" />
+                        </div>
+                        <h4 style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--color-ink)', lineHeight: '1.4' }}>
+                          {cpn.offer?.title || cpn.offer?.description}
+                        </h4>
                       </div>
-                      <h4 style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--color-ink)', lineHeight: '1.4' }}>
-                        {item.campaign.offer.title || item.campaign.offer.description}
-                      </h4>
-                    </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
-                      <span>{item.campaign.schedule.timingLabel || 'Active'}</span>
-                      <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/app/campaigns/${item.campaign.id}`)}>
-                        Proofs
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
+                        <span>{cpn.schedule?.timingLabel || 'Active'}</span>
+                        <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/app/campaigns/${c.id}`)}>
+                          Proofs
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -257,11 +253,38 @@ export function TodayView() {
 
             <div style={{ background: 'var(--color-surface-raised)', padding: '12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.5' }}>
               <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '3px' }}>SPECIALTIES</div>
-              {profile?.signatureItems || 'Not specified yet'}
+              {profile?.signature_items || 'Not specified yet'}
             </div>
           </div>
 
-          <UsageMeter usage={usage} onUpgrade={() => setShowUpgradeModal(true)} />
+          {!usagePeriod ? (
+            <ErrorStateCard
+              title="Entitlement Unavailable"
+              message="Your usage and plan data is currently missing or unavailable. Please contact support to restore your entitlement."
+              actionLabel="Contact Support"
+              onRetry={() => { }}
+            />
+          ) : (
+            <UsageMeter 
+              usage={{ 
+                periodId: usagePeriod.id,
+                businessId: usagePeriod.business_id,
+                plan: usagePeriod.plan as any,
+                planName: usagePeriod.plan,
+                priceINR: 0,
+                monthlyLimit: usagePeriod.campaign_limit,
+                usedCampaigns: usagePeriod.campaigns_used,
+                remainingCampaigns: Math.max(0, usagePeriod.campaign_limit - usagePeriod.campaigns_used),
+                usedPacks: usagePeriod.campaigns_used,
+                remainingPacks: Math.max(0, usagePeriod.campaign_limit - usagePeriod.campaigns_used),
+                percentUsed: Math.min(100, Math.round((usagePeriod.campaigns_used / (usagePeriod.campaign_limit || 1)) * 100)),
+                periodStart: usagePeriod.period_start,
+                periodEnd: usagePeriod.period_end,
+                canGenerate: usagePeriod.campaign_limit > usagePeriod.campaigns_used,
+              }} 
+              onUpgrade={() => setShowUpgradeModal(true)} 
+            />
+          )}
 
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--color-border)' }}>
@@ -274,7 +297,7 @@ export function TodayView() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {upcomingFestivalsList.map((f) => (
+              {upcomingFestivalsList.map((f: any) => (
                 <div
                   key={f.id}
                   style={{

@@ -82,12 +82,11 @@ ${treeContent}\`\`\`
 
 ## Directory Overview
 
-- \`src/components/\` - Reusable UI components (CustomSelect, CalendarPicker, FormatCard, Navigation)
-- \`src/pages/\` - Public marketing and acquisition routes (Landing, FreeTool, Pricing, HowItWorks)
-- \`src/pages/app/\` - Authenticated SaaS dashboard, Campaign Composer, Preferences, and Vault
-- \`src/lib/\` - Supabase client, campaign compilation engine, and entitlements
-- \`src/config/\` - Immutable plan configurations, platform schemas, and constants
-- \`src/types/\` - TypeScript database and campaign interface definitions
+- \`src/app/\` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
+- \`src/components/\` - Shared UI components (CustomSelect, CalendarPicker, UpgradeModal, UsageMeter)
+- \`src/lib/\` - Supabase client, API abstractions, error handling, telemetry, and entitlements
+- \`src/config/\` - Immutable plan configurations, channel definitions, and category schemas
+- \`src/types/\` - TypeScript database, campaign, and domain interface definitions
 - \`supabase/\` - SQL migrations and reference data seeds
 - \`docs/\` - Architectural specifications, strategy plans, and audit manifests
 - \`scripts/\` - Maintenance, migration, and automation utilities

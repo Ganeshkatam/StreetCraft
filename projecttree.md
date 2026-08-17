@@ -1,9 +1,9 @@
 # StreetCraft Project Directory Structure
 
-Generated automatically on: 2026-08-17T16:47:19.819Z
+Generated automatically on: 2026-08-17T22:46:23.170Z
 
-Total Directories: 147  
-Total Files: 457
+Total Directories: 161  
+Total Files: 449
 
 ```text
 streetcraft/
@@ -16,30 +16,28 @@ streetcraft/
 │   │   │   ├── client-development/
 │   │   │   │   ├── 0.pack.gz
 │   │   │   │   ├── 1.pack.gz
+│   │   │   │   ├── 10.pack.gz
+│   │   │   │   ├── 11.pack.gz
+│   │   │   │   ├── 12.pack.gz
 │   │   │   │   ├── 2.pack.gz
 │   │   │   │   ├── 3.pack.gz
 │   │   │   │   ├── 4.pack.gz
 │   │   │   │   ├── 5.pack.gz
 │   │   │   │   ├── 6.pack.gz
 │   │   │   │   ├── 7.pack.gz
+│   │   │   │   ├── 8.pack.gz
+│   │   │   │   ├── 9.pack.gz
 │   │   │   │   ├── index.pack.gz
+│   │   │   │   └── index.pack.gz.old
+│   │   │   ├── client-development-fallback/
+│   │   │   │   ├── 0.pack.gz
 │   │   │   │   └── index.pack.gz.old
 │   │   │   ├── client-production/
 │   │   │   │   ├── 0.pack
 │   │   │   │   ├── 1.pack
-│   │   │   │   ├── 10.pack
-│   │   │   │   ├── 11.pack
-│   │   │   │   ├── 12.pack
-│   │   │   │   ├── 13.pack
-│   │   │   │   ├── 14.pack
 │   │   │   │   ├── 2.pack
 │   │   │   │   ├── 3.pack
 │   │   │   │   ├── 4.pack
-│   │   │   │   ├── 5.pack
-│   │   │   │   ├── 6.pack
-│   │   │   │   ├── 7.pack
-│   │   │   │   ├── 8.pack
-│   │   │   │   ├── 9.pack
 │   │   │   │   ├── index.pack
 │   │   │   │   └── index.pack.old
 │   │   │   ├── edge-server-production/
@@ -49,6 +47,11 @@ streetcraft/
 │   │   │   ├── server-development/
 │   │   │   │   ├── 0.pack.gz
 │   │   │   │   ├── 1.pack.gz
+│   │   │   │   ├── 10.pack.gz
+│   │   │   │   ├── 11.pack.gz
+│   │   │   │   ├── 12.pack.gz
+│   │   │   │   ├── 13.pack.gz
+│   │   │   │   ├── 14.pack.gz
 │   │   │   │   ├── 2.pack.gz
 │   │   │   │   ├── 3.pack.gz
 │   │   │   │   ├── 4.pack.gz
@@ -62,18 +65,8 @@ streetcraft/
 │   │   │   └── server-production/
 │   │   │       ├── 0.pack
 │   │   │       ├── 1.pack
-│   │   │       ├── 10.pack
-│   │   │       ├── 11.pack
-│   │   │       ├── 12.pack
-│   │   │       ├── 13.pack
 │   │   │       ├── 2.pack
 │   │   │       ├── 3.pack
-│   │   │       ├── 4.pack
-│   │   │       ├── 5.pack
-│   │   │       ├── 6.pack
-│   │   │       ├── 7.pack
-│   │   │       ├── 8.pack
-│   │   │       ├── 9.pack
 │   │   │       ├── index.pack
 │   │   │       └── index.pack.old
 │   │   ├── .rscinfo
@@ -122,6 +115,10 @@ streetcraft/
 │   │   │   │       └── page.js.nft.json
 │   │   │   ├── auth/
 │   │   │   │   ├── callback/
+│   │   │   │   │   ├── route_client-reference-manifest.js
+│   │   │   │   │   ├── route.js
+│   │   │   │   │   └── route.js.nft.json
+│   │   │   │   ├── confirm/
 │   │   │   │   │   ├── route_client-reference-manifest.js
 │   │   │   │   │   ├── route.js
 │   │   │   │   │   └── route.js.nft.json
@@ -177,6 +174,10 @@ streetcraft/
 │   │   │   │   ├── page_client-reference-manifest.js
 │   │   │   │   ├── page.js
 │   │   │   │   └── page.js.nft.json
+│   │   │   ├── verify-email/
+│   │   │   │   ├── page_client-reference-manifest.js
+│   │   │   │   ├── page.js
+│   │   │   │   └── page.js.nft.json
 │   │   │   ├── _not-found.html
 │   │   │   ├── _not-found.meta
 │   │   │   ├── _not-found.rsc
@@ -221,21 +222,25 @@ streetcraft/
 │   │   │   ├── signup.rsc
 │   │   │   ├── terms.html
 │   │   │   ├── terms.meta
-│   │   │   └── terms.rsc
+│   │   │   ├── terms.rsc
+│   │   │   ├── verify-email.html
+│   │   │   ├── verify-email.meta
+│   │   │   └── verify-email.rsc
 │   │   ├── chunks/
 │   │   │   ├── 10.js
-│   │   │   ├── 137.js
 │   │   │   ├── 171.js
+│   │   │   ├── 195.js
+│   │   │   ├── 237.js
 │   │   │   ├── 252.js
+│   │   │   ├── 278.js
 │   │   │   ├── 334.js
+│   │   │   ├── 434.js
 │   │   │   ├── 452.js
-│   │   │   ├── 615.js
+│   │   │   ├── 545.js
+│   │   │   ├── 582.js
 │   │   │   ├── 627.js
-│   │   │   ├── 684.js
-│   │   │   ├── 798.js
+│   │   │   ├── 81.js
 │   │   │   ├── 849.js
-│   │   │   ├── 859.js
-│   │   │   ├── 894.js
 │   │   │   └── 9.js
 │   │   ├── pages/
 │   │   │   ├── _app.js
@@ -262,83 +267,88 @@ streetcraft/
 │   │   ├── chunks/
 │   │   │   ├── app/
 │   │   │   │   ├── _not-found/
-│   │   │   │   │   └── page-71d898024c08a12b.js
+│   │   │   │   │   └── page-c2ad5e76d5e4b179.js
 │   │   │   │   ├── app/
 │   │   │   │   │   ├── account/
-│   │   │   │   │   │   └── page-27c5451d73af496a.js
+│   │   │   │   │   │   └── page-cbdbeffad02e0dd6.js
 │   │   │   │   │   ├── auth-proof/
-│   │   │   │   │   │   └── page-d8807e04eab11747.js
+│   │   │   │   │   │   └── page-7f356462019e2a95.js
 │   │   │   │   │   ├── billing/
-│   │   │   │   │   │   └── page-74da9071c25bb14a.js
+│   │   │   │   │   │   └── page-78d0725303b9d4fb.js
 │   │   │   │   │   ├── business/
-│   │   │   │   │   │   └── page-e9fa85175cb13fc8.js
+│   │   │   │   │   │   └── page-2768ffeea0fbde33.js
 │   │   │   │   │   ├── campaigns/
 │   │   │   │   │   │   ├── [id]/
-│   │   │   │   │   │   │   └── page-1916a8a1945d5469.js
-│   │   │   │   │   │   └── page-b4c61a2383b31338.js
+│   │   │   │   │   │   │   └── page-de5687dd15766d5f.js
+│   │   │   │   │   │   └── page-3ea3bed2bb3934f1.js
 │   │   │   │   │   ├── create/
-│   │   │   │   │   │   └── page-742192cf60c472dd.js
+│   │   │   │   │   │   └── page-89c631f929aa345a.js
 │   │   │   │   │   ├── today/
-│   │   │   │   │   │   └── page-07cd8e1d74414ca3.js
-│   │   │   │   │   └── layout-86350dc15b6e3574.js
+│   │   │   │   │   │   └── page-91797ae2180bdaf3.js
+│   │   │   │   │   └── layout-504ca187bad783a3.js
 │   │   │   │   ├── auth/
 │   │   │   │   │   ├── callback/
-│   │   │   │   │   │   └── route-fe90f8652d69012f.js
+│   │   │   │   │   │   └── route-50a8b115d5370f79.js
+│   │   │   │   │   ├── confirm/
+│   │   │   │   │   │   └── route-449320aee208fae5.js
 │   │   │   │   │   └── signout/
-│   │   │   │   │       └── route-8d866943f4ec1a12.js
+│   │   │   │   │       └── route-5ad5999c81b79712.js
 │   │   │   │   ├── contact/
-│   │   │   │   │   └── page-67cfc2c8e94b419c.js
+│   │   │   │   │   └── page-566696314488fa3e.js
 │   │   │   │   ├── forgot-password/
-│   │   │   │   │   └── page-80b088f003393794.js
+│   │   │   │   │   └── page-3e9d3c100f2a0436.js
 │   │   │   │   ├── free-tool/
-│   │   │   │   │   └── page-98aadbadb7b6a681.js
+│   │   │   │   │   └── page-cc0055e5f29580c3.js
 │   │   │   │   ├── how-it-works/
-│   │   │   │   │   └── page-a702aa02f3b75094.js
+│   │   │   │   │   └── page-d6eaef968bd611d1.js
 │   │   │   │   ├── login/
-│   │   │   │   │   └── page-5569ed4532586e67.js
+│   │   │   │   │   └── page-020ba641b37a1e32.js
 │   │   │   │   ├── onboarding/
-│   │   │   │   │   └── page-f3221f043787be89.js
+│   │   │   │   │   └── page-aa303fb820ce987f.js
 │   │   │   │   ├── pricing/
-│   │   │   │   │   └── page-927d8297b227ae5a.js
+│   │   │   │   │   └── page-e346e66c2cc61480.js
 │   │   │   │   ├── privacy/
-│   │   │   │   │   └── page-18215f374965367b.js
+│   │   │   │   │   └── page-578030fd5c448b55.js
 │   │   │   │   ├── reset-password/
-│   │   │   │   │   └── page-ddb5184dbc7e8e1c.js
+│   │   │   │   │   └── page-220369a6d6e3b9f3.js
 │   │   │   │   ├── setup/
-│   │   │   │   │   └── page-37a6300533c4755d.js
+│   │   │   │   │   └── page-bdddfdfaeb649226.js
 │   │   │   │   ├── signup/
-│   │   │   │   │   └── page-3f77a2e9831ed808.js
+│   │   │   │   │   └── page-af1967d5147e59cc.js
 │   │   │   │   ├── terms/
-│   │   │   │   │   └── page-f2a296d793b43067.js
-│   │   │   │   ├── error-f78a5cd0018a5020.js
-│   │   │   │   ├── layout-84ab14b2f5d29800.js
-│   │   │   │   ├── not-found-6fe7f5472c4d6883.js
-│   │   │   │   └── page-221bf5c03613a501.js
+│   │   │   │   │   └── page-aa9f4faa51249db9.js
+│   │   │   │   ├── verify-email/
+│   │   │   │   │   └── page-bb9a103ebd3e2a6b.js
+│   │   │   │   ├── error-bf93abefd13acab1.js
+│   │   │   │   ├── layout-6ad913af0f78dcc7.js
+│   │   │   │   ├── not-found-2c6ace1bdfe11f19.js
+│   │   │   │   └── page-265d598e60ef987b.js
 │   │   │   ├── pages/
-│   │   │   │   ├── _app-42ef6f0c9ee99f63.js
-│   │   │   │   └── _error-f44bc0d037a5fda4.js
-│   │   │   ├── 110-cb728858550d1dab.js
-│   │   │   ├── 173-42f3d9eb27f28700.js
-│   │   │   ├── 203.2b4c1ee4fbe3a7cf.js
-│   │   │   ├── 218.57a830a2c55ba802.js
-│   │   │   ├── 22-36873a87e2b81980.js
-│   │   │   ├── 302-c005e0b861178868.js
-│   │   │   ├── 34-b23ccd1b46a63353.js
-│   │   │   ├── 44530001-17190279c8cf4471.js
-│   │   │   ├── 4bd1b696-f6c0ec25263d771a.js
-│   │   │   ├── 517-951e97e454dd266a.js
-│   │   │   ├── 563-cc7015f219a0bf87.js
-│   │   │   ├── 60-fdba2e80031369ac.js
-│   │   │   ├── 873-c917dc78e81fc18f.js
-│   │   │   ├── 953-05f9fae1655f9121.js
-│   │   │   ├── framework-e61e26ae43d6f563.js
-│   │   │   ├── main-26e2bd14119b4860.js
-│   │   │   ├── main-app-08e1e70dd636f5c2.js
+│   │   │   │   ├── _app-0c238c2f06f7f88f.js
+│   │   │   │   └── _error-5cfb257555e5fc2f.js
+│   │   │   ├── 1487-771a8f761a48e48e.js
+│   │   │   ├── 1517-9995401c045d1865.js
+│   │   │   ├── 44530001-9859e7e976351652.js
+│   │   │   ├── 4563-6db94a5f1a72f048.js
+│   │   │   ├── 4953-6934aae531a4c85a.js
+│   │   │   ├── 4bd1b696-a565e1bd5a2acb69.js
+│   │   │   ├── 5203.f4b97ab553880bca.js
+│   │   │   ├── 5534-e6eb8210a513a7b7.js
+│   │   │   ├── 6218.ba8ff6176d4fd6f6.js
+│   │   │   ├── 7182-404d7072b14c8c46.js
+│   │   │   ├── 7519-b1912e14a37264e2.js
+│   │   │   ├── 755-1af62cc7eca786d1.js
+│   │   │   ├── 814-95c5c932e8779ca4.js
+│   │   │   ├── 8173-4bda8112a6f83bf1.js
+│   │   │   ├── 9-d8bae48ae924260e.js
+│   │   │   ├── framework-a08059d19b5ea91c.js
+│   │   │   ├── main-045aa72fad6b40db.js
+│   │   │   ├── main-app-232bf1eb82a34458.js
 │   │   │   ├── polyfills-42372ed130431b0a.js
-│   │   │   └── webpack-61d2457134ee8b8f.js
+│   │   │   └── webpack-7d3281cf3928a567.js
 │   │   ├── css/
-│   │   │   └── 236076c5d05d4cd6.css
-│   │   └── HMEHYV5_D3Mzbea49Rkvq/
+│   │   │   └── 10062036efbe5723.css
+│   │   └── EOtttFJQ39fMlNnzM7CTf/
 │   │       ├── _buildManifest.js
 │   │       └── _ssgManifest.js
 │   ├── types/
@@ -362,6 +372,8 @@ streetcraft/
 │   │   │   │       └── page.ts
 │   │   │   ├── auth/
 │   │   │   │   ├── callback/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── confirm/
 │   │   │   │   │   └── route.ts
 │   │   │   │   └── signout/
 │   │   │   │       └── route.ts
@@ -387,6 +399,8 @@ streetcraft/
 │   │   │   │   └── page.ts
 │   │   │   ├── terms/
 │   │   │   │   └── page.ts
+│   │   │   ├── verify-email/
+│   │   │   │   └── page.ts
 │   │   │   ├── layout.ts
 │   │   │   └── page.ts
 │   │   ├── cache-life.d.ts
@@ -408,10 +422,6 @@ streetcraft/
 ├── .vscode/
 │   └── settings.json
 ├── docs/
-│   ├── arch-001-streetcraft-v1-refactor-plan.md
-│   ├── streetcraft-ai-content-studio-plan.md
-│   ├── streetcraft-growth-engine-v1-plan.md
-│   └── streetcraft-local-growth-engine-plan.md
 ├── public/
 │   ├── ChatGPT Image Aug 17, 2026, 03_19_39 AM.png
 │   ├── google_business_proof.txt
@@ -426,7 +436,9 @@ streetcraft/
 │   └── signup_full.jpg
 ├── scripts/
 │   ├── generate-project-tree.js
-│   └── test-mpa-parity-audit.ts
+│   ├── test-legacy-spa-audit.ts
+│   ├── test-mpa-parity-audit.ts
+│   └── test-today-read-contract.ts
 ├── src/
 │   ├── app/
 │   │   ├── app/
@@ -458,6 +470,8 @@ streetcraft/
 │   │   │   └── layout.tsx
 │   │   ├── auth/
 │   │   │   ├── callback/
+│   │   │   │   └── route.ts
+│   │   │   ├── confirm/
 │   │   │   │   └── route.ts
 │   │   │   └── signout/
 │   │   │       └── route.ts
@@ -497,6 +511,9 @@ streetcraft/
 │   │   │   └── SignupView.tsx
 │   │   ├── terms/
 │   │   │   └── page.tsx
+│   │   ├── verify-email/
+│   │   │   ├── page.tsx
+│   │   │   └── VerifyEmailView.tsx
 │   │   ├── error.tsx
 │   │   ├── LandingView.tsx
 │   │   ├── layout.tsx
@@ -508,14 +525,14 @@ streetcraft/
 │   │   ├── CampaignStatusBadge.tsx
 │   │   ├── ChannelCard.tsx
 │   │   ├── CustomSelect.tsx
-│   │   ├── Footer.tsx
+│   │   ├── ErrorStateCard.tsx
 │   │   ├── Logo.tsx
-│   │   ├── Navigation.tsx
-│   │   ├── ProtectedRoute.tsx
+│   │   ├── Toaster.tsx
 │   │   ├── UpgradeModal.tsx
 │   │   └── UsageMeter.tsx
 │   ├── config/
 │   │   ├── campaignTypes.ts
+│   │   ├── categories.ts
 │   │   ├── channels.ts
 │   │   ├── plans.ts
 │   │   └── validationRules.ts
@@ -535,6 +552,21 @@ streetcraft/
 │   │   ├── useCampaignRealtime.ts
 │   │   └── useUsage.ts
 │   ├── lib/
+│   │   ├── server/
+│   │   │   ├── auth/
+│   │   │   │   └── requireAuthenticatedClaims.ts
+│   │   │   ├── business/
+│   │   │   │   ├── getAccessibleBusinesses.ts
+│   │   │   │   ├── getBusinessProfile.ts
+│   │   │   │   └── resolveAuthorizedBusiness.ts
+│   │   │   ├── campaigns/
+│   │   │   │   └── getRecentCampaigns.ts
+│   │   │   ├── opportunities/
+│   │   │   │   └── getFestivalMoments.ts
+│   │   │   ├── usage/
+│   │   │   │   └── getCurrentUsagePeriod.ts
+│   │   │   └── workspace/
+│   │   │       └── getWorkspaceTodayData.ts
 │   │   ├── supabase/
 │   │   │   ├── auth.ts
 │   │   │   ├── middleware.ts
@@ -568,31 +600,6 @@ streetcraft/
 │   │   └── database.types.ts
 │   ├── utils/
 │   │   └── exportUtils.ts
-│   ├── views/
-│   │   ├── app/
-│   │   │   ├── AccountSettingsPage.tsx
-│   │   │   ├── BillingSettingsPage.tsx
-│   │   │   ├── BusinessPage.tsx
-│   │   │   ├── CampaignDetailPage.tsx
-│   │   │   ├── CampaignVaultPage.tsx
-│   │   │   ├── CreateCampaignPage.tsx
-│   │   │   └── DashboardPage.tsx
-│   │   ├── ContactPage.tsx
-│   │   ├── ErrorPage.tsx
-│   │   ├── ForgotPasswordPage.tsx
-│   │   ├── FreeToolPage.tsx
-│   │   ├── HowItWorksPage.tsx
-│   │   ├── LandingPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── NotFoundPage.tsx
-│   │   ├── OnboardingPage.tsx
-│   │   ├── PricingPage.tsx
-│   │   ├── PrivacyPage.tsx
-│   │   ├── ResetPasswordPage.tsx
-│   │   ├── SignupPage.tsx
-│   │   ├── TermsPage.tsx
-│   │   └── UnauthorizedPage.tsx
-│   ├── main.tsx
 │   └── styles.css
 ├── supabase/
 │   ├── migrations/
@@ -601,7 +608,6 @@ streetcraft/
 ├── .env
 ├── .env.example
 ├── .gitignore
-├── index.html
 ├── LICENSE
 ├── middleware.ts
 ├── next-env.d.ts
@@ -617,12 +623,11 @@ streetcraft/
 
 ## Directory Overview
 
-- `src/components/` - Reusable UI components (CustomSelect, CalendarPicker, FormatCard, Navigation)
-- `src/pages/` - Public marketing and acquisition routes (Landing, FreeTool, Pricing, HowItWorks)
-- `src/pages/app/` - Authenticated SaaS dashboard, Campaign Composer, Preferences, and Vault
-- `src/lib/` - Supabase client, campaign compilation engine, and entitlements
-- `src/config/` - Immutable plan configurations, platform schemas, and constants
-- `src/types/` - TypeScript database and campaign interface definitions
+- `src/app/` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
+- `src/components/` - Shared UI components (CustomSelect, CalendarPicker, UpgradeModal, UsageMeter)
+- `src/lib/` - Supabase client, API abstractions, error handling, telemetry, and entitlements
+- `src/config/` - Immutable plan configurations, channel definitions, and category schemas
+- `src/types/` - TypeScript database, campaign, and domain interface definitions
 - `supabase/` - SQL migrations and reference data seeds
 - `docs/` - Architectural specifications, strategy plans, and audit manifests
 - `scripts/` - Maintenance, migration, and automation utilities
