@@ -4,7 +4,14 @@ import { useCampaign } from '../../hooks/useCampaign';
 import { CampaignStatus } from '../../types/campaign';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../components/ChannelCard';
-import { ArrowLeft, Check, Edit3, Calendar, Target, Users, Clock, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Check, Edit3, Calendar, Target, Users, Clock, ShieldCheck, Download, Printer, FileText, Code } from 'lucide-react';
+import {
+  downloadFullCampaignPackTxt,
+  downloadFullCampaignPackMarkdown,
+  downloadFullCampaignPackJson,
+  triggerPrintPoster,
+} from '../../utils/exportUtils';
+import { useBusiness } from '../../hooks/useBusiness';
 
 interface CampaignDetailPageProps {
   businessId: string;
@@ -14,6 +21,7 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { campaigns, loading, updateStatus } = useCampaign(businessId);
+  const { profile } = useBusiness(businessId);
 
   const item = campaigns.find((c) => c.campaign.id === id);
 
@@ -155,6 +163,68 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Campaign Export & Download Action Bar */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '24px',
+          padding: '16px 20px',
+          background: 'var(--color-surface)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Download size={16} color="var(--color-primary)" />
+          <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink)' }}>
+            Export Campaign Pack:
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: '12.5px', padding: '6px 14px' }}
+            onClick={() => downloadFullCampaignPackTxt(item, profile?.name)}
+            title="Download full campaign copy as plain text"
+          >
+            <FileText size={13} /> Text (.txt)
+          </button>
+
+          <button
+            className="btn-secondary"
+            style={{ fontSize: '12.5px', padding: '6px 14px' }}
+            onClick={() => downloadFullCampaignPackMarkdown(item, profile?.name)}
+            title="Download full campaign copy as markdown"
+          >
+            <FileText size={13} /> Markdown (.md)
+          </button>
+
+          <button
+            className="btn-secondary"
+            style={{ fontSize: '12.5px', padding: '6px 14px' }}
+            onClick={() => downloadFullCampaignPackJson(item)}
+            title="Download raw campaign structure as JSON"
+          >
+            <Code size={13} /> JSON (.json)
+          </button>
+
+          {outputs.poster && (
+            <button
+              className="btn-primary"
+              style={{ fontSize: '12.5px', padding: '6px 14px' }}
+              onClick={triggerPrintPoster}
+              title="Print in-store counter poster directly"
+            >
+              <Printer size={13} /> Print Counter Card
+            </button>
+          )}
         </div>
       </div>
 

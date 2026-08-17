@@ -538,81 +538,64 @@ class RealtimeApiClient {
   ): Promise<{ campaignId: string; claimToken: string; pack: FullCampaignPack }> {
     const claimToken = crypto.randomUUID();
     const { campaignData, outputs, validationStatus } = generateCampaignPack(profile, input);
+    const campaignId = 'cmp_anon_' + Date.now();
+    const now = new Date().toISOString();
+
+    const pack: FullCampaignPack = {
+      campaign: {
+        id: campaignId,
+        businessId: null,
+        claimToken,
+        type: input.type,
+        objective: input.objective,
+        audience: input.audience || '',
+        offer: input.offer,
+        schedule: input.schedule,
+        status: 'ready',
+        performanceNotes: '',
+        createdAt: now,
+        updatedAt: now,
+      },
+      outputs,
+      validationStatus,
+    };
 
     if (isSupabaseConfigured) {
-      const { data: campaignRow, error: cError } = await (supabase.from('campaigns') as any)
-        .insert({
-          business_id: null,
-          claim_token: claimToken,
-          type: input.type,
-          objective: input.objective,
-          audience: input.audience || '',
-          offer: input.offer,
-          schedule: input.schedule,
-          status: 'ready',
-        })
-        .select('id')
-        .single();
-
-      if (cError) throw cError;
-
-      const campaignId = campaignRow.id;
-
-      await (supabase.from('campaign_outputs') as any).insert([
-        { campaign_id: campaignId, channel: 'GOOGLE_BUSINESS', status: 'ready', content: outputs.googleBusiness, validation_status: validationStatus },
-        { campaign_id: campaignId, channel: 'INSTAGRAM', status: 'ready', content: outputs.instagram, validation_status: validationStatus },
-        { campaign_id: campaignId, channel: 'WHATSAPP', status: 'ready', content: outputs.whatsapp, validation_status: validationStatus },
-        { campaign_id: campaignId, channel: 'IN_STORE_POSTER', status: 'ready', content: outputs.poster || {}, validation_status: validationStatus },
-      ]);
-
-      const now = new Date().toISOString();
-      return {
-        campaignId,
-        claimToken,
-        pack: {
-          campaign: {
-            id: campaignId,
-            businessId: null,
-            claimToken,
+      try {
+        const { data: campaignRow, error: cError } = await (supabase.from('campaigns') as any)
+          .insert({
+            business_id: null,
+            claim_token: claimToken,
             type: input.type,
             objective: input.objective,
             audience: input.audience || '',
             offer: input.offer,
             schedule: input.schedule,
             status: 'ready',
-            performanceNotes: '',
-            createdAt: now,
-            updatedAt: now,
-          },
-          outputs,
-          validationStatus,
-        },
-      };
+          })
+          .select('id')
+          .single();
+
+        if (!cError && campaignRow?.id) {
+          const dbCampaignId = campaignRow.id;
+          pack.campaign.id = dbCampaignId;
+          await (supabase.from('campaign_outputs') as any).insert([
+            { campaign_id: dbCampaignId, channel: 'GOOGLE_BUSINESS', status: 'ready', content: outputs.googleBusiness, validation_status: validationStatus },
+            { campaign_id: dbCampaignId, channel: 'INSTAGRAM', status: 'ready', content: outputs.instagram, validation_status: validationStatus },
+            { campaign_id: dbCampaignId, channel: 'WHATSAPP', status: 'ready', content: outputs.whatsapp, validation_status: validationStatus },
+            { campaign_id: dbCampaignId, channel: 'IN_STORE_POSTER', status: 'ready', content: outputs.poster || {}, validation_status: validationStatus },
+          ]);
+          return { campaignId: dbCampaignId, claimToken, pack };
+        }
+      } catch {
+        // Graceful fallback to client-side pack
+      }
     }
 
-    const campaignId = 'cmp_anon_' + Date.now();
-    const now = new Date().toISOString();
     return {
       campaignId,
       claimToken,
-      pack: {
-        campaign: {
-          id: campaignId,
-          businessId: null,
-          claimToken,
-          type: input.type,
-          objective: input.objective,
-          audience: input.audience || '',
-          offer: input.offer,
-          schedule: input.schedule,
-          status: 'ready',
-          performanceNotes: '',
-          createdAt: now,
-          updatedAt: now,
-        },
-        outputs,
-        validationStatus,
-      },
+      pack,
     };
   }
 

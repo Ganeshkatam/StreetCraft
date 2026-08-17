@@ -13,6 +13,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { generateCampaignPack } from '../engine/campaignEngine';
+
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -78,7 +80,7 @@ export const LandingPage: React.FC = () => {
   }, []);
 
   // 2. Demo Generation Execution
-  const executeDemoGeneration = async (
+  const executeDemoGeneration = (
     customType?: CampaignType,
     customOffer?: string,
     customStore?: string,
@@ -111,28 +113,46 @@ export const LandingPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      const result = await api.generateAnonymousCampaign(
-        {
+      const input = {
+        type: targetType,
+        objective: 'MORE_WALK_INS' as const,
+        audience: 'Neighborhood residents, nearby office workers, and visitors',
+        offer: {
+          title: targetOffer,
+          description: targetOffer,
+          value: 'Special Promotional Perk',
+          terms: 'Flash message at counter to redeem.',
+        },
+        schedule: {
+          startsAt: new Date().toISOString(),
+          endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
+          timingLabel,
+        },
+      };
+
+      const packResult = generateCampaignPack(liveProfile, input);
+      const campaignId = 'cmp_demo_' + Date.now();
+      const demoFullPack: FullCampaignPack = {
+        campaign: {
+          id: campaignId,
+          businessId: null,
+          claimToken: 'demo_claim_token',
           type: targetType,
           objective: 'MORE_WALK_INS',
           audience: 'Neighborhood residents, nearby office workers, and visitors',
-          offer: {
-            title: targetOffer,
-            description: targetOffer,
-            value: 'Special Promotional Perk',
-            terms: 'Flash message at counter to redeem.',
-          },
-          schedule: {
-            startsAt: new Date().toISOString(),
-            endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
-            timingLabel,
-          },
+          offer: input.offer,
+          schedule: input.schedule,
+          status: 'ready',
+          performanceNotes: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
-        liveProfile
-      );
+        outputs: packResult.outputs,
+        validationStatus: packResult.validationStatus,
+      };
 
-      setLivePack(result.pack);
-      setClaimToken(result.claimToken);
+      setLivePack(demoFullPack);
+      setClaimToken('demo_token_' + Date.now());
     } finally {
       setIsGenerating(false);
     }
@@ -202,9 +222,14 @@ export const LandingPage: React.FC = () => {
 
           {/* Left: Outcome Framing */}
           <div>
-            <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '16px', fontWeight: 600 }}>
-              STREETCRAFT &bull; GROWTH ENGINE FOR PHYSICAL BUSINESSES
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-subtle)', flexShrink: 0, background: '#FAF8F5' }}>
+                <img src="/illustration_storefront.jpg" alt="Storefront sketch" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>
+                STREETCRAFT &bull; GROWTH ENGINE FOR PHYSICAL BUSINESSES
+              </span>
+            </div>
 
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '54px', color: 'var(--color-ink)', lineHeight: '1.12', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
               Turn quiet afternoons into packed storefront tables.
@@ -375,7 +400,10 @@ export const LandingPage: React.FC = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
 
-          <div className="card" style={{ padding: '32px 30px', background: 'var(--color-surface)' }}>
+          <div className="card" style={{ padding: '28px 26px', background: 'var(--color-surface)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '140px', borderRadius: 'var(--radius-xs)', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--color-border)', background: '#FAF8F5' }}>
+              <img src="/illustration_storefront.jpg" alt="Storefront sketch" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '10px' }}>
               01 &mdash; TELL US ABOUT YOUR BUSINESS
             </span>
@@ -387,7 +415,10 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="card" style={{ padding: '32px 30px', background: 'var(--color-surface)' }}>
+          <div className="card" style={{ padding: '28px 26px', background: 'var(--color-surface)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '140px', borderRadius: 'var(--radius-xs)', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--color-border)', background: '#FAF8F5' }}>
+              <img src="/illustration_opportunity.jpg" alt="Opportunity sketch" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '10px' }}>
               02 &mdash; FIND THE OPPORTUNITY
             </span>
@@ -399,7 +430,10 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="card" style={{ padding: '32px 30px', background: 'var(--color-surface)' }}>
+          <div className="card" style={{ padding: '28px 26px', background: 'var(--color-surface)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '140px', borderRadius: 'var(--radius-xs)', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--color-border)', background: '#FAF8F5' }}>
+              <img src="/illustration_counter_card.jpg" alt="Counter card sketch" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
             <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 700, display: 'block', marginBottom: '10px' }}>
               03 &mdash; CREATE EVERYTHING AT ONCE
             </span>

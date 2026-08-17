@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChannelType, ChannelStatus } from '../types/campaign';
 import { CHANNELS } from '../config/channels';
 import { CampaignStatusBadge } from './CampaignStatusBadge';
-import { Copy, Check, Newspaper, Image, MessageSquare, Send, QrCode } from 'lucide-react';
+import { Copy, Check, Newspaper, Image, MessageSquare, Send, QrCode, Download, Printer, FileText, ChevronDown } from 'lucide-react';
+import { downloadChannelFile, triggerPrintPoster } from '../utils/exportUtils';
 
 interface ChannelCardProps {
   channel: ChannelType;
@@ -19,6 +20,22 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   const meta = CHANNELS[channel];
   const [copied, setCopied] = useState(false);
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    };
+    if (showDownloadMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDownloadMenu]);
 
   const getChannelIcon = () => {
     switch (channel) {
@@ -238,23 +255,87 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <CampaignStatusBadge status={status} size="sm" />
           {status === 'ready' && (
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button
-                className="btn-secondary"
-                style={{ fontSize: '11.5px', padding: '4px 10px' }}
-                onClick={() => {
-                  const blob = new Blob([getFullCopyText()], { type: 'text/plain;charset=utf-8' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${channel.toLowerCase()}_proof.txt`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                title="Download as text file"
-              >
-                Download
-              </button>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', position: 'relative' }}>
+              {channel === 'IN_STORE_POSTER' && (
+                <button
+                  className="btn-secondary"
+                  style={{ fontSize: '11.5px', padding: '4px 10px' }}
+                  onClick={triggerPrintPoster}
+                  title="Print counter card or save as PDF"
+                >
+                  <Printer size={12} /> Print
+                </button>
+              )}
+
+              <div className="dropdown-container" ref={downloadMenuRef}>
+                <button
+                  className="btn-secondary"
+                  style={{ fontSize: '11.5px', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                  title="Download options"
+                  aria-expanded={showDownloadMenu}
+                >
+                  <Download size={12} />
+                  <span>Download</span>
+                  <ChevronDown
+                    size={11}
+                    style={{
+                      opacity: 0.65,
+                      transform: showDownloadMenu ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.15s ease',
+                    }}
+                  />
+                </button>
+
+                {showDownloadMenu && (
+                  <div className="dropdown-menu">
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        downloadChannelFile(channel, content, 'txt');
+                        setShowDownloadMenu(false);
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={13} color="var(--color-primary)" />
+                        <span>Plain Text</span>
+                      </span>
+                      <span className="dropdown-item-badge">.txt</span>
+                    </button>
+
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        downloadChannelFile(channel, content, 'md');
+                        setShowDownloadMenu(false);
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={13} color="var(--color-accent)" />
+                        <span>Markdown</span>
+                      </span>
+                      <span className="dropdown-item-badge">.md</span>
+                    </button>
+
+                    {channel === 'IN_STORE_POSTER' && (
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          setShowDownloadMenu(false);
+                          triggerPrintPoster();
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Printer size={13} color="var(--color-ink)" />
+                          <span>Print / Save PDF</span>
+                        </span>
+                        <span className="dropdown-item-badge">Print</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 className="btn-secondary"
                 style={{ fontSize: '11.5px', padding: '4px 10px' }}

@@ -7,7 +7,13 @@ import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
 import { CalendarPicker } from '../../components/CalendarPicker';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Download, Printer, FileText, Code } from 'lucide-react';
+import {
+  downloadFullCampaignPackTxt,
+  downloadFullCampaignPackMarkdown,
+  downloadFullCampaignPackJson,
+  triggerPrintPoster,
+} from '../../utils/exportUtils';
 
 interface CreateCampaignPageProps {
   businessId: string;
@@ -405,9 +411,45 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 {generatedPack.campaign.offer.title || generatedPack.campaign.offer.description}
               </h3>
             </div>
-            <button className="btn-secondary" onClick={() => navigate('/app/campaigns')}>
-              Open Vault &rarr;
-            </button>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '12.5px', padding: '6px 12px' }}
+                onClick={() => downloadFullCampaignPackTxt(generatedPack, profile?.name)}
+                title="Download all proofs as text file"
+              >
+                <FileText size={13} /> Text (.txt)
+              </button>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '12.5px', padding: '6px 12px' }}
+                onClick={() => downloadFullCampaignPackMarkdown(generatedPack, profile?.name)}
+                title="Download all proofs as markdown"
+              >
+                <FileText size={13} /> Markdown (.md)
+              </button>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '12.5px', padding: '6px 12px' }}
+                onClick={() => downloadFullCampaignPackJson(generatedPack)}
+                title="Download JSON data"
+              >
+                <Code size={13} /> JSON (.json)
+              </button>
+              {generatedPack.outputs.poster && (
+                <button
+                  className="btn-secondary"
+                  style={{ fontSize: '12.5px', padding: '6px 12px' }}
+                  onClick={triggerPrintPoster}
+                  title="Print counter card or save as PDF"
+                >
+                  <Printer size={13} /> Print
+                </button>
+              )}
+              <button className="btn-primary" style={{ fontSize: '12.5px', padding: '6px 14px' }} onClick={() => navigate('/app/campaigns')}>
+                Open Vault &rarr;
+              </button>
+            </div>
           </div>
 
           <div className="proofs-grid-2x2">
