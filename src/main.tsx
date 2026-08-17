@@ -13,6 +13,7 @@ import { DynamicOpportunity } from './engine/briefing/opportunityEngine';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { UpgradeModal } from './components/UpgradeModal';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 import { LandingPage } from './pages/LandingPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
@@ -121,28 +122,34 @@ function AppLayout() {
             <Route
               path="/login"
               element={
-                <LoginPage
-                  claimToken={claimToken}
-                  onSuccess={() => setClaimToken(null)}
-                />
+                <ProtectedRoute anonymousOnly>
+                  <LoginPage
+                    claimToken={claimToken}
+                    onSuccess={() => setClaimToken(null)}
+                  />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/signup"
               element={
-                <SignupPage
-                  claimToken={claimToken}
-                  onSuccess={() => setClaimToken(null)}
-                />
+                <ProtectedRoute anonymousOnly>
+                  <SignupPage
+                    claimToken={claimToken}
+                    onSuccess={() => setClaimToken(null)}
+                  />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/setup"
               element={
-                <OnboardingPage
-                  claimToken={claimToken}
-                  onSuccess={() => setClaimToken(null)}
-                />
+                <ProtectedRoute requireAuth requireBusiness={false}>
+                  <OnboardingPage
+                    claimToken={claimToken}
+                    onSuccess={() => setClaimToken(null)}
+                  />
+                </ProtectedRoute>
               }
             />
             <Route
@@ -151,11 +158,19 @@ function AppLayout() {
             />
             <Route
               path="/forgot-password"
-              element={<ForgotPasswordPage />}
+              element={
+                <ProtectedRoute anonymousOnly>
+                  <ForgotPasswordPage />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/reset-password"
-              element={<ResetPasswordPage />}
+              element={
+                <ProtectedRoute anonymousOnly>
+                  <ResetPasswordPage />
+                </ProtectedRoute>
+              }
             />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="/not-found" element={<NotFoundPage />} />
@@ -236,11 +251,13 @@ function AppLayout() {
               <Route
                 path="/app/today"
                 element={
-                  <DashboardPage
-                    businessId={session.activeBusinessId}
-                    onLaunchPreset={handleLaunchOpportunity}
-                    onOpenUpgrade={() => setUpgradeModalOpen(true)}
-                  />
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <DashboardPage
+                      businessId={session.activeBusinessId}
+                      onLaunchPreset={handleLaunchOpportunity}
+                      onOpenUpgrade={() => setUpgradeModalOpen(true)}
+                    />
+                  </ProtectedRoute>
                 }
               />
               <Route
@@ -250,24 +267,38 @@ function AppLayout() {
               <Route
                 path="/app/create"
                 element={
-                  <CreateCampaignPage
-                    businessId={session.activeBusinessId}
-                    initialPreset={campaignPreset}
-                    onOpenUpgrade={() => setUpgradeModalOpen(true)}
-                  />
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <CreateCampaignPage
+                      businessId={session.activeBusinessId}
+                      initialPreset={campaignPreset}
+                      onOpenUpgrade={() => setUpgradeModalOpen(true)}
+                    />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/app/campaigns"
-                element={<CampaignVaultPage businessId={session.activeBusinessId} />}
+                element={
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <CampaignVaultPage businessId={session.activeBusinessId} />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/app/campaigns/:id"
-                element={<CampaignDetailPage businessId={session.activeBusinessId} />}
+                element={
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <CampaignDetailPage businessId={session.activeBusinessId} />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/app/business"
-                element={<BusinessPage businessId={session.activeBusinessId} />}
+                element={
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <BusinessPage businessId={session.activeBusinessId} />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/app/settings"
@@ -276,16 +307,22 @@ function AppLayout() {
               <Route
                 path="/app/settings/billing"
                 element={
-                  <BillingSettingsPage
-                    businessId={session.activeBusinessId}
-                    session={session}
-                    onOpenUpgrade={() => setUpgradeModalOpen(true)}
-                  />
+                  <ProtectedRoute requireAuth requireBusiness requireRole="admin">
+                    <BillingSettingsPage
+                      businessId={session.activeBusinessId}
+                      session={session}
+                      onOpenUpgrade={() => setUpgradeModalOpen(true)}
+                    />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/app/settings/account"
-                element={<AccountSettingsPage session={session} />}
+                element={
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <AccountSettingsPage session={session} />
+                  </ProtectedRoute>
+                }
               />
               <Route path="*" element={<Navigate to="/app/today" replace />} />
             </Routes>
