@@ -70,7 +70,7 @@ export const NotFoundPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-secondary" onClick={() => navigate(-1)}>
-            <ArrowLeft size={15} /> Go Back
+            Go Back
           </button>
           <button className="btn-primary" onClick={() => navigate('/app/today')}>
             <LayoutDashboard size={15} /> Today&apos;s Briefing

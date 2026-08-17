@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { UserSession } from '../types/business';
 import { UsageSummary } from '../types/billing';
 import { Logo } from './Logo';
-import { ArrowRight, LogOut, ChevronDown, Plus, Store } from 'lucide-react';
+import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ShieldCheck } from 'lucide-react';
 
 interface NavigationProps {
   session: UserSession;
@@ -28,18 +28,9 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
   const [accountLimit, setAccountLimit] = useState(2);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSection = (sectionId: string) => {
-    if (location.pathname !== '/') {
-      navigate(`/#${sectionId}`);
-    } else {
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (session.isAuthenticated) {
@@ -53,12 +44,16 @@ export const Navigation: React.FC<NavigationProps> = ({
       if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) {
         setShowSwitcher(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const activeBizName = businesses.find(b => b.id === session.activeBusinessId)?.name || 'Loading...';
+  const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();
 
   return (
     <header className="main-header">
@@ -179,6 +174,18 @@ export const Navigation: React.FC<NavigationProps> = ({
               >
                 Business
               </button>
+              <button
+                className={`nav-item ${currentPath === '/app/billing' || currentPath === '/app/settings/billing' ? 'active' : ''}`}
+                onClick={() => navigate('/app/billing')}
+              >
+                Billing
+              </button>
+              <button
+                className={`nav-item ${currentPath === '/app/account' || currentPath === '/app/settings/account' ? 'active' : ''}`}
+                onClick={() => navigate('/app/account')}
+              >
+                Account
+              </button>
             </>
           )}
         </nav>
@@ -194,12 +201,80 @@ export const Navigation: React.FC<NavigationProps> = ({
 
               {!isAppView ? (
                 <button className="btn-primary" onClick={() => navigate('/app/today')}>
-                  Open Workspace <ArrowRight size={13} />
+                  Open Workspace
                 </button>
               ) : (
-                <button className="btn-ghost" onClick={onSignOut}>
-                  <LogOut size={13} /> Sign out
-                </button>
+                <div className="user-menu-container" ref={userMenuRef}>
+                  <button
+                    className="user-badge-btn"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    title="Operator Account Menu"
+                  >
+                    <div className="user-avatar">{userInitial}</div>
+                    <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {session.name || 'Account'}
+                    </span>
+                    <ChevronDown size={13} color="var(--color-ink-muted)" />
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="user-dropdown-menu">
+                      <div className="user-dropdown-header">
+                        <div className="user-dropdown-name">{session.name || 'Store Operator'}</div>
+                        <div className="user-dropdown-email">{session.email}</div>
+                        <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', fontWeight: 600 }}>
+                          <ShieldCheck size={12} /> Verified Operator
+                        </div>
+                      </div>
+
+                      <button
+                        className="user-dropdown-item"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/app/account');
+                        }}
+                      >
+                        <User size={14} color="var(--color-primary)" />
+                        <span>Account Settings</span>
+                      </button>
+
+                      <button
+                        className="user-dropdown-item"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/app/business');
+                        }}
+                      >
+                        <Store size={14} color="var(--color-ink-muted)" />
+                        <span>Store Preferences</span>
+                      </button>
+
+                      <button
+                        className="user-dropdown-item"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/app/billing');
+                        }}
+                      >
+                        <CreditCard size={14} color="var(--color-ink-muted)" />
+                        <span>Billing &amp; Subscription</span>
+                      </button>
+
+                      <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+
+                      <button
+                        className="user-dropdown-item danger"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          onSignOut();
+                        }}
+                      >
+                        <LogOut size={14} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </>
           ) : (
@@ -208,7 +283,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 Sign in
               </button>
               <button className="btn-primary" onClick={() => navigate('/free-tool')}>
-                Try StreetCraft &rarr;
+                Try StreetCraft
               </button>
             </>
           )}

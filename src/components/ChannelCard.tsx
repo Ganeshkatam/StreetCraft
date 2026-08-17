@@ -3,6 +3,7 @@ import { ChannelType, ChannelStatus } from '../types/campaign';
 import { CHANNELS } from '../config/channels';
 import { CampaignStatusBadge } from './CampaignStatusBadge';
 import { Copy, Check, Newspaper, Image, MessageSquare, Send, QrCode, Download, Printer, FileText, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 import { downloadChannelFile, triggerPrintPoster } from '../utils/exportUtils';
 
 interface ChannelCardProps {
@@ -53,12 +54,14 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleCopyTag = (tag: string) => {
     navigator.clipboard.writeText(tag);
     setCopiedTag(tag);
+    toast.success(`Copied "${tag}"`);
     setTimeout(() => setCopiedTag(null), 1500);
   };
 
@@ -110,7 +113,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
                 style={{ padding: '6px 12px', fontSize: '12px' }}
                 onClick={() => handleCopy(`${headline}\n\n${body}\n\nAction: ${ctaType}`)}
               >
-                {ctaType} &rarr;
+                {ctaType}
               </button>
             </div>
           </div>

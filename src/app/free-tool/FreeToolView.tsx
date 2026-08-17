@@ -392,7 +392,7 @@ export function FreeToolView() {
                   style={{ fontSize: '13.5px', padding: '8px 18px' }}
                   onClick={() => router.push(`/signup?claim=${claimToken}`)}
                 >
-                  Save to Workspace &rarr;
+                  Save to Workspace
                 </button>
               </div>
             )}

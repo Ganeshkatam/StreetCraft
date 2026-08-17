@@ -4,7 +4,8 @@ import { useCampaign } from '../../hooks/useCampaign';
 import { CampaignStatus } from '../../types/campaign';
 import { CampaignStatusBadge } from '../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../components/ChannelCard';
-import { ChevronDown, ChevronUp, Edit3, Plus } from 'lucide-react';
+import { Edit3, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface CampaignVaultPageProps {
   businessId: string;
@@ -24,8 +25,13 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
   });
 
   const handleSaveNotes = async (campaignId: string, currentStatus: CampaignStatus) => {
-    await updateStatus(campaignId, currentStatus, tempNotes);
-    setEditingNotesId(null);
+    try {
+      await updateStatus(campaignId, currentStatus, tempNotes);
+      toast.success('Notes saved successfully.');
+      setEditingNotesId(null);
+    } catch {
+      toast.error('Failed to save notes.');
+    }
   };
 
   return (
@@ -81,7 +87,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
               : `No campaigns with status ${filter.toLowerCase()} found.`}
           </p>
           <button className="btn-primary" onClick={() => navigate('/app/create')}>
-            Create First Campaign &rarr;
+            Create First Campaign
           </button>
         </div>
       ) : (
@@ -114,7 +120,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                       style={{ fontSize: '12px', padding: '5px 12px' }}
                       onClick={() => navigate(`/app/campaigns/${item.campaign.id}`)}
                     >
-                      Open &rarr;
+                      Open
                     </button>
 
                     <CampaignStatusBadge status={item.campaign.status} />

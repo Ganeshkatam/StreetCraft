@@ -297,6 +297,7 @@ class RealtimeApiClient {
     if (error) throw error;
     if (!data.user) throw new Error('Signup failed: user not created.');
 
+    // User profile creation is strictly gated on email confirmation in database triggers
     return this.getSession();
   }
 
@@ -326,10 +327,23 @@ class RealtimeApiClient {
     return this.getSession();
   }
 
+  public async resendConfirmationEmail(email: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
+      });
+      if (error) throw error;
+    }
+  }
+
   public async resetPassword(email: string): Promise<void> {
     if (isSupabaseConfigured) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
     }
@@ -396,11 +410,55 @@ class RealtimeApiClient {
   }
 
   public async getFestivalCalendar() {
-    if (!isSupabaseConfigured) return [];
-    const { data } = await (supabase.from('festival_calendar') as any)
+    if (!isSupabaseConfigured) {
+      return this._getDefaultFestivalCalendar();
+    }
+    const { data, error } = await (supabase.from('festival_calendar') as any)
       .select('*')
       .order('starts_at', { ascending: true });
-    return data || [];
+    if (error || !data || data.length === 0) {
+      return this._getDefaultFestivalCalendar();
+    }
+    return data;
+  }
+
+  private _getDefaultFestivalCalendar() {
+    return [
+      { id: 'fest_newyear', name: 'New Year Kickoff & Fresh Start', region: 'National', starts_at: '2026-01-01', ends_at: '2026-01-04', marketing_relevance: 'Healthy resolutions, fresh smoothies & wholesome breakfast bowls', suggested_offer: 'New Year detox combos & 15% fresh start breakfast offer' },
+      { id: 'fest_harvest', name: 'Pongal, Makar Sankranti & Lohri', region: 'National / Regional', starts_at: '2026-01-13', ends_at: '2026-01-16', marketing_relevance: 'Harvest celebration feasts, traditional sweets & warm winter treats', suggested_offer: 'Special festive harvest thalis & warm jaggery dessert boxes' },
+      { id: 'fest_republic', name: 'Republic Day Long Weekend', region: 'National', starts_at: '2026-01-24', ends_at: '2026-01-27', marketing_relevance: 'National holiday long weekend family brunch & walk-ins', suggested_offer: 'Tricolor specialty desserts & long-weekend breakfast combos' },
+      { id: 'fest_valentines', name: "Valentine's Week & Couples Dining", region: 'National', starts_at: '2026-02-07', ends_at: '2026-02-15', marketing_relevance: 'Romantic dining, dessert duos & artisanal gift hampers', suggested_offer: '2-course couple dinner pairings & handcrafted chocolate boxes' },
+      { id: 'fest_shivratri', name: 'Maha Shivratri Fasting Specials', region: 'National', starts_at: '2026-02-24', ends_at: '2026-02-26', marketing_relevance: 'Wholesome fasting menus, fruit bowls & sattvic delicacies', suggested_offer: 'Special fasting thali & cold pressed beverage pairing' },
+      { id: 'fest_holi', name: 'Holi Festive Weekend & Gujiya Carnival', region: 'National', starts_at: '2026-03-13', ends_at: '2026-03-16', marketing_relevance: 'Organic thandai specials, colorful sweets & family celebrations', suggested_offer: 'Artisanal thandai pitchers & curated Holi gujiya gift boxes' },
+      { id: 'fest_ugadi', name: 'Ugadi & Gudi Padwa (New Year)', region: 'South / Maharashtra', starts_at: '2026-03-19', ends_at: '2026-03-22', marketing_relevance: 'Traditional new year feast platters, mango specialties & sweets', suggested_offer: 'Regional new year festive platter & family sweet box' },
+      { id: 'fest_eid_fitr', name: 'Eid-ul-Fitr Feasts', region: 'National', starts_at: '2026-03-29', ends_at: '2026-04-01', marketing_relevance: 'Festive feasting, biryani feasts & celebratory dessert drops', suggested_offer: 'Grand Eid celebration platters & complimentary sheer khurma' },
+      { id: 'fest_easter', name: 'Easter & Spring Bakes Weekend', region: 'National', starts_at: '2026-04-03', ends_at: '2026-04-06', marketing_relevance: 'Hot cross buns, carrot cakes & spring brunch menus', suggested_offer: 'Easter egg dessert basket & family brunch booking discount' },
+      { id: 'fest_baisakhi', name: 'Baisakhi, Vishu & Poila Boishakh', region: 'North / South / East', starts_at: '2026-04-13', ends_at: '2026-04-16', marketing_relevance: 'Regional harvest celebrations & traditional culinary specials', suggested_offer: 'Festive thali combo & celebration sweet box' },
+      { id: 'fest_mothers_day', name: "Mother's Day High Tea & Dining", region: 'National', starts_at: '2026-05-08', ends_at: '2026-05-11', marketing_relevance: "Mother's Day celebratory brunch, tea sets & salon packages", suggested_offer: 'Complimentary dessert for moms & family high-tea reservation packages' },
+      { id: 'fest_summer_mango', name: 'Summer Mango Festival', region: 'National', starts_at: '2026-05-15', ends_at: '2026-05-31', marketing_relevance: 'Peak Alphonso pastry specials, mango smoothies & fruit coolers', suggested_offer: 'Fresh mango dessert bowl & buy-2-get-1 mango coolers' },
+      { id: 'fest_fathers_day', name: "Father's Day Feast & Brew Specials", region: 'National', starts_at: '2026-06-19', ends_at: '2026-06-22', marketing_relevance: "Father's Day hearty grills, artisanal coffee flights & meals", suggested_offer: 'Father-and-child brunch discount & specialty brew tastings' },
+      { id: 'fest_yoga_day', name: 'International Yoga & Wellness Week', region: 'National', starts_at: '2026-06-19', ends_at: '2026-06-25', marketing_relevance: 'Detox juices, protein bowls & wellness studio promotions', suggested_offer: 'Green smoothie boost & healthy morning breakfast combos' },
+      { id: 'fest_monsoon', name: 'Monsoon Kickoff & Chai Pakoda Window', region: 'National', starts_at: '2026-06-25', ends_at: '2026-07-10', marketing_relevance: 'Rainy day comfort food, piping masala chai & crispy fritters', suggested_offer: 'Monsoon chai-pakoda duo & rainy afternoon discount' },
+      { id: 'fest_chocolate_day', name: 'World Chocolate Day Festival', region: 'National', starts_at: '2026-07-06', ends_at: '2026-07-09', marketing_relevance: 'Decadent single-origin desserts, truffle boxes & mocha pairings', suggested_offer: 'Buy-1-get-1 dark chocolate pastry & artisan hot chocolate flight' },
+      { id: 'fest_guru_purnima', name: 'Guru Purnima Gratitude Feasts', region: 'National', starts_at: '2026-07-18', ends_at: '2026-07-20', marketing_relevance: 'Family gatherings, mentor tributes & traditional sweets', suggested_offer: 'Family dinner platters & takeaway tribute sweet hampers' },
+      { id: 'fest_independence', name: 'Independence Day Weekend', region: 'National', starts_at: '2026-08-14', ends_at: '2026-08-17', marketing_relevance: 'Long weekend dining & patriotic treats', suggested_offer: 'Tricolor specialty desserts or 15% long-weekend brunch combos' },
+      { id: 'fest_raksha', name: 'Raksha Bandhan & Sibling Gifting', region: 'National', starts_at: '2026-08-26', ends_at: '2026-08-29', marketing_relevance: 'Sibling gifting, sweet boxes & celebratory meals', suggested_offer: 'Curated sibling gift boxes & 2-for-1 treat specials' },
+      { id: 'fest_janmashtami', name: 'Janmashtami Sweet Drop', region: 'National', starts_at: '2026-08-28', ends_at: '2026-08-31', marketing_relevance: 'Festive dairy specialties, peda boxes & late night treats', suggested_offer: 'Fresh makhan & peda festive hamper with evening tea' },
+      { id: 'fest_teachers_day', name: "Teachers' Day & Campus Specials", region: 'National', starts_at: '2026-09-04', ends_at: '2026-09-06', marketing_relevance: 'Student meetups, appreciation treats & afternoon snacks', suggested_offer: '20% teacher discount & student group study bundles' },
+      { id: 'fest_onam', name: 'Onam Celebration & Grand Sadhya', region: 'Kerala / South', starts_at: '2026-09-03', ends_at: '2026-09-06', marketing_relevance: 'Sadhya feasts, harvest celebrations & family dining', suggested_offer: 'Special Onam festive menu & celebratory beverage pairing' },
+      { id: 'fest_ganesh', name: 'Ganesh Chaturthi', region: 'Maharashtra / South / West', starts_at: '2026-09-14', ends_at: '2026-09-24', marketing_relevance: 'Festive family sweets, Modak specials & dining', suggested_offer: 'Artisanal festive sweets box & family feast platters' },
+      { id: 'fest_coffee_day', name: 'International Coffee Day', region: 'National', starts_at: '2026-09-30', ends_at: '2026-10-02', marketing_relevance: 'Specialty single origin roasts, latte art & brewing classes', suggested_offer: 'Free shot upgrade & buy-1-get-1 specialty espresso' },
+      { id: 'fest_navratri', name: 'Navratri & Durga Puja', region: 'National / Bengal / Gujarat', starts_at: '2026-10-11', ends_at: '2026-10-20', marketing_relevance: 'Festive feasting, fasting special menus & night treats', suggested_offer: 'Special festive thalis & evening celebration combos' },
+      { id: 'fest_dussehra', name: 'Dussehra (Vijayadashami)', region: 'National', starts_at: '2026-10-20', ends_at: '2026-10-23', marketing_relevance: 'Celebratory family feasts, sweet boxes & new beginnings', suggested_offer: 'Grand festive thali & auspicious sweet boxes' },
+      { id: 'fest_halloween', name: 'Halloween Spooky Treats & Autumn Window', region: 'National', starts_at: '2026-10-29', ends_at: '2026-11-01', marketing_relevance: 'Pumpkin spice season, spooky baked goods & costume discounts', suggested_offer: 'Halloween themed bakes & pumpkin spice latte pairings' },
+      { id: 'fest_diwali', name: 'Diwali Lights & New Year Gifting', region: 'National', starts_at: '2026-11-08', ends_at: '2026-11-13', marketing_relevance: 'Peak shopping, corporate gifting & family celebrations', suggested_offer: 'Exclusive Diwali gift hampers & pre-booking discounts' },
+      { id: 'fest_bhai_dooj', name: 'Bhai Dooj Sibling Celebrations', region: 'National', starts_at: '2026-11-13', ends_at: '2026-11-15', marketing_relevance: 'Sibling lunches, post-Diwali dinners & festive treats', suggested_offer: 'Sibling dining combo & mini sweet box takeaway' },
+      { id: 'fest_gurpurab', name: 'Guru Nanak Jayanti (Gurpurab)', region: 'National', starts_at: '2026-11-23', ends_at: '2026-11-25', marketing_relevance: 'Community gatherings, festive sweets & wholesome dining', suggested_offer: 'Festive langar-inspired thali & karah prasad dessert special' },
+      { id: 'fest_black_friday', name: 'Black Friday & Small Business Weekend', region: 'National', starts_at: '2026-11-26', ends_at: '2026-11-30', marketing_relevance: 'Holiday shopping rush, gift card promotions & flash specials', suggested_offer: 'Buy a Rs. 1000 store gift card, get Rs. 250 bonus voucher' },
+      { id: 'fest_winter_warmers', name: 'Winter Warmers & Hot Chocolate Fest', region: 'National', starts_at: '2026-12-01', ends_at: '2026-12-18', marketing_relevance: 'Warm comfort drinks, soups, spiced bakery goods & cozy evenings', suggested_offer: 'Gourmet hot chocolate flight & soup-plus-sandwich meal' },
+      { id: 'fest_christmas', name: 'Christmas & Winter Carnival', region: 'National', starts_at: '2026-12-20', ends_at: '2026-12-26', marketing_relevance: 'Holiday cheer, hot chocolates, plum cakes & winter specials', suggested_offer: 'Signature hot chocolate pairings & holiday bakes gift box' },
+      { id: 'fest_nye', name: "New Year's Eve & Countdown Brunch", region: 'National', starts_at: '2026-12-30', ends_at: '2027-01-02', marketing_relevance: 'Year-end celebrations & fresh January brunch', suggested_offer: 'New Year brunch reservations & early-bird table booking' },
+    ];
   }
 
   // 3. BUSINESS PROFILE & PREFERENCES

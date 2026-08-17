@@ -93,7 +93,7 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                Send Message &rarr;
+                Send Message
               </button>
             </form>
           )}
@@ -113,7 +113,7 @@ export const ContactPage: React.FC = () => {
               href="mailto:founder@streetcraft.in"
               style={{ fontSize: '13.5px', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}
             >
-              founder@streetcraft.in &rarr;
+              founder@streetcraft.in
             </a>
           </div>
 
@@ -131,7 +131,7 @@ export const ContactPage: React.FC = () => {
               rel="noopener noreferrer"
               style={{ fontSize: '13.5px', color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}
             >
-              Message on WhatsApp &rarr;
+              Message on WhatsApp
             </a>
           </div>
         </div>

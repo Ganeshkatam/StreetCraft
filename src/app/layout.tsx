@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Toaster } from '../components/Toaster';
 import '../styles.css';
 
 export const metadata: Metadata = {
@@ -57,6 +58,7 @@ export default function RootLayout({
       </head>
       <body>
         <div className="app-container">{children}</div>
+        <Toaster />
       </body>
     </html>
   );

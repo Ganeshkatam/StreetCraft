@@ -104,7 +104,7 @@ export function CustomSelect<T = string>({
         }}
       >
         <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.label : (value ? String(value) : placeholder)}
         </span>
         <ChevronDown
           size={16}

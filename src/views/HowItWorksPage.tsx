@@ -95,7 +95,7 @@ export const HowItWorksPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" style={{ padding: '13px 28px', fontSize: '14.5px' }} onClick={() => navigate('/free-tool')}>
-            Try Free Campaign Tool &rarr;
+            Try Free Campaign Tool
           </button>
           <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '14.5px' }} onClick={() => navigate('/pricing')}>
             View Rates &amp; Pricing
@@ -346,11 +346,11 @@ export const HowItWorksPage: React.FC = () => {
                   </span>
                   {s.step < 4 ? (
                     <button className="btn-secondary" style={{ fontSize: '13px', padding: '8px 18px' }} onClick={() => setActiveStep(s.step + 1)}>
-                      Next Step &rarr;
+                      Next Step
                     </button>
                   ) : (
                     <button className="btn-primary" style={{ fontSize: '13px', padding: '8px 20px' }} onClick={() => navigate('/free-tool')}>
-                      Try Free Campaign Tool &rarr;
+                      Try Free Campaign Tool
                     </button>
                   )}
                 </div>
@@ -469,7 +469,7 @@ export const HowItWorksPage: React.FC = () => {
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button className="btn-primary" style={{ padding: '11px 22px', fontSize: '13.5px' }} onClick={() => navigate('/free-tool')}>
-                  Test with Your Store &rarr;
+                  Test with Your Store
                 </button>
                 <button className="btn-secondary" style={{ padding: '11px 18px', fontSize: '13.5px' }} onClick={() => navigate('/pricing')}>
                   View Rates
@@ -517,7 +517,7 @@ export const HowItWorksPage: React.FC = () => {
         </p>
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" style={{ padding: '13px 30px', fontSize: '15px' }} onClick={() => navigate('/free-tool')}>
-            Try Free Campaign Tool &rarr;
+            Try Free Campaign Tool
           </button>
           <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '15px' }} onClick={() => navigate('/login')}>
             Sign In to Store

@@ -402,7 +402,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
                   }
                 }}
               >
-                Save to Workspace &rarr;
+                Save to Workspace
               </button>
             </div>
           )}

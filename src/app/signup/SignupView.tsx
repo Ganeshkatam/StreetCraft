@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase, isGoogleOAuthEnabled } from '../../lib/supabase';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
+import { toast } from 'sonner';
 import {
   Store,
   Megaphone,
@@ -29,19 +30,23 @@ function SignupContent() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
     setIsSubmitting(true);
     try {
-      await signUp(email, password, name);
-      const dest = claimToken ? `/setup?claim=${encodeURIComponent(claimToken)}` : '/setup';
-      router.push(dest);
+      const res = await signUp(email, password, name);
+      if (!res.isAuthenticated) {
+        toast.info(`Verification email sent to ${email}. Please check your inbox.`);
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else {
+        toast.success('Account created successfully.');
+        const dest = claimToken ? `/setup?claim=${encodeURIComponent(claimToken)}` : '/setup';
+        router.push(dest);
+      }
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to create your account. Please try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to create your account. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +61,7 @@ function SignupContent() {
       });
       if (error) throw error;
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Google Sign-In is unavailable. Please sign up with email.'));
+      toast.error(getUserFacingErrorMessage(err, 'Google Sign-In is unavailable. Please sign up with email.'));
     }
   };
 
@@ -83,7 +88,7 @@ function SignupContent() {
             className="auth-back-btn"
             onClick={() => router.push('/')}
           >
-            &larr; Back to home
+            Back to home
           </button>
         </header>
 
@@ -99,7 +104,7 @@ function SignupContent() {
             </p>
 
             <div className="auth-value-props">
-              <div className="auth-value-prop-item">
+              <div className="auth-value-item">
                 <div className="auth-value-icon">
                   <Megaphone size={16} />
                 </div>
@@ -109,7 +114,7 @@ function SignupContent() {
                 </div>
               </div>
 
-              <div className="auth-value-prop-item">
+              <div className="auth-value-item">
                 <div className="auth-value-icon">
                   <Sparkles size={16} />
                 </div>
@@ -128,15 +133,9 @@ function SignupContent() {
               <p className="auth-card-subtitle">
                 {claimToken ? 'Create your account to save your generated campaign.' : 'Already have an account? '}
                 <Link href={claimToken ? `/login?claim=${encodeURIComponent(claimToken)}` : '/login'} className="auth-inline-link">
-                  Sign in &rarr;
+                  Sign in
                 </Link>
               </p>
-
-              {errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
 
               {isGoogleOAuthEnabled && (
                 <>
@@ -202,11 +201,11 @@ function SignupContent() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 8 characters"
-                      className="auth-input"
+                      className="auth-input auth-input-password"
                     />
                     <button
                       type="button"
-                      className="auth-password-toggle"
+                      className="auth-input-password-toggle"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -238,7 +237,7 @@ function SignupContent() {
                   disabled={isSubmitting || !agreeTerms}
                   className="auth-submit-btn"
                 >
-                  {isSubmitting ? 'Creating account...' : 'Create Free Workspace \u2192'}
+                  {isSubmitting ? 'Creating account...' : 'Create Free Workspace'}
                 </button>
               </form>
             </div>

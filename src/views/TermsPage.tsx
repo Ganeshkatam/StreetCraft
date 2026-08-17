@@ -13,7 +13,7 @@ export const TermsPage: React.FC = () => {
         style={{ marginBottom: '32px', paddingLeft: 0 }}
         onClick={() => navigate(-1)}
       >
-        <ArrowLeft size={16} /> Back
+        Back
       </button>
 
       {/* Header */}

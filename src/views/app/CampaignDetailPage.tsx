@@ -75,7 +75,7 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
           We couldn&apos;t find that campaign. It may have been archived or removed from your vault.
         </p>
         <button className="btn-primary" onClick={() => navigate('/app/campaigns')}>
-          &larr; Back to Campaign Vault
+          Back to Campaign Vault
         </button>
       </div>
     );
@@ -92,7 +92,7 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
           className="btn-ghost"
           style={{ padding: 0, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <ArrowLeft size={14} /> Back to Campaigns
+          Back to Campaigns
         </button>
       </div>
 

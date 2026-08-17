@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase, isGoogleOAuthEnabled } from '../lib/supabase';
 import { getUserFacingErrorMessage } from '../lib/userFacingError';
+import { toast } from 'sonner';
 import {
   Store,
   Megaphone,
@@ -29,19 +30,23 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
     setIsSubmitting(true);
     try {
-      await signUp(email, password, name);
-      if (onSuccess) onSuccess();
-      navigate('/setup');
+      const res = await signUp(email, password, name);
+      if (!res.isAuthenticated) {
+        toast.info(`Verification email sent to ${email}. Please check your inbox.`);
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else {
+        toast.success('Account created successfully.');
+        if (onSuccess) onSuccess();
+        navigate('/setup');
+      }
     } catch (err) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to create your account. Please try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to create your account. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +75,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
           </div>
 
           <button className="auth-back-btn" onClick={() => navigate('/')}>
-            &larr; Back to site
+            Back to site
           </button>
         </header>
 
@@ -124,12 +129,6 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
           {/* Right Column: Floating Signup Card */}
           <div className="auth-card-col">
             <div className="auth-card">
-              {errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
-
               <h2 className="auth-card-title">Create your account</h2>
               <p className="auth-card-subtitle">Start your free store workspace today.</p>
 
@@ -204,7 +203,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
                   disabled={isSubmitting || !name || !email || !password || !agreeTerms}
                   className="auth-submit-btn"
                 >
-                  {isSubmitting ? 'Creating account...' : 'Create Account \u2192'}
+                  {isSubmitting ? 'Creating account...' : 'Create Account'}
                 </button>
               </form>
 
@@ -218,7 +217,6 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
                   <button
                     type="button"
                     onClick={async () => {
-                      setErrorMsg(null);
                       setIsSubmitting(true);
                       try {
                         const { error } = await supabase.auth.signInWithOAuth({
@@ -229,7 +227,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
                         });
                         if (error) throw error;
                       } catch (err: any) {
-                        setErrorMsg(getUserFacingErrorMessage(err, 'Failed to initiate Google sign-in.'));
+                        toast.error(getUserFacingErrorMessage(err, 'Failed to initiate Google sign-in.'));
                       } finally {
                         setIsSubmitting(false);
                       }
@@ -266,7 +264,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
                   onClick={() => navigate('/login')}
                   className="auth-switch-link"
                 >
-                  Sign in &rarr;
+                  Sign in
                 </button>
               </div>
             </div>

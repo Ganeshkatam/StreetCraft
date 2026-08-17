@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { getUserFacingErrorMessage } from '../lib/userFacingError';
+import { toast } from 'sonner';
 import {
   Store,
   ShieldCheck,
   Check
 } from 'lucide-react';
+import { CustomSelect } from '../components/CustomSelect';
+import { STORE_CATEGORIES } from '../config/categories';
 
 interface OnboardingPageProps {
   claimToken?: string | null;
@@ -21,25 +24,24 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [storeName, setStoreName] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
-  const [city, setCity] = useState('Bengaluru');
-  const [category, setCategory] = useState('Artisanal Cafe & Bakery');
-  const [signatureItems, setSignatureItems] = useState('Single-Origin Pour-Overs, Sourdough Bakes');
-  const [targetCustomer, setTargetCustomer] = useState('Working professionals, freelancers, and neighborhood residents');
-  const [slowHours, setSlowHours] = useState('Monday–Thursday, 3:00 PM – 6:00 PM');
-  const [defaultOffer, setDefaultOffer] = useState('20% off all pour-overs & fresh bakes');
+  const [city, setCity] = useState('');
+  const [category, setCategory] = useState('');
+  const [signatureItems, setSignatureItems] = useState('');
+  const [targetCustomer, setTargetCustomer] = useState('');
+  const [slowHours, setSlowHours] = useState('');
+  const [defaultOffer, setDefaultOffer] = useState('');
   const [phone, setPhone] = useState('');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName || !neighborhood) return;
+    if (!storeName || !neighborhood || !category || !city) return;
+    toast.success('Store identity saved.');
     setStep(2);
   };
 
   const handleCompleteSetup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
     setIsSubmitting(true);
 
     try {
@@ -71,10 +73,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
         }
       }
 
+      toast.success('Store operating rhythm saved.');
       if (onSuccess) onSuccess();
       setStep(3);
     } catch (err: any) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store profile. Please review your details and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save store profile. Please review your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -152,12 +155,6 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
           {/* Right Column: Floating Setup Card */}
           <div className="auth-card-col">
             <div className="auth-card">
-              {errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
-
               {step === 1 && (
                 <div>
                   <span className="section-eyebrow">STEP 1 OF 2 &bull; BUSINESS IDENTITY</span>
@@ -178,19 +175,12 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
 
                     <div className="auth-form-field">
                       <label className="auth-form-label">What kind of place is it?</label>
-                      <select
+                      <CustomSelect
                         value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="form-select"
-                      >
-                        <option value="Cafe & Coffee Bar">Café & Coffee Bar</option>
-                        <option value="Bakery & Patisserie">Bakery & Patisserie</option>
-                        <option value="Restaurant & Diner">Restaurant & Diner</option>
-                        <option value="Pizzeria & Trattoria">Pizzeria & Trattoria</option>
-                        <option value="Artisanal Food Studio">Artisanal Food Studio</option>
-                        <option value="Retail Boutique">Retail Boutique</option>
-                        <option value="Salon & Wellness Studio">Salon & Wellness Studio</option>
-                      </select>
+                        onChange={(val) => setCategory(val)}
+                        options={STORE_CATEGORIES}
+                        placeholder="Select your business category..."
+                      />
                     </div>
 
                     <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
@@ -220,10 +210,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
 
                     <button
                       type="submit"
-                      disabled={!storeName || !neighborhood}
+                      disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
                       className="auth-submit-btn"
                     >
-                      Continue &rarr;
+                      Continue
                     </button>
                   </form>
                 </div>
@@ -275,7 +265,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
                         className="btn-secondary"
                         style={{ padding: '8px 12px', fontSize: '12.5px' }}
                       >
-                        &larr; Back
+                        Back
                       </button>
                       <button
                         type="submit"
@@ -283,7 +273,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
                         className="auth-submit-btn"
                         style={{ flex: 1 }}
                       >
-                        {isSubmitting ? 'Setting up...' : 'Launch Workspace \u2192'}
+                        {isSubmitting ? 'Setting up...' : 'Launch Workspace'}
                       </button>
                     </div>
                   </form>
@@ -303,7 +293,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
                     onClick={() => navigate('/app/create')}
                     className="auth-submit-btn"
                   >
-                    Open Campaign Composer &rarr;
+                    Open Campaign Composer
                   </button>
                 </div>
               )}

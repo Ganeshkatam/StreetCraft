@@ -93,7 +93,7 @@ export function CreateCampaignView() {
           Campaigns require your physical store context, products, and operating schedule. Please set up your first business to begin creating marketing campaigns.
         </p>
         <button className="btn-primary" onClick={() => router.push('/setup')} style={{ margin: '0 auto' }}>
-          Set Up Storefront &rarr;
+          Set Up Storefront
         </button>
       </div>
     );
@@ -176,7 +176,7 @@ export function CreateCampaignView() {
             <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} campaigns). Upgrade for additional quota.
           </div>
           <button className="btn-secondary" onClick={() => setShowUpgradeModal(true)}>
-            Upgrade Tier &rarr;
+            Upgrade Tier
           </button>
         </div>
       )}
@@ -257,7 +257,7 @@ export function CreateCampaignView() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button className="btn-primary" onClick={() => setStep(2)}>
-              Next: Define Goal <ArrowRight size={14} />
+              Next: Define Goal
             </button>
           </div>
         </div>
@@ -308,10 +308,10 @@ export function CreateCampaignView() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <button className="btn-secondary" onClick={() => setStep(1)}>
-              <ArrowLeft size={14} /> Back
+              Back
             </button>
             <button className="btn-primary" onClick={() => setStep(3)}>
-              Next: The Offer <ArrowRight size={14} />
+              Next: The Offer
             </button>
           </div>
         </div>
@@ -385,7 +385,7 @@ export function CreateCampaignView() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '28px' }}>
               <button className="btn-secondary" onClick={() => setStep(2)}>
-                <ArrowLeft size={14} /> Back
+                Back
               </button>
               <button
                 className="btn-primary"
@@ -471,7 +471,7 @@ export function CreateCampaignView() {
                 </button>
               )}
               <button className="btn-primary" style={{ fontSize: '12.5px', padding: '6px 14px' }} onClick={() => router.push('/app/campaigns')}>
-                Open Vault &rarr;
+                Open Vault
               </button>
             </div>
           </div>
@@ -506,7 +506,7 @@ export function CreateCampaignView() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
             <button className="btn-primary" onClick={() => router.push('/app/campaigns')}>
-              Open Campaign Vault &rarr;
+              Open Campaign Vault
             </button>
           </div>
         </div>

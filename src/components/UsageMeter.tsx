@@ -59,7 +59,7 @@ export const UsageMeter: React.FC<UsageMeterProps> = ({ usage, onUpgrade, compac
         <span>Plan: <strong style={{ color: 'var(--color-ink)' }}>{usage.planName}</strong></span>
         {onUpgrade && (
           <button className="btn-ghost" style={{ fontSize: '12px', padding: '0', color: 'var(--color-primary)' }} onClick={onUpgrade}>
-            Upgrade Tier <ArrowUpRight size={13} />
+            Upgrade Tier
           </button>
         )}
       </div>

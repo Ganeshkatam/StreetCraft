@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Toaster } from './components/Toaster';
 import './styles.css';
 
 import { ThemeProvider } from './theme/ThemeProvider';
@@ -25,6 +26,7 @@ import { SignupPage } from './views/SignupPage';
 import { OnboardingPage } from './views/OnboardingPage';
 import { ForgotPasswordPage } from './views/ForgotPasswordPage';
 import { ResetPasswordPage } from './views/ResetPasswordPage';
+import { VerifyEmailPage } from './views/VerifyEmailPage';
 import { PrivacyPage } from './views/PrivacyPage';
 import { TermsPage } from './views/TermsPage';
 import { NotFoundPage } from './views/NotFoundPage';
@@ -58,7 +60,8 @@ function AppLayout() {
     location.pathname === '/setup' ||
     location.pathname === '/onboarding' ||
     location.pathname === '/forgot-password' ||
-    location.pathname === '/reset-password';
+    location.pathname === '/reset-password' ||
+    location.pathname === '/verify-email';
   const isSystemView =
     location.pathname === '/unauthorized' ||
     location.pathname === '/not-found' ||
@@ -186,6 +189,7 @@ function AppLayout() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="/not-found" element={<NotFoundPage />} />
             <Route path="/error" element={<ErrorPage />} />
@@ -315,8 +319,28 @@ function AppLayout() {
                 }
               />
               <Route
+                path="/app/billing"
+                element={
+                  <ProtectedRoute requireAuth requireBusiness requireRole="admin">
+                    <BillingSettingsPage
+                      businessId={session.activeBusinessId}
+                      session={session}
+                      onOpenUpgrade={() => setUpgradeModalOpen(true)}
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/app/account"
+                element={
+                  <ProtectedRoute requireAuth requireBusiness>
+                    <AccountSettingsPage session={session} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/app/settings"
-                element={<Navigate to="/app/settings/billing" replace />}
+                element={<Navigate to="/app/account" replace />}
               />
               <Route
                 path="/app/settings/billing"
@@ -364,6 +388,7 @@ if (rootElement) {
       <DialogProvider>
         <BrowserRouter>
           <AppLayout />
+          <Toaster />
         </BrowserRouter>
       </DialogProvider>
     </ThemeProvider>

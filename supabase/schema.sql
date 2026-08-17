@@ -290,7 +290,13 @@ CREATE POLICY "profiles_select" ON public.profiles
 
 CREATE POLICY "profiles_insert" ON public.profiles
   FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = id);
+  WITH CHECK (
+    auth.uid() = id
+    AND (
+      (auth.jwt()->>'email_confirmed_at') IS NOT NULL
+      OR (auth.jwt()->>'confirmed_at') IS NOT NULL
+    )
+  );
 
 CREATE POLICY "profiles_update" ON public.profiles
   FOR UPDATE TO authenticated
@@ -413,13 +419,16 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, phone)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'phone', '')
-  )
-  ON CONFLICT (id) DO NOTHING;
+  -- Strict verification check: Only create a public profile if the user is confirmed/verified
+  IF (NEW.email_confirmed_at IS NOT NULL OR NEW.confirmed_at IS NOT NULL) THEN
+    INSERT INTO public.profiles (id, full_name, phone)
+    VALUES (
+      NEW.id,
+      COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', ''),
+      COALESCE(NEW.raw_user_meta_data->>'phone', '')
+    )
+    ON CONFLICT (id) DO NOTHING;
+  END IF;
   RETURN NEW;
 EXCEPTION
   WHEN OTHERS THEN
@@ -445,6 +454,25 @@ CREATE TRIGGER on_campaign_updated
   BEFORE UPDATE ON public.campaigns
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_updated_at();
+
+-- Auto-create profile only when verified:
+-- 1. On signup insert (if pre-verified e.g. OAuth / auto-confirm)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user_profile();
+
+-- 2. On confirmation update (when user confirms their email)
+DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;
+CREATE TRIGGER on_auth_user_confirmed
+  AFTER UPDATE OF email_confirmed_at, confirmed_at ON auth.users
+  FOR EACH ROW
+  WHEN (
+    (OLD.email_confirmed_at IS NULL AND NEW.email_confirmed_at IS NOT NULL)
+    OR (OLD.confirmed_at IS NULL AND NEW.confirmed_at IS NOT NULL)
+  )
+  EXECUTE FUNCTION public.handle_new_user_profile();
 
 -- ============================================================================
 -- 5. ATOMIC STORED PROCEDURES (RPCs)
@@ -474,6 +502,11 @@ BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION 'Unauthorized: Caller must be authenticated.';
+  END IF;
+
+  -- Ensure operator email is confirmed and profile exists
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = v_user_id) THEN
+    RAISE EXCEPTION 'UNCONFIRMED_USER: Email confirmation is required before activating a store workspace.';
   END IF;
 
   SELECT s.plan_id, p.business_limit, p.monthly_campaign_limit 
@@ -1080,3 +1113,117 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'status', 'CANCELLED');
 END;
 $$;
+
+-- ============================================================================
+-- 6. AUTOMATED MAINTENANCE CRON JOBS (pg_cron)
+-- ============================================================================
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- 6.1 Unconfirmed Users Purge Function
+CREATE OR REPLACE FUNCTION public.cleanup_unconfirmed_users()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+BEGIN
+  -- Automatically delete unconfirmed users who registered more than 1 hour ago
+  DELETE FROM auth.users
+  WHERE email_confirmed_at IS NULL
+    AND confirmed_at IS NULL
+    AND created_at < (NOW() - INTERVAL '1 hour');
+END;
+$$;
+
+-- 6.2 Schedule cleanup to run every 10 minutes
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup_unconfirmed_users_hourly') THEN
+    PERFORM cron.unschedule('cleanup_unconfirmed_users_hourly');
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    NULL;
+END;
+$$;
+
+SELECT cron.schedule(
+  'cleanup_unconfirmed_users_hourly',
+  '*/10 * * * *',
+  'SELECT public.cleanup_unconfirmed_users();'
+);
+
+-- ============================================================================
+-- 7. ANNUAL FESTIVAL & REGIONAL MOMENTS SEED DATA
+-- ============================================================================
+
+INSERT INTO public.festival_calendar (id, name, region, starts_at, ends_at, marketing_relevance, suggested_offer)
+VALUES
+  -- JANUARY
+  ('fest_newyear', 'New Year Kickoff & Fresh Start', 'National', '2026-01-01', '2026-01-04', 'Healthy resolutions, fresh smoothies & wholesome breakfast bowls', 'New Year detox combos & 15% fresh start breakfast offer'),
+  ('fest_harvest', 'Pongal, Makar Sankranti & Lohri', 'National / Regional', '2026-01-13', '2026-01-16', 'Harvest celebration feasts, traditional sweets & warm winter treats', 'Special festive harvest thalis & warm jaggery dessert boxes'),
+  ('fest_republic', 'Republic Day Long Weekend', 'National', '2026-01-24', '2026-01-27', 'National holiday long weekend family brunch & walk-ins', 'Tricolor specialty desserts & long-weekend breakfast combos'),
+
+  -- FEBRUARY
+  ('fest_valentines', 'Valentine''s Week & Couples Dining', 'National', '2026-02-07', '2026-02-15', 'Romantic dining, dessert duos & artisanal gift hampers', '2-course couple dinner pairings & handcrafted chocolate boxes'),
+  ('fest_shivratri', 'Maha Shivratri Fasting Specials', 'National', '2026-02-24', '2026-02-26', 'Wholesome fasting menus, fruit bowls & sattvic delicacies', 'Special fasting thali & cold pressed beverage pairing'),
+
+  -- MARCH
+  ('fest_holi', 'Holi Festive Weekend & Gujiya Carnival', 'National', '2026-03-13', '2026-03-16', 'Organic thandai specials, colorful sweets & family celebrations', 'Artisanal thandai pitchers & curated Holi gujiya gift boxes'),
+  ('fest_ugadi', 'Ugadi & Gudi Padwa (New Year)', 'South / Maharashtra', '2026-03-19', '2026-03-22', 'Traditional new year feast platters, mango specialties & sweets', 'Regional new year festive platter & family sweet box'),
+  ('fest_eid_fitr', 'Eid-ul-Fitr Feasts', 'National', '2026-03-29', '2026-04-01', 'Festive feasting, biryani feasts & celebratory dessert drops', 'Grand Eid celebration platters & complimentary sheer khurma'),
+
+  -- APRIL
+  ('fest_easter', 'Easter & Spring Bakes Weekend', 'National', '2026-04-03', '2026-04-06', 'Hot cross buns, carrot cakes & spring brunch menus', 'Easter egg dessert basket & family brunch booking discount'),
+  ('fest_baisakhi', 'Baisakhi, Vishu & Poila Boishakh', 'North / South / East', '2026-04-13', '2026-04-16', 'Regional harvest celebrations & traditional culinary specials', 'Festive thali combo & celebration sweet box'),
+  ('fest_world_book', 'World Book & Art Day Local Evenings', 'National', '2026-04-22', '2026-04-24', 'Cozy reading evenings, study combos & creative coffee specials', 'Coffee + pastry book-lover combo with quiet corner seating'),
+
+  -- MAY
+  ('fest_mothers_day', 'Mother''s Day High Tea & Dining', 'National', '2026-05-08', '2026-05-11', 'Mother''s Day celebratory brunch, tea sets & salon packages', 'Complimentary dessert for moms & family high-tea reservation packages'),
+  ('fest_summer_mango', 'Summer Mango Festival', 'National', '2026-05-15', '2026-05-31', 'Peak Alphonso pastry specials, mango smoothies & fruit coolers', 'Fresh mango dessert bowl & buy-2-get-1 mango coolers'),
+
+  -- JUNE
+  ('fest_fathers_day', 'Father''s Day Feast & Brew Specials', 'National', '2026-06-19', '2026-06-22', 'Father''s Day hearty grills, artisanal coffee flights & meals', 'Father-and-child brunch discount & specialty brew tastings'),
+  ('fest_yoga_day', 'International Yoga & Wellness Week', 'National', '2026-06-19', '2026-06-25', 'Detox juices, protein bowls & wellness studio promotions', 'Green smoothie boost & healthy morning breakfast combos'),
+  ('fest_monsoon', 'Monsoon Kickoff & Chai Pakoda Window', 'National', '2026-06-25', '2026-07-10', 'Rainy day comfort food, piping masala chai & crispy fritters', 'Monsoon chai-pakoda duo & rainy afternoon discount'),
+
+  -- JULY
+  ('fest_chocolate_day', 'World Chocolate Day Festival', 'National', '2026-07-06', '2026-07-09', 'Decadent single-origin desserts, truffle boxes & mocha pairings', 'Buy-1-get-1 dark chocolate pastry & artisan hot chocolate flight'),
+  ('fest_guru_purnima', 'Guru Purnima Gratitude Feasts', 'National', '2026-07-18', '2026-07-20', 'Family gatherings, mentor tributes & traditional sweets', 'Family dinner platters & takeaway tribute sweet hampers'),
+
+  -- AUGUST
+  ('fest_independence', 'Independence Day Weekend', 'National', '2026-08-14', '2026-08-17', 'Long weekend dining & patriotic treats', 'Tricolor specialty desserts or 15% long-weekend brunch combos'),
+  ('fest_raksha', 'Raksha Bandhan & Sibling Gifting', 'National', '2026-08-26', '2026-08-29', 'Sibling gifting, sweet boxes & celebratory meals', 'Curated sibling gift boxes & 2-for-1 treat specials'),
+  ('fest_janmashtami', 'Janmashtami Sweet Drop', 'National', '2026-08-28', '2026-08-31', 'Festive dairy specialties, peda boxes & late night treats', 'Fresh makhan & peda festive hamper with evening tea'),
+
+  -- SEPTEMBER
+  ('fest_teachers_day', 'Teachers'' Day & Campus Specials', 'National', '2026-09-04', '2026-09-06', 'Student meetups, appreciation treats & afternoon snacks', '20% teacher discount & student group study bundles'),
+  ('fest_onam', 'Onam Celebration & Grand Sadhya', 'Kerala / South', '2026-09-03', '2026-09-06', 'Sadhya feasts, harvest celebrations & family dining', 'Special Onam festive menu & celebratory beverage pairing'),
+  ('fest_ganesh', 'Ganesh Chaturthi', 'Maharashtra / South / West', '2026-09-14', '2026-09-24', 'Festive family sweets, Modak specials & dining', 'Artisanal festive sweets box & family feast platters'),
+
+  -- OCTOBER
+  ('fest_coffee_day', 'International Coffee Day', 'National', '2026-09-30', '2026-10-02', 'Specialty single origin roasts, latte art & brewing classes', 'Free shot upgrade & buy-1-get-1 specialty espresso'),
+  ('fest_navratri', 'Navratri & Durga Puja', 'National / Bengal / Gujarat', '2026-10-11', '2026-10-20', 'Festive feasting, fasting special menus & night treats', 'Special festive thalis & evening celebration combos'),
+  ('fest_dussehra', 'Dussehra (Vijayadashami)', 'National', '2026-10-20', '2026-10-23', 'Celebratory family feasts, sweet boxes & new beginnings', 'Grand festive thali & auspicious sweet boxes'),
+  ('fest_halloween', 'Halloween Spooky Treats & Autumn Window', 'National', '2026-10-29', '2026-11-01', 'Pumpkin spice season, spooky baked goods & costume discounts', 'Halloween themed bakes & pumpkin spice latte pairings'),
+
+  -- NOVEMBER
+  ('fest_diwali', 'Diwali Lights & New Year Gifting', 'National', '2026-11-08', '2026-11-13', 'Peak shopping, corporate gifting & family celebrations', 'Exclusive Diwali gift hampers & pre-booking discounts'),
+  ('fest_bhai_dooj', 'Bhai Dooj Sibling Celebrations', 'National', '2026-11-13', '2026-11-15', 'Sibling lunches, post-Diwali dinners & festive treats', 'Sibling dining combo & mini sweet box takeaway'),
+  ('fest_gurpurab', 'Guru Nanak Jayanti (Gurpurab)', 'National', '2026-11-23', '2026-11-25', 'Community gatherings, festive sweets & wholesome dining', 'Festive langar-inspired thali & karah prasad dessert special'),
+  ('fest_black_friday', 'Black Friday & Small Business Weekend', 'National', '2026-11-26', '2026-11-30', 'Holiday shopping rush, gift card promotions & flash specials', 'Buy a Rs. 1000 store gift card, get Rs. 250 bonus voucher'),
+
+  -- DECEMBER
+  ('fest_winter_warmers', 'Winter Warmers & Hot Chocolate Fest', 'National', '2026-12-01', '2026-12-18', 'Warm comfort drinks, soups, spiced bakery goods & cozy evenings', 'Gourmet hot chocolate flight & soup-plus-sandwich meal'),
+  ('fest_christmas', 'Christmas & Winter Carnival', 'National', '2026-12-20', '2026-12-26', 'Holiday cheer, hot chocolates, plum cakes & winter specials', 'Signature hot chocolate pairings & holiday bakes gift box'),
+  ('fest_nye', 'New Year''s Eve & Countdown Brunch', 'National', '2026-12-30', '2027-01-02', 'Year-end celebrations & fresh January brunch', 'New Year brunch reservations & early-bird table booking')
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  region = EXCLUDED.region,
+  starts_at = EXCLUDED.starts_at,
+  ends_at = EXCLUDED.ends_at,
+  marketing_relevance = EXCLUDED.marketing_relevance,
+  suggested_offer = EXCLUDED.suggested_offer;
+
+

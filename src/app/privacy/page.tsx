@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           className="btn-ghost"
           style={{ marginBottom: '32px', paddingLeft: 0, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          <ArrowLeft size={16} /> Back to home
+          Back to home
         </Link>
 
         <div className="section-header" style={{ marginBottom: '40px' }}>

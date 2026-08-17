@@ -5,21 +5,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
 
-const getEnv = (key: string): string => {
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key] as string;
-  }
-  return '';
-};
-
+// Direct static property accesses required for Next.js compiler inlining in browser client bundles
 const SUPABASE_URL =
-  getEnv('NEXT_PUBLIC_SUPABASE_URL') ||
-  getEnv('VITE_SUPABASE_URL') ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_URL : '') ||
   '';
 
 const SUPABASE_ANON_KEY =
-  getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ||
-  getEnv('VITE_SUPABASE_ANON_KEY') ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_ANON_KEY : '') ||
   '';
 
 export const isSupabaseConfigured = Boolean(
@@ -30,8 +24,8 @@ export const isSupabaseConfigured = Boolean(
 
 export const isGoogleOAuthEnabled = Boolean(
   isSupabaseConfigured &&
-    (getEnv('NEXT_PUBLIC_ENABLE_GOOGLE_OAUTH') === 'true' ||
-      getEnv('VITE_ENABLE_GOOGLE_OAUTH') === 'true')
+    (process.env.NEXT_PUBLIC_ENABLE_GOOGLE_OAUTH === 'true' ||
+      (typeof process !== 'undefined' && process.env ? process.env.VITE_ENABLE_GOOGLE_OAUTH === 'true' : false))
 );
 
 export const supabase: SupabaseClient<Database> = createClient<Database>(

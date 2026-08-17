@@ -68,7 +68,7 @@ export default function NotFound() {
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <Link href="/" className="btn-secondary">
-            &larr; Home
+            Home
           </Link>
           <Link href="/app/today" className="btn-primary">
             <LayoutDashboard size={14} /> Workspace

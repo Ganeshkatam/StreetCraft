@@ -8,6 +8,7 @@ import { CampaignStatus } from '../../../types/campaign';
 import { CampaignStatusBadge } from '../../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../../components/ChannelCard';
 import { Edit3, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function CampaignVaultView() {
   const router = useRouter();
@@ -26,8 +27,13 @@ export function CampaignVaultView() {
   });
 
   const handleSaveNotes = async (campaignId: string, currentStatus: CampaignStatus) => {
-    await updateStatus(campaignId, currentStatus, tempNotes);
-    setEditingNotesId(null);
+    try {
+      await updateStatus(campaignId, currentStatus, tempNotes);
+      toast.success('Notes saved successfully.');
+      setEditingNotesId(null);
+    } catch {
+      toast.error('Failed to save notes.');
+    }
   };
 
   return (
@@ -84,7 +90,7 @@ export function CampaignVaultView() {
               : `No campaigns with status ${filter.toLowerCase()} found.`}
           </p>
           <button className="btn-primary" onClick={() => router.push('/app/create')}>
-            Create First Campaign &rarr;
+            Create First Campaign
           </button>
         </div>
       ) : (
@@ -117,7 +123,7 @@ export function CampaignVaultView() {
                       style={{ fontSize: '12px', padding: '5px 12px' }}
                       onClick={() => router.push(`/app/campaigns/${item.campaign.id}`)}
                     >
-                      Open &rarr;
+                      Open
                     </button>
 
                     <CampaignStatusBadge status={item.campaign.status} />

@@ -98,7 +98,7 @@ export function ContactView() {
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: '14px' }}>
-                  Send Message &rarr;
+                  Send Message
                 </button>
               </form>
             )}
@@ -119,7 +119,7 @@ export function ContactView() {
                 href="mailto:founder@streetcraft.in"
                 style={{ fontSize: '13.5px', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}
               >
-                founder@streetcraft.in &rarr;
+                founder@streetcraft.in
               </a>
             </div>
 
@@ -139,7 +139,7 @@ export function ContactView() {
                 rel="noopener noreferrer"
                 style={{ fontSize: '13.5px', color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}
               >
-                Message on WhatsApp &rarr;
+                Message on WhatsApp
               </a>
             </div>
           </div>

@@ -242,7 +242,7 @@ export const LandingView: React.FC = () => {
 
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '36px' }}>
               <button className="btn-primary" style={{ padding: '13px 28px', fontSize: '14.5px' }} onClick={() => router.push('/free-tool')}>
-                Try free campaign tool &rarr;
+                Try Free Campaign Tool
               </button>
               <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '14.5px' }} onClick={() => router.push('/login')}>
                 Sign in to store
@@ -698,7 +698,7 @@ export const LandingView: React.FC = () => {
                         style={{ fontSize: '13px', padding: '7px 16px' }}
                         onClick={() => router.push('/free-tool')}
                       >
-                        Create your first campaign &rarr;
+                        Create your first campaign
                       </button>
                     </div>
                   )}
@@ -792,7 +792,7 @@ export const LandingView: React.FC = () => {
                   style={{ padding: '12px 24px', fontSize: '14px' }}
                   onClick={() => router.push('/pricing')}
                 >
-                  View Full Rates &amp; Founder Offer &rarr;
+                  View Full Rates &amp; Founder Offer
                 </button>
                 <button
                   className="btn-secondary"
@@ -883,7 +883,7 @@ export const LandingView: React.FC = () => {
         </p>
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" style={{ padding: '13px 30px', fontSize: '15px' }} onClick={() => router.push('/free-tool')}>
-            Try Free Campaign Tool &rarr;
+            Try Free Campaign Tool
           </button>
           <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '15px' }} onClick={() => router.push('/login')}>
             Sign In to Store

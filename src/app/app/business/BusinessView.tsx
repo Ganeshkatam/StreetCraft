@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useBusiness } from '../../../hooks/useBusiness';
 import { BusinessProfile } from '../../../types/business';
-import { CheckCircle2, Save } from 'lucide-react';
+import { toast } from 'sonner';
+import { Save } from 'lucide-react';
 
 export function BusinessView() {
   const { session } = useAuth();
@@ -12,7 +13,6 @@ export function BusinessView() {
 
   const { profile, loading, updateProfile } = useBusiness(businessId);
   const [formData, setFormData] = useState<BusinessProfile | null>(null);
-  const [savedSuccess, setSavedSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -34,8 +34,9 @@ export function BusinessView() {
     setIsSaving(true);
     try {
       await updateProfile(formData);
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 2500);
+      toast.success('Business profile updated successfully.');
+    } catch {
+      toast.error('Failed to update business profile. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -50,12 +51,6 @@ export function BusinessView() {
           StreetCraft uses these details to shape every campaign. Updates apply immediately across your workspace.
         </p>
       </div>
-
-      {savedSuccess && (
-        <div style={{ padding: '14px 18px', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontSize: '13.5px', fontWeight: 600 }}>
-          <CheckCircle2 size={16} /> Business details saved successfully.
-        </div>
-      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', alignItems: 'start' }}>
         <form onSubmit={handleSubmit} className="card">

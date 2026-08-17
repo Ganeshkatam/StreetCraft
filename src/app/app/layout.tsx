@@ -1,6 +1,5 @@
 import React from 'react';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
-import { ServerFooter } from '../components/ServerFooter';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +14,6 @@ export default function WorkspaceLayout({
       <main style={{ flex: 1 }}>
         {children}
       </main>
-      <ServerFooter variant="compact" />
     </div>
   );
 }

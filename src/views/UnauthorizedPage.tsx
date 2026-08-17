@@ -70,7 +70,7 @@ export const UnauthorizedPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-secondary" onClick={() => navigate(-1)}>
-            <ArrowLeft size={15} /> Go Back
+            Go Back
           </button>
           <button className="btn-secondary" onClick={() => navigate('/app/business')}>
             <Store size={15} /> Storefronts

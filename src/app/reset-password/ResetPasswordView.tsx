@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import { Check, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { Check } from 'lucide-react';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 
 export function ResetPasswordView() {
@@ -11,33 +12,32 @@ export function ResetPasswordView() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      setErrorMsg('Password must be at least 8 characters long.');
+      toast.error('Password must be at least 8 characters long.');
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
+      toast.error('Passwords do not match.');
       return;
     }
 
     setLoading(true);
-    setErrorMsg(null);
 
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
       setSuccess(true);
+      toast.success('Password updated successfully.');
       setTimeout(() => {
         router.push('/login');
-      }, 2500);
+      }, 2000);
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to update your password. Please request a new reset link.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to update your password. Please request a new reset link.'));
     } finally {
       setLoading(false);
     }
@@ -70,11 +70,6 @@ export function ResetPasswordView() {
           </div>
         ) : (
           <form onSubmit={handleReset}>
-            {errorMsg && (
-              <div className="auth-error-alert" style={{ marginBottom: '16px' }}>
-                <AlertCircle size={15} /> {errorMsg}
-              </div>
-            )}
 
             <div className="form-group" style={{ marginBottom: '14px' }}>
               <label className="form-label">New Password</label>
@@ -106,7 +101,7 @@ export function ResetPasswordView() {
               className="auth-submit-btn"
               style={{ width: '100%' }}
             >
-              {loading ? 'Updating Password...' : 'Save New Password \u2192'}
+              {loading ? 'Updating Password...' : 'Save New Password'}
             </button>
           </form>
         )}

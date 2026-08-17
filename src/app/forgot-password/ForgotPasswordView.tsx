@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'sonner';
 import { Store, Mail, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 
@@ -12,18 +13,17 @@ export function ForgotPasswordView() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setErrorMsg(null);
     setIsSubmitting(true);
     try {
       await resetPassword(email);
       setIsSubmitted(true);
+      toast.success('Password reset instructions sent to your email.');
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to send recovery instructions. Please verify your email and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to send recovery instructions. Please verify your email and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,7 +49,7 @@ export function ForgotPasswordView() {
           </div>
 
           <button className="auth-back-btn" onClick={() => router.push('/login')}>
-            &larr; Back to sign in
+            Back to sign in
           </button>
         </header>
 
@@ -72,12 +72,6 @@ export function ForgotPasswordView() {
 
           <div className="auth-card-col">
             <div className="auth-card">
-              {!isSubmitted && errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
-
               {isSubmitted ? (
                 <div style={{ textAlign: 'center', padding: '8px 0' }}>
                   <div className="auth-value-icon" style={{ width: '42px', height: '42px', margin: '0 auto 12px' }}>
@@ -91,7 +85,7 @@ export function ForgotPasswordView() {
                     onClick={() => router.push('/login')}
                     className="auth-submit-btn"
                   >
-                    Return to Sign in &rarr;
+                    Return to Sign in
                   </button>
                 </div>
               ) : (
@@ -120,7 +114,7 @@ export function ForgotPasswordView() {
                       disabled={isSubmitting || !email}
                       className="auth-submit-btn"
                     >
-                      {isSubmitting ? 'Sending instructions...' : 'Send Reset Link \u2192'}
+                      {isSubmitting ? 'Sending instructions...' : 'Send Reset Link'}
                     </button>
                   </form>
 
@@ -131,7 +125,7 @@ export function ForgotPasswordView() {
                       onClick={() => router.push('/login')}
                       className="auth-switch-link"
                     >
-                      Sign in &rarr;
+                      Sign in
                     </button>
                   </div>
                 </div>

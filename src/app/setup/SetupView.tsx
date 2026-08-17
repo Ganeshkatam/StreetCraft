@@ -5,11 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
+import { toast } from 'sonner';
 import {
   Store,
   ShieldCheck,
   Check
 } from 'lucide-react';
+import { CustomSelect } from '../../components/CustomSelect';
+import { STORE_CATEGORIES } from '../../config/categories';
 
 function SetupContent() {
   const router = useRouter();
@@ -21,14 +24,13 @@ function SetupContent() {
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(session.activeBusinessId || null);
   const [storeName, setStoreName] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
-  const [city, setCity] = useState('Bengaluru');
-  const [category, setCategory] = useState('Artisanal Cafe & Bakery');
-  const [signatureItems, setSignatureItems] = useState('Single-Origin Pour-Overs, Sourdough Bakes');
-  const [targetCustomer, setTargetCustomer] = useState('Working professionals, freelancers, and neighborhood residents');
-  const [slowHours, setSlowHours] = useState('Monday–Thursday, 3:00 PM – 6:00 PM');
-  const [defaultOffer, setDefaultOffer] = useState('20% off all pour-overs & fresh bakes');
+  const [city, setCity] = useState('');
+  const [category, setCategory] = useState('');
+  const [signatureItems, setSignatureItems] = useState('');
+  const [targetCustomer, setTargetCustomer] = useState('');
+  const [slowHours, setSlowHours] = useState('');
+  const [defaultOffer, setDefaultOffer] = useState('');
   const [phone, setPhone] = useState('');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResuming, setIsResuming] = useState(true);
 
@@ -69,9 +71,8 @@ function SetupContent() {
   // Step 1: Immediately persist the business entity to PostgreSQL
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName || !neighborhood) return;
+    if (!storeName || !neighborhood || !category || !city) return;
 
-    setErrorMsg(null);
     setIsSubmitting(true);
 
     try {
@@ -94,9 +95,10 @@ function SetupContent() {
           phoneWhatsApp: phone,
         });
       }
+      toast.success('Store identity saved.');
       setStep(2);
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store identity. Please check your connection and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save store identity. Please check your connection and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +107,6 @@ function SetupContent() {
   // Step 2: Persist operating rhythm & detailed store context
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
     setIsSubmitting(true);
 
     try {
@@ -135,9 +136,10 @@ function SetupContent() {
           await api.claimAnonymousCampaign(claimToken, bizId);
         }
       }
+      toast.success('Store operating rhythm saved.');
       setStep(3);
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store preferences. Please review your details and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to save store preferences. Please review your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -224,12 +226,6 @@ function SetupContent() {
 
           <div className="auth-card-col">
             <div className="auth-card">
-              {errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
-
               {step === 1 && (
                 <div>
                   <span className="section-eyebrow">STEP 1 OF 2 &bull; BUSINESS IDENTITY</span>
@@ -250,19 +246,12 @@ function SetupContent() {
 
                     <div className="auth-form-field">
                       <label className="auth-form-label">What kind of place is it?</label>
-                      <select
+                      <CustomSelect
                         value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="form-select"
-                      >
-                        <option value="Cafe & Coffee Bar">Café & Coffee Bar</option>
-                        <option value="Bakery & Patisserie">Bakery & Patisserie</option>
-                        <option value="Restaurant & Diner">Restaurant & Diner</option>
-                        <option value="Pizzeria & Trattoria">Pizzeria & Trattoria</option>
-                        <option value="Artisanal Food Studio">Artisanal Food Studio</option>
-                        <option value="Retail Boutique">Retail Boutique</option>
-                        <option value="Salon & Wellness Studio">Salon & Wellness Studio</option>
-                      </select>
+                        onChange={(val) => setCategory(val)}
+                        options={STORE_CATEGORIES}
+                        placeholder="Select your business category..."
+                      />
                     </div>
 
                     <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
@@ -292,10 +281,10 @@ function SetupContent() {
 
                     <button
                       type="submit"
-                      disabled={!storeName || !neighborhood || isSubmitting}
+                      disabled={!storeName || !neighborhood || !category || !city || isSubmitting}
                       className="auth-submit-btn"
                     >
-                      {isSubmitting ? 'Saving store...' : 'Save & Continue \u2192'}
+                      {isSubmitting ? 'Saving store...' : 'Save & Continue'}
                     </button>
                   </form>
                 </div>
@@ -347,7 +336,7 @@ function SetupContent() {
                         className="btn-secondary"
                         style={{ padding: '8px 12px', fontSize: '12.5px' }}
                       >
-                        &larr; Back
+                        Back
                       </button>
                       <button
                         type="submit"
@@ -355,7 +344,7 @@ function SetupContent() {
                         className="auth-submit-btn"
                         style={{ flex: 1 }}
                       >
-                        {isSubmitting ? 'Saving preferences...' : 'Launch Workspace \u2192'}
+                        {isSubmitting ? 'Saving preferences...' : 'Launch Workspace'}
                       </button>
                     </div>
                   </form>
@@ -375,7 +364,7 @@ function SetupContent() {
                     onClick={() => router.push('/app/create')}
                     className="auth-submit-btn"
                   >
-                    Open Campaign Composer &rarr;
+                    Open Campaign Composer
                   </button>
                 </div>
               )}

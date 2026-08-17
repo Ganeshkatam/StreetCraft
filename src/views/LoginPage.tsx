@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { supabase, isGoogleOAuthEnabled } from '../lib/supabase';
 import { getUserFacingErrorMessage } from '../lib/userFacingError';
+import { toast } from 'sonner';
 import {
   Store,
   Megaphone,
@@ -29,12 +30,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorParam = params.get('error');
+    if (errorParam) {
+      if (errorParam === 'email_confirmation_failed') {
+        toast.error('Email confirmation link was invalid or has expired. Please sign in or request a new link.');
+      } else if (errorParam === 'auth_exchange_failed') {
+        toast.error('Authentication session exchange failed. Please sign in again.');
+      } else {
+        toast.error(decodeURIComponent(errorParam));
+      }
+    }
+  }, [location.search]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
     setIsSubmitting(true);
     try {
       const session = await signIn(email, password);
@@ -43,6 +56,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
       }
       if (onSuccess) onSuccess();
 
+      toast.success('Signed in successfully.');
+
       if (session.activeBusinessId) {
         const fromPath = (location.state as any)?.from;
         navigate(fromPath && fromPath.startsWith('/app') ? fromPath : '/app/today');
@@ -50,7 +65,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
         navigate('/setup');
       }
     } catch (err) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to sign in. Please verify your credentials and try again.'));
+      toast.error(getUserFacingErrorMessage(err, 'Failed to sign in. Please verify your credentials and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +94,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           </div>
 
           <button className="auth-back-btn" onClick={() => navigate('/')}>
-            &larr; Back to site
+            Back to site
           </button>
         </header>
 
@@ -132,12 +147,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           {/* Right Column: Floating Auth Card */}
           <div className="auth-card-col">
             <div className="auth-card">
-              {errorMsg && (
-                <div className="auth-error-alert">
-                  {errorMsg}
-                </div>
-              )}
-
               <h2 className="auth-card-title">Sign in to StreetCraft</h2>
               <p className="auth-card-subtitle">Enter your details to continue.</p>
 
@@ -204,7 +213,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   disabled={isSubmitting}
                   className="auth-submit-btn"
                 >
-                  {isSubmitting ? 'Signing in...' : 'Sign in \u2192'}
+                  {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </button>
               </form>
 
@@ -218,7 +227,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   <button
                     type="button"
                     onClick={async () => {
-                      setErrorMsg(null);
                       setIsSubmitting(true);
                       try {
                         const { error } = await supabase.auth.signInWithOAuth({
@@ -229,7 +237,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                         });
                         if (error) throw error;
                       } catch (err: any) {
-                        setErrorMsg(getUserFacingErrorMessage(err, 'Failed to initiate Google sign-in.'));
+                        toast.error(getUserFacingErrorMessage(err, 'Failed to initiate Google sign-in.'));
                       } finally {
                         setIsSubmitting(false);
                       }
@@ -266,7 +274,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   onClick={() => navigate('/signup')}
                   className="auth-switch-link"
                 >
-                  Create an account &rarr;
+                  Create an account
                 </button>
               </div>
             </div>

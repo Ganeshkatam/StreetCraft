@@ -118,7 +118,7 @@ export function TodayView() {
                         style={{ fontSize: '12px', padding: '6px 14px' }}
                         onClick={() => handleLaunchPreset(opp)}
                       >
-                        {opp.actionLabel} &rarr;
+                        {opp.actionLabel}
                       </button>
                     </div>
                   </div>
@@ -142,7 +142,7 @@ export function TodayView() {
                 Campaign Vault
               </h3>
               <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => router.push('/app/campaigns')}>
-                View all in vault ({campaigns.length}) &rarr;
+                View all in vault ({campaigns.length})
               </button>
             </div>
 
@@ -181,7 +181,7 @@ export function TodayView() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
                       <span>{item.campaign.schedule.timingLabel || 'Active'}</span>
                       <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/app/campaigns/${item.campaign.id}`)}>
-                        Proofs &rarr;
+                        Proofs
                       </button>
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export function TodayView() {
                 STORE CONTEXT
               </span>
               <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => router.push('/app/business')}>
-                Edit &rarr;
+                Edit
               </button>
             </div>
 

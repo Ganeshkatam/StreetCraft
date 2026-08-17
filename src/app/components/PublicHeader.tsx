@@ -56,7 +56,7 @@ export function PublicHeader() {
                 onClick={() => router.push('/app/today')}
                 style={{ padding: '8px 18px', fontSize: '13.5px' }}
               >
-                Open Workspace <ArrowRight size={13} />
+                Open Workspace
               </button>
             </>
           ) : (
@@ -73,7 +73,7 @@ export function PublicHeader() {
                 className="btn-primary"
                 style={{ padding: '8px 18px', fontSize: '13.5px' }}
               >
-                <Sparkles size={13} /> Try Free Tool &rarr;
+                <Sparkles size={13} /> Try Free Tool
               </Link>
             </>
           )}

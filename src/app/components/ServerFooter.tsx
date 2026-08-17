@@ -176,7 +176,7 @@ export const ServerFooter: React.FC<ServerFooterProps> = ({ variant = 'full' }) 
       <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
         <div className="footer-top-grid">
           {/* Brand Narrative */}
-          <div style={{ maxWidth: '360px' }}>
+          <div className="footer-brand">
             <div style={{ marginBottom: '16px' }}>
               <Link href="/">
                 <Logo size="md" />

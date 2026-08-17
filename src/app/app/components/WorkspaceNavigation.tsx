@@ -7,7 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUsage } from '../../../hooks/useUsage';
 import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { LogOut, ChevronDown, Plus, Store } from 'lucide-react';
+import { LogOut, ChevronDown, Plus, Store, User, Settings, CreditCard, ShieldCheck } from 'lucide-react';
 
 export const WorkspaceNavigation: React.FC = () => {
   const router = useRouter();
@@ -18,8 +18,10 @@ export const WorkspaceNavigation: React.FC = () => {
   const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
   const [accountLimit, setAccountLimit] = useState(2);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (session.isAuthenticated) {
@@ -33,12 +35,16 @@ export const WorkspaceNavigation: React.FC = () => {
       if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) {
         setShowSwitcher(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const activeBizName = businesses.find(b => b.id === session.activeBusinessId)?.name || 'My Store';
+  const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();
 
   return (
     <>
@@ -144,6 +150,12 @@ export const WorkspaceNavigation: React.FC = () => {
             >
               Billing
             </Link>
+            <Link
+              href="/app/account"
+              className={`nav-item ${pathname === '/app/account' ? 'active' : ''}`}
+            >
+              Account
+            </Link>
           </nav>
 
           <div className="header-actions">
@@ -157,15 +169,73 @@ export const WorkspaceNavigation: React.FC = () => {
               </button>
             )}
 
-            <button
-              className="btn-ghost"
-              onClick={async () => {
-                await signOut();
-                router.push('/login');
-              }}
-            >
-              <LogOut size={13} /> Sign out
-            </button>
+            {/* Operator User Account Menu */}
+            <div className="user-menu-container" ref={userMenuRef}>
+              <button
+                className="user-badge-btn"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                title="Operator Account Menu"
+              >
+                <div className="user-avatar">{userInitial}</div>
+                <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {session.name || 'Account'}
+                </span>
+                <ChevronDown size={13} color="var(--color-ink-muted)" />
+              </button>
+
+              {showUserMenu && (
+                <div className="user-dropdown-menu">
+                  <div className="user-dropdown-header">
+                    <div className="user-dropdown-name">{session.name || 'Store Operator'}</div>
+                    <div className="user-dropdown-email">{session.email}</div>
+                    <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', fontWeight: 600 }}>
+                      <ShieldCheck size={12} /> Verified Operator
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/app/account"
+                    className="user-dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <User size={14} color="var(--color-primary)" />
+                    <span>Account Settings</span>
+                  </Link>
+
+                  <Link
+                    href="/app/business"
+                    className="user-dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <Store size={14} color="var(--color-ink-muted)" />
+                    <span>Store Preferences</span>
+                  </Link>
+
+                  <Link
+                    href="/app/billing"
+                    className="user-dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <CreditCard size={14} color="var(--color-ink-muted)" />
+                    <span>Billing &amp; Subscription</span>
+                  </Link>
+
+                  <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+
+                  <button
+                    className="user-dropdown-item danger"
+                    onClick={async () => {
+                      setShowUserMenu(false);
+                      await signOut();
+                      router.push('/login');
+                    }}
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

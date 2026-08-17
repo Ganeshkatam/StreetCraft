@@ -237,7 +237,7 @@ export const Footer: React.FC<FooterProps> = ({ variant = 'full' }) => {
         <div className="footer-top-grid">
 
           {/* Brand Column */}
-          <div style={{ maxWidth: '360px' }}>
+          <div className="footer-brand">
             <div style={{ marginBottom: '16px', cursor: 'pointer' }} onClick={() => navigate('/')}>
               <Logo size="md" />
             </div>

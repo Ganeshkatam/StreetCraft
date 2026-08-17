@@ -137,7 +137,6 @@ export default async function AuthProofPage() {
               fontWeight: 500,
             }}
           >
-            <ArrowLeft size={14} />
             Return to Public Home
           </Link>
         </div>

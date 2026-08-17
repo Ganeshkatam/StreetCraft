@@ -59,13 +59,66 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
     }
   }, [isOpen]);
 
-  // Known Local Festivals & Peak Opportunities (Indian Market)
+  // Known Local Festivals & Peak Opportunities (Comprehensive Indian & Commercial Calendar)
   const smartOpportunities: SmartOpportunity[] = useMemo(() => [
-    { day: 15, month: 7, name: 'Independence Day Special', category: 'Festival', recommendedTiming: 'August 15, Full Day Festival Special' },
-    { day: 19, month: 7, name: 'Raksha Bandhan Hampers', category: 'Festival', recommendedTiming: 'August 19, All Day Gift Specials' },
-    { day: 26, month: 7, name: 'Janmashtami Sweet Drop', category: 'Festival', recommendedTiming: 'August 26, Festive Special Window' },
-    { day: 7, month: 8, name: 'Ganesh Chaturthi Window', category: 'Festival', recommendedTiming: 'September 7–11, Festival Special Menus' },
-    { day: 15, month: 8, name: 'Onam Grand Feast', category: 'Festival', recommendedTiming: 'September 15, 11:30 AM – 3:30 PM Sadya' },
+    // January (Month 0)
+    { day: 1, month: 0, name: 'New Year Kickoff & Fresh Start', category: 'Festival', recommendedTiming: 'January 1–4, Fresh Start & Healthy Brunch' },
+    { day: 14, month: 0, name: 'Makar Sankranti & Pongal', category: 'Festival', recommendedTiming: 'January 13–16, Harvest Feast Menus' },
+    { day: 26, month: 0, name: 'Republic Day Long Weekend', category: 'Weekend', recommendedTiming: 'January 24–27, Family Brunch Special' },
+
+    // February (Month 1)
+    { day: 14, month: 1, name: "Valentine's & Couples Dining", category: 'Festival', recommendedTiming: 'February 7–15, Romantic Dinner Pairings' },
+    { day: 25, month: 1, name: 'Maha Shivratri Specials', category: 'Festival', recommendedTiming: 'February 24–26, Fasting & Sattvic Menus' },
+
+    // March (Month 2)
+    { day: 14, month: 2, name: 'Holi Festivities & Thandai', category: 'Festival', recommendedTiming: 'March 13–16, Festive Sweet Drops' },
+    { day: 20, month: 2, name: 'Ugadi & Gudi Padwa (New Year)', category: 'Festival', recommendedTiming: 'March 19–22, Traditional Feast Platters' },
+    { day: 30, month: 2, name: 'Eid-ul-Fitr Feasts', category: 'Festival', recommendedTiming: 'March 29–April 1, Celebration Platters' },
+
+    // April (Month 3)
+    { day: 5, month: 3, name: 'Easter & Spring Bakes', category: 'Festival', recommendedTiming: 'April 3–6, Spring Bakes & Brunch' },
+    { day: 14, month: 3, name: 'Baisakhi & Vishu Harvest', category: 'Festival', recommendedTiming: 'April 13–16, Regional New Year Specials' },
+    { day: 23, month: 3, name: 'World Book & Art Day', category: 'Slump Window', recommendedTiming: 'April 22–24, Coffee + Book Duo' },
+
+    // May (Month 4)
+    { day: 10, month: 4, name: "Mother's Day High Tea", category: 'Festival', recommendedTiming: 'May 8–11, Family Brunch & High Tea' },
+    { day: 20, month: 4, name: 'Summer Mango Festival', category: 'Festival', recommendedTiming: 'May 15–31, Fresh Mango Specials' },
+
+    // June (Month 5)
+    { day: 20, month: 5, name: "Father's Day Grill & Brew", category: 'Festival', recommendedTiming: 'June 19–22, Hearty Meals & Coffee Flights' },
+    { day: 21, month: 5, name: 'International Yoga Day', category: 'Slump Window', recommendedTiming: 'June 19–25, Wellness & Smoothie Boost' },
+    { day: 28, month: 5, name: 'Monsoon Chai & Pakoda Window', category: 'Slump Window', recommendedTiming: 'June 25–July 10, Rainy Afternoon Combos' },
+
+    // July (Month 6)
+    { day: 7, month: 6, name: 'World Chocolate Day', category: 'Festival', recommendedTiming: 'July 6–9, Single-Origin Chocolate Drops' },
+    { day: 19, month: 6, name: 'Guru Purnima Gratitude', category: 'Festival', recommendedTiming: 'July 18–20, Family Tribute Dinners' },
+
+    // August (Month 7)
+    { day: 15, month: 7, name: 'Independence Day Weekend', category: 'Festival', recommendedTiming: 'August 14–17, Tricolor & Long Weekend Brunch' },
+    { day: 28, month: 7, name: 'Raksha Bandhan Hampers', category: 'Festival', recommendedTiming: 'August 26–29, Sibling Gift Hampers' },
+    { day: 30, month: 7, name: 'Janmashtami Sweet Drop', category: 'Festival', recommendedTiming: 'August 28–31, Dairy & Peda Hampers' },
+
+    // September (Month 8)
+    { day: 5, month: 8, name: "Teachers' Day & Student Specials", category: 'Slump Window', recommendedTiming: 'September 4–6, Campus & Group Treats' },
+    { day: 5, month: 8, name: 'Onam Grand Feast (Sadhya)', category: 'Festival', recommendedTiming: 'September 3–6, 11:30 AM – 3:30 PM Sadya' },
+    { day: 15, month: 8, name: 'Ganesh Chaturthi Window', category: 'Festival', recommendedTiming: 'September 14–24, Modak & Feast Platters' },
+
+    // October (Month 9)
+    { day: 1, month: 9, name: 'International Coffee Day', category: 'Slump Window', recommendedTiming: 'September 30–October 2, Barista Specials' },
+    { day: 15, month: 9, name: 'Navratri & Durga Puja Feasts', category: 'Festival', recommendedTiming: 'October 10–20, Evening & Garba Treats' },
+    { day: 22, month: 9, name: 'Dussehra Celebrations', category: 'Festival', recommendedTiming: 'October 20–23, Auspicious Sweet Drops' },
+    { day: 31, month: 9, name: 'Halloween Spooky Treats', category: 'Festival', recommendedTiming: 'October 29–November 1, Themed Bakes & Lattes' },
+
+    // November (Month 10)
+    { day: 10, month: 10, name: 'Diwali Lights & Gifting Rush', category: 'Festival', recommendedTiming: 'November 6–13, Premium Gift Hampers' },
+    { day: 14, month: 10, name: 'Bhai Dooj Sibling Lunches', category: 'Festival', recommendedTiming: 'November 13–15, Sibling Dining Combos' },
+    { day: 24, month: 10, name: 'Guru Nanak Jayanti', category: 'Festival', recommendedTiming: 'November 23–25, Community Feast Specials' },
+    { day: 27, month: 10, name: 'Black Friday & Small Business Weekend', category: 'Weekend', recommendedTiming: 'November 26–30, Holiday Gift Card Specials' },
+
+    // December (Month 11)
+    { day: 10, month: 11, name: 'Winter Warmers & Hot Chocolate', category: 'Slump Window', recommendedTiming: 'December 1–18, Spiced Hot Cocoa Flights' },
+    { day: 25, month: 11, name: 'Christmas & Winter Carnival', category: 'Festival', recommendedTiming: 'December 20–26, Plum Cakes & Roast Platters' },
+    { day: 31, month: 11, name: "New Year's Eve Countdown", category: 'Festival', recommendedTiming: 'December 30–January 2, Celebration Reservations' },
   ], []);
 
   // Format full output string with current dates & time slot
