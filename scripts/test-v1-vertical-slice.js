@@ -297,6 +297,23 @@ async function runVerticalSliceTest() {
   }
   console.log('PASS: Database strictly rejected unauthorized direct business_members insert.');
 
+  // Attempt direct table insert into campaigns for Business A (bypassing save_campaign_atomically)
+  const { error: directCampaignError } = await supabase
+    .from('campaigns')
+    .insert({
+      business_id: businessA_Id,
+      campaign_type: 'FLASH_OFFER',
+      objective: 'MORE_WALK_INS',
+      target_audience: 'Direct Inserter',
+      status: 'READY'
+    });
+
+  if (!directCampaignError) {
+    console.error('FAIL: Security vulnerability! Direct table insertion into campaigns bypassed save_campaign_atomically.');
+    process.exit(1);
+  }
+  console.log('PASS: Database strictly rejected direct table insert into campaigns (forces save_campaign_atomically).');
+
   // -------------------------------------------------------------
   // TEST 8: Commercial Business Limit Enforcement (Free Tier: Max 2)
   // -------------------------------------------------------------
