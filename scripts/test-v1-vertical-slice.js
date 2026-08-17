@@ -33,8 +33,18 @@ async function runVerticalSliceTest() {
   }
   console.log('PASS: User authenticated successfully with UID:', authData.user.id);
 
-  // Clean test user state for idempotent execution
-  await supabase.rpc('reset_test_user_state');
+  // -------------------------------------------------------------
+  // TEST 1B: Verify Direct Business & Usage INSERT is Strictly Blocked
+  // -------------------------------------------------------------
+  const { error: directInsertError } = await supabase.from('businesses').insert({
+    name: 'Bypassed Business',
+    category: 'Cafe'
+  });
+  if (!directInsertError) {
+    console.error('FAIL: Direct table insert into businesses succeeded when it must be blocked.');
+    process.exit(1);
+  }
+  console.log('PASS: Direct table insert into businesses correctly rejected by database security.');
 
   // -------------------------------------------------------------
   // TEST 2: Business A Creation via Atomic RPC
@@ -117,7 +127,7 @@ async function runVerticalSliceTest() {
     qrAction: 'Scan to claim counter reward'
   };
 
-  const { data: campaignResult, error: campaignError } = await supabase.rpc('save_campaign_pack_atomically', {
+  const { data: campaignResult, error: campaignError } = await supabase.rpc('save_campaign_atomically', {
     p_business_id: businessA_Id,
     p_campaign_type: 'WEEKDAY_BOOST',
     p_objective: 'MORE_WALK_INS',
@@ -144,7 +154,7 @@ async function runVerticalSliceTest() {
   campaignA_Id = campaignResult.campaign_id;
   console.log('PASS: Campaign saved atomically with ID:', campaignA_Id);
   console.log('      Status:', campaignResult.status);
-  console.log('      Usage:', campaignResult.packs_used, 'of', campaignResult.pack_limit, 'campaigns used');
+  console.log('      Usage:', campaignResult.campaigns_used, 'of', campaignResult.campaign_limit, 'campaigns used');
 
   // -------------------------------------------------------------
   // TEST 5: Verify Vault Persistence & 4 Proofs
@@ -241,7 +251,7 @@ async function runVerticalSliceTest() {
   const strangerClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
   // Attempt to call RPC with Business A's ID without authentication
-  const { data: unauthRpc, error: unauthError } = await strangerClient.rpc('save_campaign_pack_atomically', {
+  const { data: unauthRpc, error: unauthError } = await strangerClient.rpc('save_campaign_atomically', {
     p_business_id: businessA_Id,
     p_campaign_type: 'FLASH_OFFER',
     p_objective: 'MORE_WALK_INS',
@@ -271,6 +281,21 @@ async function runVerticalSliceTest() {
     process.exit(1);
   }
   console.log('PASS: Database RLS denied read access to Business A campaigns for unauthenticated client (returned 0 rows).');
+
+  // Attempt to insert unauthorized membership into Business A
+  const { error: intruderMemberError } = await strangerClient
+    .from('business_members')
+    .insert({
+      business_id: businessA_Id,
+      user_id: '00000000-0000-0000-0000-000000000000',
+      role: 'admin'
+    });
+
+  if (!intruderMemberError) {
+    console.error('FAIL: Security vulnerability! Direct membership insert into arbitrary business was allowed.');
+    process.exit(1);
+  }
+  console.log('PASS: Database strictly rejected unauthorized direct business_members insert.');
 
   // -------------------------------------------------------------
   // TEST 8: Commercial Business Limit Enforcement (Free Tier: Max 2)
@@ -406,15 +431,16 @@ async function runVerticalSliceTest() {
   // Verify updated usage_periods quota in PostgreSQL
   const { data: updatedPeriods } = await supabase
     .from('usage_periods')
-    .select('plan, pack_limit, packs_used')
+    .select('*')
     .eq('business_id', businessA_Id)
     .single();
 
-  if (!updatedPeriods || updatedPeriods.plan !== 'GROWTH' || updatedPeriods.pack_limit !== 300) {
+  const quotaLimit = updatedPeriods?.campaign_limit ?? updatedPeriods?.pack_limit;
+  if (!updatedPeriods || updatedPeriods.plan !== 'GROWTH' || quotaLimit !== 300) {
     console.error('FAIL: Quota did not update post-payment:', updatedPeriods);
     process.exit(1);
   }
-  console.log('PASS: Business A quota verified post-payment: Plan:', updatedPeriods.plan, '| Monthly Limit:', updatedPeriods.pack_limit);
+  console.log('PASS: Business A quota verified post-payment: Plan:', updatedPeriods.plan, '| Monthly Limit:', quotaLimit);
 
   console.log('\n================================================================');
   console.log('ALL 11 END-TO-END COMMERCIAL, PAYMENT & PRODUCT TESTS PASSED (100%)');

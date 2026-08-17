@@ -665,6 +665,170 @@ button {
   color: var(--color-ink);
 }
 
+/* ==========================================================================
+   Bespoke App Dialog System
+   ========================================================================== */
+
+.app-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(18, 20, 19, 0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: dialogBackdropFadeIn 180ms ease-out forwards;
+}
+
+.app-dialog-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 40px -12px rgba(18, 20, 19, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  animation: dialogCardPopIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialogCardPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.app-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  position: relative;
+}
+
+.app-dialog-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-dialog-header-text {
+  flex: 1;
+}
+
+.app-dialog-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: 2px;
+}
+
+.app-dialog-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.3;
+}
+
+.app-dialog-close-btn {
+  background: none;
+  border: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.app-dialog-close-btn:hover {
+  color: var(--color-ink);
+  background-color: var(--color-surface-raised);
+}
+
+.app-dialog-body {
+  margin-bottom: var(--space-6);
+}
+
+.app-dialog-message {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-ink-secondary, #4a4d48);
+}
+
+.app-dialog-input-group {
+  margin-top: var(--space-4);
+}
+
+.app-dialog-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--color-surface-raised, #fcfaf6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.app-dialog-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-subtle);
+}
+
+.app-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.app-dialog-cancel-btn {
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.app-dialog-confirm-btn {
+  padding: 8px 20px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
 /* Editorial Footer */
 .editorial-footer {
   border-top: 1px solid var(--color-border);

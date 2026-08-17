@@ -50,7 +50,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
     },
     {
       q: 'Can I start for free without a credit card?',
-      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete campaigns every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
+      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_campaign_limit ?? plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete campaigns every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
     },
     {
       q: 'Can I upgrade or cancel my plan at any time?',
@@ -175,7 +175,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
                        <CheckCircle2 size={18} color="var(--color-ink)" />
-                       <span style={{ fontWeight: 600 }}>{founderPlan.monthly_pack_limit} campaigns</span>
+                       <span style={{ fontWeight: 600 }}>{founderPlan.monthly_campaign_limit ?? founderPlan.monthly_pack_limit ?? 100} campaigns</span>
                      </div>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
                        <CheckCircle2 size={18} color="var(--color-ink)" />
@@ -273,7 +273,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                 </div>
 
                 <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '24px', paddingBottom: '14px', borderBottom: '1px solid var(--color-border)' }}>
-                  {p.monthly_pack_limit} campaigns monthly
+                  {p.monthly_campaign_limit ?? p.monthly_pack_limit ?? 3} campaigns monthly
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', marginBottom: '32px' }}>
@@ -368,7 +368,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             </thead>
             <tbody>
               {[
-                { feature: 'Monthly Campaign Limit', starter: `${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} campaigns`, pro: `${plans.find(p => p.id === 'PRO')?.monthly_pack_limit ?? 100} campaigns`, growth: `${plans.find(p => p.id === 'GROWTH')?.monthly_pack_limit ?? 300} campaigns` },
+                { feature: 'Monthly Campaign Limit', starter: `${plans.find(p => p.id === 'FREE')?.monthly_campaign_limit ?? plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} campaigns`, pro: `${plans.find(p => p.id === 'PRO')?.monthly_campaign_limit ?? plans.find(p => p.id === 'PRO')?.monthly_pack_limit ?? 100} campaigns`, growth: `${plans.find(p => p.id === 'GROWTH')?.monthly_campaign_limit ?? plans.find(p => p.id === 'GROWTH')?.monthly_pack_limit ?? 300} campaigns` },
                 { feature: 'Google Search & Maps Store Updates', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'Instagram Reel Hook & Stories', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'WhatsApp Broadcast Copy', starter: 'Included', pro: 'Included', growth: 'Included' },

@@ -8,6 +8,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
+
 export const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
@@ -25,7 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
       await resetPassword(email);
       setIsSubmitted(true);
     } catch (err) {
-      setErrorMsg((err as Error).message || 'Failed to send recovery instructions.');
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to send recovery instructions. Please verify your email and try again.'));
     } finally {
       setIsSubmitting(false);
     }

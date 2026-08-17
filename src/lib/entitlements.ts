@@ -10,7 +10,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     name: 'Neighborhood Starter',
     priceINR: 0,
     annualPriceINR: 0,
-    monthlyPackLimit: 3,
+    monthlyCampaignLimit: 3,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     features: [
       '3 complete campaigns / month',
@@ -24,7 +24,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     name: 'High-Street Pro',
     priceINR: 399,
     annualPriceINR: 3990,
-    monthlyPackLimit: 100,
+    monthlyCampaignLimit: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       '100 complete campaigns / month',
@@ -40,7 +40,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     name: 'Multi-Store Growth',
     priceINR: 799,
     annualPriceINR: 7990,
-    monthlyPackLimit: 300,
+    monthlyCampaignLimit: 300,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       '300 complete campaigns / month',
@@ -55,7 +55,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     name: 'Early Adopter Pro',
     priceINR: 279,
     annualPriceINR: 2790,
-    monthlyPackLimit: 100,
+    monthlyCampaignLimit: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
       '100 complete campaigns / month',
@@ -70,7 +70,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
 
 export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
   FREE: {
-    campaignPacks: 3,
+    campaigns: 3,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     dailyBriefing: true,
     businessPreferences: true,
@@ -78,7 +78,7 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     teamSeats: 1,
   },
   PRO: {
-    campaignPacks: 100,
+    campaigns: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     dailyBriefing: true,
     businessPreferences: true,
@@ -86,7 +86,7 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     teamSeats: 3,
   },
   GROWTH: {
-    campaignPacks: 300,
+    campaigns: 300,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     dailyBriefing: true,
     businessPreferences: true,
@@ -94,7 +94,7 @@ export const PLAN_ENTITLEMENTS: Record<PlanTier, PlanEntitlements> = {
     teamSeats: 10,
   },
   FOUNDER: {
-    campaignPacks: 100,
+    campaigns: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     dailyBriefing: true,
     businessPreferences: true,
@@ -109,12 +109,24 @@ export function getPlanConfig(plan: PlanTier): PlanConfig {
 
 export function getEntitlement<K extends keyof PlanEntitlements>(
   plan: PlanTier,
-  key: K
+  feature: K
 ): PlanEntitlements[K] {
   const entitlements = PLAN_ENTITLEMENTS[plan] || PLAN_ENTITLEMENTS.FREE;
-  return entitlements[key];
+  return entitlements[feature];
 }
 
-export function canGeneratePack(usedPacks: number, packLimit: number): boolean {
-  return usedPacks < packLimit;
+export function hasChannelAccess(
+  plan: PlanTier,
+  channel: 'GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER'
+): boolean {
+  const channels = getEntitlement(plan, 'channels');
+  return channels.includes(channel);
+}
+
+export function canCreateCampaignPack(
+  plan: PlanTier,
+  currentMonthPacksUsed: number
+): boolean {
+  const packLimit = getEntitlement(plan, 'campaigns');
+  return currentMonthPacksUsed < packLimit;
 }

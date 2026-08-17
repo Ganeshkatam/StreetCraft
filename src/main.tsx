@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import './styles.css';
 
 import { ThemeProvider } from './theme/ThemeProvider';
+import { DialogProvider } from './context/DialogContext';
 import { useAuth } from './hooks/useAuth';
 import { useBusiness } from './hooks/useBusiness';
 import { useUsage } from './hooks/useUsage';
@@ -286,9 +287,11 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   createRoot(rootElement).render(
     <ThemeProvider>
-      <BrowserRouter>
-        <AppLayout />
-      </BrowserRouter>
+      <DialogProvider>
+        <BrowserRouter>
+          <AppLayout />
+        </BrowserRouter>
+      </DialogProvider>
     </ThemeProvider>
   );
 }

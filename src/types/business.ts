@@ -51,3 +51,17 @@ export interface UserSession {
   activeBusinessId: UUID;
   role: MemberRole;
 }
+
+export interface UserProfile {
+  id: UUID;
+  fullName: string;
+  avatarUrl?: string;
+  phone: string;
+  notificationPreferences: {
+    email: boolean;
+    whatsapp: boolean;
+    weeklyDigest: boolean;
+  };
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+}

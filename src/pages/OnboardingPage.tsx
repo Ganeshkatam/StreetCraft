@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import {
   Store,
   ShieldCheck,
@@ -73,11 +74,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ claimToken, onSu
       if (onSuccess) onSuccess();
       setStep(3);
     } catch (err: any) {
-      if (err.message?.includes('BUSINESS_LIMIT_REACHED')) {
-        setErrorMsg("You've reached your plan's business limit. Upgrade your account to add more businesses.");
-      } else {
-        setErrorMsg(err.message);
-      }
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store profile. Please review your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBusiness } from '../../hooks/useBusiness';
 import { useUsage } from '../../hooks/useUsage';
 import { api } from '../../lib/api';
+import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
@@ -125,7 +126,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       setStep(4);
       await refreshUsage();
     } catch (err) {
-      setGenerationError((err as Error).message || 'Failed to create campaign. Your monthly usage was not deducted.');
+      setGenerationError(getUserFacingErrorMessage(err, 'Failed to create campaign. Your monthly allowance was not deducted. Please try again.'));
     } finally {
       setIsGenerating(false);
     }

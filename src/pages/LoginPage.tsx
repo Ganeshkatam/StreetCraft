@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import {
   Store,
   Megaphone,
@@ -46,14 +48,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
         navigate('/setup');
       }
     } catch (err) {
-      const raw = (err as Error).message || 'Failed to sign in';
-      if (raw.toLowerCase().includes('invalid login credentials')) {
-        setErrorMsg('Invalid email or password. Please verify your credentials and try again.');
-      } else if (raw.toLowerCase().includes('email not confirmed')) {
-        setErrorMsg('Please confirm your email address via the link sent to your inbox.');
-      } else {
-        setErrorMsg(raw);
-      }
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to sign in. Please verify your credentials and try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -218,7 +213,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
 
               <button
                 type="button"
-                onClick={() => alert('Google Sign In is enabled in production Supabase.')}
+                onClick={async () => {
+                  setErrorMsg(null);
+                  setIsSubmitting(true);
+                  try {
+                    if (isSupabaseConfigured && supabase) {
+                      const { error } = await supabase.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                          redirectTo: window.location.origin + '/app'
+                        }
+                      });
+                      if (error) throw error;
+                    } else {
+                      setErrorMsg('Google Sign-In requires active Supabase OAuth configuration.');
+                    }
+                  } catch (err: any) {
+                    setErrorMsg(err?.message || 'Failed to initiate Google sign-in.');
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
                 className="auth-google-btn"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24">

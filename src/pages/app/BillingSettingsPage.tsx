@@ -5,6 +5,8 @@ import { UserSession } from '../../types/business';
 import { UsageMeter } from '../../components/UsageMeter';
 import { CreditCard, Sparkles, AlertCircle, History, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { api } from '../../lib/api';
+import { getUserFacingErrorMessage } from '../../lib/userFacingError';
+import { useDialog } from '../../context/DialogContext';
 
 interface BillingSettingsPageProps {
   businessId: string;
@@ -19,6 +21,7 @@ export const BillingSettingsPage: React.FC<BillingSettingsPageProps> = ({
 }) => {
   const { usage, events, refreshUsage } = useUsage(businessId);
   const { profile, refreshProfile } = useBusiness(businessId);
+  const dialog = useDialog();
   const [cancelling, setCancelling] = useState(false);
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
 
@@ -26,9 +29,17 @@ export const BillingSettingsPage: React.FC<BillingSettingsPageProps> = ({
   const isPaid = plan !== 'FREE';
 
   const handleCancel = async () => {
-    if (!window.confirm('Are you sure you want to cancel your paid plan? You will revert to the Free tier (max 3 campaigns/month, 2 businesses).')) {
-      return;
-    }
+    const confirmed = await dialog.confirm({
+      title: 'Confirm Plan Cancellation',
+      eyebrow: 'COMMERCIAL STATE',
+      variant: 'danger',
+      message: 'Are you sure you want to cancel your paid subscription? Your account will revert to the Free Tier (max 3 campaigns/month and 2 businesses) at the end of the current cycle.',
+      confirmText: 'Confirm Downgrade',
+      cancelText: 'Keep Plan',
+    });
+
+    if (!confirmed) return;
+
     setCancelling(true);
     setCancelMessage(null);
     try {
@@ -37,7 +48,7 @@ export const BillingSettingsPage: React.FC<BillingSettingsPageProps> = ({
       await refreshUsage();
       await refreshProfile();
     } catch (err) {
-      setCancelMessage((err as Error).message);
+      setCancelMessage(getUserFacingErrorMessage(err, 'Failed to update subscription. Please try again.'));
     } finally {
       setCancelling(false);
     }

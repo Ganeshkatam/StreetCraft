@@ -5,7 +5,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import { UUID } from '../types/common';
-import { BusinessProfile, UserSession } from '../types/business';
+import { BusinessProfile, UserSession, UserProfile } from '../types/business';
 import {
   Campaign,
   CampaignStatus,
@@ -83,6 +83,93 @@ class RealtimeApiClient {
       activeBusinessId,
       role,
     };
+  }
+
+  // 1b. USER PROFILE (public.profiles)
+  public async getUserProfile(userId?: UUID): Promise<UserProfile | null> {
+    if (!isSupabaseConfigured) {
+      const sess = await this.getSession();
+      return {
+        id: sess.userId || 'usr_local',
+        fullName: sess.name || 'Store Operator',
+        phone: sess.phone || '',
+        notificationPreferences: {
+          email: true,
+          whatsapp: false,
+          weeklyDigest: true,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+    if (!targetUserId) return null;
+
+    const { data, error } = await (supabase.from('profiles') as any)
+      .select('*')
+      .eq('id', targetUserId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        id: targetUserId,
+        fullName: '',
+        phone: '',
+        notificationPreferences: {
+          email: true,
+          whatsapp: false,
+          weeklyDigest: true,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    return {
+      id: data.id,
+      fullName: data.full_name || '',
+      avatarUrl: data.avatar_url || '',
+      phone: data.phone || '',
+      notificationPreferences: data.notification_preferences || {
+        email: true,
+        whatsapp: false,
+        weeklyDigest: true,
+      },
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  public async updateUserProfile(
+    userId: UUID,
+    updates: {
+      fullName?: string;
+      phone?: string;
+      avatarUrl?: string;
+      notificationPreferences?: { email: boolean; whatsapp: boolean; weeklyDigest: boolean };
+    }
+  ): Promise<UserProfile | null> {
+    if (!isSupabaseConfigured) {
+      return this.getUserProfile(userId);
+    }
+
+    const payload: any = {
+      updated_at: new Date().toISOString(),
+    };
+    if (updates.fullName !== undefined) payload.full_name = updates.fullName;
+    if (updates.phone !== undefined) payload.phone = updates.phone;
+    if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
+    if (updates.notificationPreferences !== undefined) payload.notification_preferences = updates.notificationPreferences;
+
+    const { error } = await (supabase.from('profiles') as any)
+      .upsert({
+        id: userId,
+        ...payload,
+      });
+
+    if (error) throw error;
+    return this.getUserProfile(userId);
   }
 
   public async getMyBusinesses(): Promise<Array<{ id: UUID; name: string }>> {
@@ -379,15 +466,18 @@ class RealtimeApiClient {
 
     if (!businessId || !isSupabaseConfigured) {
       const defaultPlan = plans[0];
+      const limit = defaultPlan.monthly_campaign_limit ?? defaultPlan.monthly_pack_limit ?? 3;
       return {
         periodId: 'up_local',
         businessId: businessId || 'biz_local',
         plan: defaultPlan.id as PlanTier,
         planName: defaultPlan.name,
         priceINR: defaultPlan.monthly_inr,
-        monthlyLimit: defaultPlan.monthly_pack_limit,
+        monthlyLimit: limit,
+        usedCampaigns: 0,
+        remainingCampaigns: limit,
         usedPacks: 0,
-        remainingPacks: defaultPlan.monthly_pack_limit,
+        remainingPacks: limit,
         percentUsed: 0,
         periodStart: new Date().toISOString().split('T')[0],
         periodEnd: new Date().toISOString().split('T')[0],
@@ -404,9 +494,10 @@ class RealtimeApiClient {
 
     const planTier = (period?.plan || 'FREE') as PlanTier;
     const planObj = plans.find((p) => p.id === planTier) || plans[0];
-    const packLimit = period?.pack_limit ?? planObj.monthly_pack_limit;
-    const packsUsed = period?.packs_used ?? 0;
-    const remainingPacks = Math.max(0, packLimit - packsUsed);
+    const planLimit = planObj.monthly_campaign_limit ?? planObj.monthly_pack_limit ?? 3;
+    const campaignLimit = period?.campaign_limit ?? period?.pack_limit ?? planLimit;
+    const campaignsUsed = period?.campaigns_used ?? period?.packs_used ?? 0;
+    const remainingCampaigns = Math.max(0, campaignLimit - campaignsUsed);
 
     return {
       periodId: period?.id || '',
@@ -414,13 +505,15 @@ class RealtimeApiClient {
       plan: planTier,
       planName: planObj.name,
       priceINR: planObj.monthly_inr,
-      monthlyLimit: packLimit,
-      usedPacks: packsUsed,
-      remainingPacks,
-      percentUsed: packLimit > 0 ? Math.min(100, Math.round((packsUsed / packLimit) * 100)) : 0,
+      monthlyLimit: campaignLimit,
+      usedCampaigns: campaignsUsed,
+      remainingCampaigns,
+      usedPacks: campaignsUsed,
+      remainingPacks: remainingCampaigns,
+      percentUsed: campaignLimit > 0 ? Math.min(100, Math.round((campaignsUsed / campaignLimit) * 100)) : 0,
       periodStart: period?.period_start || '',
       periodEnd: period?.period_end || '',
-      canGenerate: packsUsed < packLimit,
+      canGenerate: campaignsUsed < campaignLimit,
     };
   }
 
@@ -475,7 +568,7 @@ class RealtimeApiClient {
     }
 
     if (isSupabaseConfigured && businessId) {
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('save_campaign_pack_atomically', {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('save_campaign_atomically', {
         p_business_id: businessId,
         p_campaign_type: input.type,
         p_objective: input.objective,

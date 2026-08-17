@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlanTier, DatabasePlan } from '../types/billing';
 import { api } from '../lib/api';
 import { X, Check } from 'lucide-react';
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -18,12 +19,15 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
+      setErrorNotice(null);
+      setSuccessNotice(null);
       api.getPlans().then((data) => {
         setPlans(data);
         setLoading(false);
@@ -35,13 +39,15 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   const handleUpgrade = async (plan: DatabasePlan) => {
     setIsProcessing(true);
+    setErrorNotice(null);
     try {
       const paymentRef = 'pay_' + Math.random().toString(36).substring(2, 11);
       const orderRef = 'order_' + Math.random().toString(36).substring(2, 11);
 
       await api.confirmPaymentAndActivateSubscription('razorpay', paymentRef, orderRef, plan.id, 'monthly');
 
-      setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${plan.monthly_pack_limit} monthly campaigns.`);
+      const limit = plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 100;
+      setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${limit} monthly campaigns.`);
       if (onPlanUpdated) onPlanUpdated();
       if (onSuccess) onSuccess();
       setTimeout(() => {
@@ -49,7 +55,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         onClose();
       }, 1400);
     } catch (err: any) {
-      alert(err.message || 'Payment confirmation failed.');
+      setErrorNotice(getUserFacingErrorMessage(err, 'Payment confirmation failed. Please verify your details or try again.'));
     } finally {
       setIsProcessing(false);
     }
@@ -67,6 +73,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             <X size={18} />
           </button>
         </div>
+
+        {errorNotice && (
+          <div style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: 'var(--radius-xs)', margin: '16px 0 8px', color: '#b91c1c', fontSize: '13.5px' }}>
+            {errorNotice}
+          </div>
+        )}
 
         {successNotice ? (
           <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', margin: '20px 0' }}>
@@ -107,7 +119,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                           <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}>/mo</span>
                         </div>
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px' }}>
-                          {plan.monthly_pack_limit} campaigns / month
+                          {plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 3} campaigns / month
                         </div>
                         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-ink-soft)' }}>
                           {plan.features.slice(0, 3).map((f, i) => (

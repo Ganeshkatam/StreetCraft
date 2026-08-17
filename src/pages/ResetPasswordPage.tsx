@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { KeyRound, Check, AlertCircle, Sparkles } from 'lucide-react';
 
+import { getUserFacingErrorMessage } from '../lib/userFacingError';
+
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -34,7 +36,7 @@ export const ResetPasswordPage: React.FC = () => {
         navigate('/login');
       }, 2500);
     } catch (err) {
-      setErrorMsg((err as Error).message);
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to update your password. Please request a new reset link.'));
     } finally {
       setLoading(false);
     }
