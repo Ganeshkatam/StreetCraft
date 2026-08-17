@@ -9,24 +9,26 @@
     "url": "https://github.com/Ganeshkatam/StreetCraft.git"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
     "tree": "node scripts/generate-project-tree.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "^1.31.0",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "^7.18.2",
-    "vite": "latest",
-    "zod": "^4.4.3"
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.49.1",
+    "lucide-react": "^1.16.0",
+    "next": "^15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.5",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "typescript": "^7.0.2"
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
   }
 }

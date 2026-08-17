@@ -1,17 +1,12 @@
 /**
- * StreetCraft Privacy-Conscious Observability & Product Telemetry
- * Captures lifecycle funnel events without logging sensitive store data.
+ * StreetCraft Lightweight Client Telemetry & Metric Logger
  */
 
 export type TelemetryEvent =
-  | 'user_signup'
-  | 'user_signin'
-  | 'business_created'
-  | 'preferences_saved'
-  | 'campaign_started'
   | 'campaign_generated'
   | 'campaign_saved'
-  | 'campaign_failed'
+  | 'campaign_exported'
+  | 'opportunity_viewed'
   | 'proof_copied'
   | 'subscription_upgraded'
   | 'subscription_cancelled'
@@ -27,7 +22,7 @@ export interface TelemetryPayload {
 }
 
 class TelemetryLogger {
-  private _isDev = import.meta.env.DEV;
+  private _isDev = typeof process !== 'undefined' && process.env ? process.env.NODE_ENV !== 'production' : true;
 
   public track(event: TelemetryEvent, payload?: TelemetryPayload): void {
     const timestamp = new Date().toISOString();

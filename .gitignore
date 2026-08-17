@@ -3,7 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
-# Production build
+# Production build & Next.js cache
+.next/
+out/
 dist/
 build/
 
