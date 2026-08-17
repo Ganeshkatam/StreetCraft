@@ -42,7 +42,7 @@ import { LayoutDashboard, Sparkles, FolderArchive, Store, CreditCard, User } fro
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, signOut } = useAuth();
+  const { session, signOut, loading: authLoading } = useAuth();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [claimToken, setClaimToken] = useState<string | null>(null);
   const [campaignPreset, setCampaignPreset] = useState<DynamicOpportunity | null>(null);
@@ -69,6 +69,27 @@ function AppLayout() {
     setClaimToken(token);
     navigate('/login');
   };
+
+  // Strictly block access to /app/* without authenticated session and active business
+  if (isAppView) {
+    if (authLoading) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-page)' }}>
+          <div style={{ fontSize: '14px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}>
+            Loading store workspace...
+          </div>
+        </div>
+      );
+    }
+
+    if (!session.isAuthenticated || !session.userId) {
+      return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    }
+
+    if (!session.activeBusinessId) {
+      return <Navigate to="/setup" replace />;
+    }
+  }
 
   return (
     <div className="app-container">

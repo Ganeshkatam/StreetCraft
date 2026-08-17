@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -22,6 +22,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -43,7 +44,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
       if (onSuccess) onSuccess();
 
       if (session.activeBusinessId) {
-        navigate('/app/today');
+        const fromPath = (location.state as any)?.from;
+        navigate(fromPath && fromPath.startsWith('/app') ? fromPath : '/app/today');
       } else {
         navigate('/setup');
       }
