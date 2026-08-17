@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '../../lib/api';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { DatabasePlan } from '../../types/billing';
-import { Logo } from '../../components/Logo';
+import { PublicHeader } from '../components/PublicHeader';
 import { ServerFooter } from '../components/ServerFooter';
 import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -61,24 +61,7 @@ export function PricingView() {
 
   return (
     <>
-      <header className="main-header">
-        <div className="header-container">
-          <Link href="/" className="brand-wrapper">
-            <Logo size="md" />
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '13.5px' }}>
-              How It Works
-            </Link>
-            <Link href="/pricing" className="btn-ghost" style={{ fontSize: '13.5px', color: 'var(--color-primary)' }}>
-              Pricing
-            </Link>
-            <Link href="/login" className="btn-primary" style={{ padding: '8px 18px', fontSize: '13.5px' }}>
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main style={{ maxWidth: '1360px', margin: '0 auto', padding: '40px var(--space-gutter) 80px' }}>
 

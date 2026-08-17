@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Logo } from '../../components/Logo';
+import { PublicHeader } from '../components/PublicHeader';
 import { ServerFooter } from '../components/ServerFooter';
 import { Mail, MessageCircle, Check } from 'lucide-react';
 
@@ -22,24 +21,7 @@ export function ContactView() {
 
   return (
     <>
-      <header className="main-header">
-        <div className="header-container">
-          <Link href="/" className="brand-wrapper">
-            <Logo size="md" />
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '13.5px' }}>
-              How It Works
-            </Link>
-            <Link href="/pricing" className="btn-ghost" style={{ fontSize: '13.5px' }}>
-              Pricing
-            </Link>
-            <Link href="/login" className="btn-primary" style={{ padding: '8px 18px', fontSize: '13.5px' }}>
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main style={{ maxWidth: '800px', margin: '0 auto', padding: '60px var(--space-gutter) 96px' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
