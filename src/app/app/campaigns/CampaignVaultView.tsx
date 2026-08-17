@@ -7,7 +7,7 @@ import { useCampaign } from '../../../hooks/useCampaign';
 import { CampaignStatus } from '../../../types/campaign';
 import { CampaignStatusBadge } from '../../../components/CampaignStatusBadge';
 import { ChannelCard } from '../../../components/ChannelCard';
-import { Edit3, Plus } from 'lucide-react';
+import { Edit3, Plus, Store } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CampaignVaultView() {
@@ -20,6 +20,42 @@ export function CampaignVaultView() {
   const [expandedId] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState<string>('');
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+          Loading campaign vault...
+        </div>
+      </div>
+    );
+  }
+
+  if (!businessId) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="card" style={{ maxWidth: '560px', margin: '60px auto', textAlign: 'center', padding: '48px 36px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Store size={26} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
+            No Storefront Selected
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+            You haven&apos;t set up a store profile yet. Complete the quick onboarding setup to start recording campaigns in your vault.
+          </p>
+          <button
+            onClick={() => router.push('/setup')}
+            className="btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} />
+            Set Up Your Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const filteredCampaigns = campaigns.filter((item) => {
     if (filter === 'ALL') return true;

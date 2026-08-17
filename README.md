@@ -1,7 +1,7 @@
 # StreetCraft
 
 > **Turn one business opportunity into everything customers need to see.**  
-> A growth engine for physical businesses across Google, Instagram, WhatsApp, and your counter — prepared together.
+> A growth engine for physical businesses across Google, Instagram, WhatsApp, and counter print — prepared together.
 
 ---
 
@@ -22,40 +22,44 @@ StreetCraft is a specialized growth platform built for physical retail, food, sa
 - **Outcome-First Workflow**: From daily briefing to one-click campaign generation without marketing friction.
 - **Relational Data Integrity**: Backed by PostgreSQL on Supabase with zero client-side mock data fallbacks in production.
 - **Multi-Tenant Security**: Every business record is isolated through PostgreSQL Row Level Security (RLS) and atomic `SECURITY DEFINER` procedures.
-- **Context-Aware Navigation & Layout**:
-  - Full editorial footer on public discovery pages (`/`, `/how-it-works`, `/pricing`).
-  - Compact footer on utility pages (`/free-tool`, `/contact`).
-  - Minimal legal footer on compliance pages (`/privacy`, `/terms`).
-  - Zero marketing footer or navigation clutter on auth, onboarding, and workspace routes.
+- **Strict Email Verification Gating**: Operator profiles (`public.profiles`) are strictly prevented from being created until email confirmation (`email_confirmed_at IS NOT NULL`).
+- **Automated Unconfirmed Users Cleanup**: A Postgres `pg_cron` schedule automatically purges unverified signups older than 1 hour.
+- **Date-Aware Marketing Calendar**: Dynamic proximity engine that evaluates upcoming national and regional festivals relative to current time rather than static array order.
+- **Modern Notification System**: Uses Sonner toasts for consistent, accessible notifications across the application.
+- **Clean Button Typography**: Modern, distraction-free button styling without directional arrows or glyphs.
+- **Unobstructed Workspace Layout**: Dedicated workspace navigation with multi-store switcher and operator profile menu, with footers removed from all `/app/*` routes.
 
 ---
 
 ## Application Route Topology
 
-### Public Discovery & Acquisition
+### Public Discovery & Marketing
 - `/` — Platform landing page and value proposition
 - `/how-it-works` — Visual explanation of the 4-touchpoint engine
 - `/pricing` — Transparent billing tiers, business limits, and Founder slots
 - `/free-tool` — Instant anonymous campaign generator with lead-claim handover
-- `/contact` — Operator support and pilot inquiries
+- `/contact` — Operator support and direct founder channels
 - `/privacy` — Privacy policy and data handling terms
 - `/terms` — Commercial terms of service
 
 ### Authentication & Account Access
-- `/login` — Secure email/password authentication
-- `/signup` — Operator registration
+- `/login` — Secure email/password authentication with error query-param capture
+- `/signup` — Operator registration with automated redirect to verification
+- `/verify-email` — Dedicated verification screen with 60-second cooldown resend trigger
+- `/auth/callback` — Supabase PKCE and OTP token handler with open-redirect protection
+- `/auth/confirm` — Email confirmation handler matching standard Supabase templates
 - `/forgot-password` — Password reset trigger
 - `/reset-password` — Password update confirmation
 - `/setup` — Storefront onboarding wizard
 
 ### Workspace (Protected — Requires Authenticated Session & Active Business)
-- `/app/today` — Daily briefing, local opportunity triggers, and quota status
-- `/app/create` — 4-touchpoint campaign generator and composer
+- `/app/today` — Daily briefing, live opportunity radar, and quota status
+- `/app/create` — 4-touchpoint campaign generator and composer wizard
 - `/app/campaigns` — Persistent campaign vault and historical exports
 - `/app/campaigns/:id` — Individual campaign details, print export, and walk-in notes
 - `/app/business` — Storefront profile, operating hours, and neighborhood context
-- `/app/settings/billing` — Subscription tier, monthly quotas, and payment verification
-- `/app/settings/account` — Operator security and session management
+- `/app/billing` — Subscription tier, monthly quotas, and payment verification
+- `/app/account` — Operator profile, multi-store ownership, credentials, and session controls
 
 ### System & Recovery
 - `/unauthorized` — Permission denied recovery
@@ -66,14 +70,17 @@ StreetCraft is a specialized growth platform built for physical retail, food, sa
 
 ## Database Security Model
 
-StreetCraft enforces all business invariants at the database level:
+StreetCraft enforces all business invariants directly at the database layer:
 
 - `businesses`: Store entities with strict owner/admin/member relationships.
 - `business_members`: Multi-tenant authorization matrix.
 - `business_profiles`: Domain context (neighborhood, landmarks, style voice, signature offerings).
-- `campaigns` & `campaign_outputs`: Atomic campaign storage.
+- `profiles`: Strictly verified operator profiles linked to `auth.users`.
+- `campaigns` & `campaign_outputs`: Atomic campaign storage and audit trails.
+- `festival_calendar`: 35-event full-year annual commercial and cultural festival database.
 - `usage_periods` & `usage_events`: Real-time quota tracking.
 - `subscriptions` & `founder_allocation`: Idempotent payment verification and slot allocation.
+- `cron.job`: Automated `pg_cron` background jobs (e.g. `cleanup_unconfirmed_users_hourly`).
 
 ---
 
@@ -85,19 +92,20 @@ StreetCraft enforces all business invariants at the database level:
 - Supabase project instance
 
 ### Environment Configuration
-Copy `.env.example` to `.env` and provide your Supabase credentials:
+Copy `.env.example` to `.env` and configure your credentials:
 
 ```bash
 cp .env.example .env
 ```
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_ENABLE_GOOGLE_OAUTH=false
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_ENABLE_GOOGLE_OAUTH=false
 ```
 
 ### Installation & Development
+
 ```bash
 # Install dependencies
 npm install
@@ -105,7 +113,10 @@ npm install
 # Start local development server
 npm run dev
 
-# Run TypeScript typecheck and production build
+# Run TypeScript typecheck
+npm run typecheck
+
+# Run production build
 npm run build
 ```
 

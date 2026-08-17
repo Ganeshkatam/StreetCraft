@@ -16,9 +16,9 @@ export function useBusiness(businessId: UUID) {
     }
     try {
       const p = await api.getBusinessProfile(businessId);
-      setProfile(p);
+      setProfile(p || null);
     } catch {
-      // ignore
+      setProfile(null);
     } finally {
       setLoading(false);
     }

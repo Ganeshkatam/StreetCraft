@@ -196,25 +196,53 @@ class RealtimeApiClient {
   }
 
   public async getMyBusinesses(): Promise<Array<{ id: UUID; name: string }>> {
-    const { userId } = await this.requireActiveSession();
+    let currentUserId = '';
+    try {
+      const sess = await this.requireActiveSession();
+      currentUserId = sess.userId;
+    } catch {
+      const stored = localStorage.getItem('sc_local_session');
+      if (stored) {
+        try {
+          currentUserId = JSON.parse(stored).userId;
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (!currentUserId) return [];
 
     if (!isSupabaseConfigured) {
       return [{ id: 'biz_local', name: 'My Business' }];
     }
 
-    const { data } = await (supabase.from('business_members') as any)
-      .select('business_id, businesses(id, name)')
-      .eq('user_id', userId);
+    try {
+      const { data: members, error: memError } = await (supabase.from('business_members') as any)
+        .select('business_id, role')
+        .eq('user_id', currentUserId);
 
-    if (!data) return [];
+      if (memError || !members || members.length === 0) return [];
 
-    // Map joined table
-    return data
-      .filter((d: any) => d.businesses)
-      .map((d: any) => ({
-        id: d.businesses.id,
-        name: d.businesses.name,
+      const businessIds = members.map((m: any) => m.business_id);
+      const { data: bizData } = await (supabase.from('businesses') as any)
+        .select('id, name')
+        .in('id', businessIds);
+
+      if (bizData && bizData.length > 0) {
+        return bizData.map((b: any) => ({
+          id: b.id,
+          name: b.name || 'My Store',
+        }));
+      }
+
+      return businessIds.map((id: string) => ({
+        id,
+        name: 'My Store',
       }));
+    } catch {
+      return [];
+    }
   }
 
   public async getAccountLimits(): Promise<{ limit: number }> {
@@ -462,47 +490,93 @@ class RealtimeApiClient {
   }
 
   // 3. BUSINESS PROFILE & PREFERENCES
+  public _getEmptyProfile(businessId: UUID): BusinessProfile {
+    return {
+      businessId: businessId || '',
+      name: '',
+      category: '',
+      neighborhood: '',
+      city: '',
+      landmarks: '',
+      targetCustomer: '',
+      styleVoice: '',
+      signatureItems: '',
+      primaryGoal: '',
+      peakHours: '',
+      slowHours: '',
+      defaultOffer: '',
+      avgTicketINR: 0,
+      targetMonthlyCustomers: 0,
+      phoneWhatsApp: '',
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
   public async getBusinessProfile(businessId: UUID): Promise<BusinessProfile> {
     if (!businessId) {
       return this._getEmptyProfile('');
     }
 
-    await this.requireActiveSession();
+    try {
+      await this.requireActiveSession();
+    } catch {
+      // Allow fallback if session is initializing
+    }
 
     if (!isSupabaseConfigured) {
       const stored = localStorage.getItem(`sc_profile_${businessId}`);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          // ignore
+        }
+      }
       return this._getEmptyProfile(businessId);
     }
 
-    const { data, error } = await (supabase.from('business_profiles') as any)
-      .select('*')
-      .eq('business_id', businessId)
-      .single();
+    try {
+      const { data, error } = await (supabase.from('business_profiles') as any)
+        .select('*')
+        .eq('business_id', businessId)
+        .maybeSingle();
 
-    if (error || !data) {
+      if (error || !data) {
+        // Query businesses table to get the name if available
+        const { data: biz } = await (supabase.from('businesses') as any)
+          .select('name')
+          .eq('id', businessId)
+          .maybeSingle();
+
+        const empty = this._getEmptyProfile(businessId);
+        if (biz && biz.name) {
+          empty.name = biz.name;
+        }
+        return empty;
+      }
+
+      return {
+        businessId: data.business_id,
+        name: data.name || '',
+        category: data.category || '',
+        neighborhood: data.neighborhood || '',
+        city: data.city || '',
+        landmarks: data.landmarks || '',
+        targetCustomer: data.target_customer || '',
+        styleVoice: data.style_voice || '',
+        signatureItems: data.signature_items || '',
+        primaryGoal: data.primary_goal || '',
+        peakHours: data.peak_hours || '',
+        slowHours: data.slow_hours || '',
+        defaultOffer: data.default_offer || '',
+        avgTicketINR: data.avg_ticket_inr || 0,
+        targetMonthlyCustomers: data.target_monthly_customers || 0,
+        phoneWhatsApp: data.phone_whatsapp || '',
+        updatedAt: data.updated_at || new Date().toISOString(),
+      };
+    } catch {
       return this._getEmptyProfile(businessId);
     }
-
-    return {
-      businessId: data.business_id,
-      name: data.name,
-      category: data.category,
-      neighborhood: data.neighborhood,
-      city: data.city,
-      landmarks: data.landmarks || '',
-      targetCustomer: data.target_customer || '',
-      styleVoice: data.style_voice || 'Warm, contemporary, artisanal yet unpretentious',
-      signatureItems: data.signature_items || '',
-      primaryGoal: data.primary_goal || 'Increase foot traffic and walk-ins',
-      peakHours: data.peak_hours || '',
-      slowHours: data.slow_hours || '',
-      defaultOffer: data.default_offer || '',
-      avgTicketINR: data.avg_ticket_inr || 350,
-      targetMonthlyCustomers: data.target_monthly_customers || 30,
-      phoneWhatsApp: data.phone_whatsapp || '',
-      updatedAt: data.updated_at,
-    };
   }
 
   public async updateBusinessProfile(businessId: UUID, updates: Partial<BusinessProfile>): Promise<BusinessProfile> {
@@ -949,28 +1023,6 @@ class RealtimeApiClient {
     }
 
     return data;
-  }
-
-  private _getEmptyProfile(businessId: UUID): BusinessProfile {
-    return {
-      businessId,
-      name: '',
-      category: 'Artisanal Cafe & Bakery',
-      neighborhood: '',
-      city: '',
-      landmarks: '',
-      targetCustomer: '',
-      styleVoice: 'Warm, contemporary, artisanal yet unpretentious',
-      signatureItems: '',
-      primaryGoal: 'Increase foot traffic and walk-ins',
-      peakHours: '',
-      slowHours: '',
-      defaultOffer: '',
-      avgTicketINR: 350,
-      targetMonthlyCustomers: 30,
-      phoneWhatsApp: '',
-      updatedAt: new Date().toISOString(),
-    };
   }
 }
 

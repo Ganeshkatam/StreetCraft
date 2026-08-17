@@ -25,6 +25,7 @@ function SetupContent() {
   const [storeName, setStoreName] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
+  const [landmarks, setLandmarks] = useState('');
   const [category, setCategory] = useState('');
   const [signatureItems, setSignatureItems] = useState('');
   const [targetCustomer, setTargetCustomer] = useState('');
@@ -42,10 +43,11 @@ function SetupContent() {
       api.getBusinessProfile(activeId)
         .then((prof) => {
           if (prof) {
-            setStoreName(prof.name || '');
-            setCategory(prof.category || 'Artisanal Cafe & Bakery');
-            setNeighborhood(prof.neighborhood || '');
-            setCity(prof.city || 'Bengaluru');
+            if (prof.name) setStoreName(prof.name);
+            if (prof.category) setCategory(prof.category);
+            if (prof.neighborhood) setNeighborhood(prof.neighborhood);
+            if (prof.city) setCity(prof.city);
+            if (prof.landmarks) setLandmarks(prof.landmarks);
             if (prof.signatureItems) setSignatureItems(prof.signatureItems);
             if (prof.slowHours) setSlowHours(prof.slowHours);
             if (prof.defaultOffer) setDefaultOffer(prof.defaultOffer);
@@ -92,6 +94,7 @@ function SetupContent() {
           category,
           neighborhood,
           city,
+          landmarks,
           phoneWhatsApp: phone,
         });
       }
@@ -118,18 +121,18 @@ function SetupContent() {
           category,
           neighborhood,
           city,
-          landmarks: '',
+          landmarks,
           targetCustomer,
-          styleVoice: 'Warm, contemporary, artisanal yet unpretentious',
+          styleVoice: '',
           signatureItems,
-          primaryGoal: 'Increase foot traffic',
-          peakHours: 'Morning and evening',
+          primaryGoal: '',
+          peakHours: '',
           slowHours,
           defaultOffer,
-          avgTicketINR: 350,
+          avgTicketINR: 0,
           phoneWhatsApp: phone,
           updatedAt: new Date().toISOString(),
-          targetMonthlyCustomers: 40,
+          targetMonthlyCustomers: 0,
         });
 
         if (claimToken) {
@@ -221,6 +224,76 @@ function SetupContent() {
                   <div className="auth-value-desc">Signature items, slump hours & contact</div>
                 </div>
               </div>
+
+              {/* Dynamic Step-Based Guidance Card */}
+              {step === 1 && (
+                <div
+                  className="auth-value-item"
+                  style={{
+                    flexDirection: 'column',
+                    gap: '6px',
+                    background: 'rgba(255, 255, 255, 0.94)',
+                    border: '1px solid rgba(255, 255, 255, 0.95)',
+                    padding: '16px 18px',
+                  }}
+                >
+                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                    STEP 1 FOCUS: LOCAL DISCOVERY
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                    Why your location &amp; category matter
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', lineHeight: '1.45' }}>
+                    StreetCraft uses your exact neighborhood and category to tailor search keywords, Google Business updates, and local geotagging so nearby customers discover you first.
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div
+                  className="auth-value-item"
+                  style={{
+                    flexDirection: 'column',
+                    gap: '6px',
+                    background: 'rgba(255, 255, 255, 0.94)',
+                    border: '1px solid rgba(255, 255, 255, 0.95)',
+                    padding: '16px 18px',
+                  }}
+                >
+                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                    STEP 2 FOCUS: COUNTER RHYTHM
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                    Turn quiet hours into walk-in revenue
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', lineHeight: '1.45' }}>
+                    Your signature specialties and slump hours power timely afternoon specials, flash deals, and WhatsApp broadcasts timed right before your quiet hours start.
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div
+                  className="auth-value-item"
+                  style={{
+                    flexDirection: 'column',
+                    gap: '6px',
+                    background: 'rgba(255, 255, 255, 0.94)',
+                    border: '1px solid rgba(255, 255, 255, 0.95)',
+                    padding: '16px 18px',
+                  }}
+                >
+                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                    STEP 3 FOCUS: WORKSPACE LAUNCH
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                    Ready to compose your first campaign
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', lineHeight: '1.45' }}>
+                    Your store identity and rhythm are now active. Head into the campaign studio to generate promotional copy and multi-channel campaign assets.
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -254,7 +327,7 @@ function SetupContent() {
                       />
                     </div>
 
-                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
                       <div>
                         <label className="auth-form-label">Area / Neighborhood</label>
                         <input
@@ -262,7 +335,7 @@ function SetupContent() {
                           required
                           value={neighborhood}
                           onChange={(e) => setNeighborhood(e.target.value)}
-                          placeholder="e.g. Indiranagar"
+                          placeholder="e.g. Indiranagar, Bandra"
                           className="form-input"
                         />
                       </div>
@@ -273,10 +346,21 @@ function SetupContent() {
                           required
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
-                          placeholder="e.g. Bengaluru"
+                          placeholder="e.g. Bengaluru, Mumbai"
                           className="form-input"
                         />
                       </div>
+                    </div>
+
+                    <div className="auth-form-field" style={{ marginBottom: '20px' }}>
+                      <label className="auth-form-label">Landmark or Street Cue (optional)</label>
+                      <input
+                        type="text"
+                        value={landmarks}
+                        onChange={(e) => setLandmarks(e.target.value)}
+                        placeholder="e.g. Near 12th Main junction, opposite the park"
+                        className="form-input"
+                      />
                     </div>
 
                     <button
@@ -308,33 +392,55 @@ function SetupContent() {
                     </div>
 
                     <div className="auth-form-field">
+                      <label className="auth-form-label">Who are your typical customers?</label>
+                      <input
+                        type="text"
+                        value={targetCustomer}
+                        onChange={(e) => setTargetCustomer(e.target.value)}
+                        placeholder="e.g. Neighborhood residents, working professionals, weekend brunchers"
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="auth-form-field">
                       <label className="auth-form-label">When does the business usually get quiet?</label>
                       <input
                         type="text"
                         value={slowHours}
                         onChange={(e) => setSlowHours(e.target.value)}
-                        placeholder="The hours or days you'd most like to fill"
+                        placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
                         className="form-input"
                       />
                     </div>
 
-                    <div className="auth-form-field" style={{ marginBottom: '16px' }}>
+                    <div className="auth-form-field">
+                      <label className="auth-form-label">Default Counter Offer / Special</label>
+                      <input
+                        type="text"
+                        value={defaultOffer}
+                        onChange={(e) => setDefaultOffer(e.target.value)}
+                        placeholder="e.g. 20% off pour-overs & fresh bakes"
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="auth-form-field" style={{ marginBottom: '20px' }}>
                       <label className="auth-form-label">Store WhatsApp or counter phone (optional)</label>
                       <input
                         type="text"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Number for customer inquiries or bookings"
+                        placeholder="+91 98765 43210"
                         className="form-input"
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
                       <button
                         type="button"
                         onClick={() => setStep(1)}
                         className="btn-secondary"
-                        style={{ padding: '8px 12px', fontSize: '12.5px' }}
+                        style={{ padding: '10px 16px', fontSize: '13px' }}
                       >
                         Back
                       </button>
@@ -353,11 +459,11 @@ function SetupContent() {
 
               {step === 3 && (
                 <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                  <div className="auth-value-icon" style={{ width: '42px', height: '42px', margin: '0 auto 12px' }}>
-                    <Check size={22} strokeWidth={2.5} />
+                  <div className="auth-value-icon" style={{ width: '48px', height: '48px', margin: '0 auto 14px', borderRadius: '50%' }}>
+                    <Check size={26} strokeWidth={2.5} />
                   </div>
                   <h2 className="auth-card-title">Store Workspace Ready</h2>
-                  <p className="auth-card-subtitle" style={{ margin: '0 0 18px' }}>
+                  <p className="auth-card-subtitle" style={{ margin: '0 0 20px' }}>
                     {storeName || 'Your store'} has been configured and saved. Let&apos;s create your first campaign.
                   </p>
                   <button
@@ -370,7 +476,7 @@ function SetupContent() {
               )}
             </div>
 
-            <footer className="auth-security-badge">
+            <footer className="auth-security-badge" style={{ marginTop: '16px' }}>
               <ShieldCheck size={13} />
               <span>Your data is secure and never shared.</span>
             </footer>

@@ -57,8 +57,8 @@ export function AccountSettingsView() {
         }
       });
 
-      getMyBusinesses().then(setBusinesses);
-      getAccountLimits().then((res) => setAccountLimit(res.limit));
+      getMyBusinesses().then((res) => setBusinesses(Array.isArray(res) ? res : []));
+      getAccountLimits().then((res) => setAccountLimit(res?.limit || 2));
     }
   }, [session.userId, session.name, session.phone, session.activeBusinessId]);
 
@@ -371,12 +371,12 @@ export function AccountSettingsView() {
                 <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Managed Storefronts</h3>
               </div>
               <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>
-                {businesses.length} of {accountLimit} used
+                {(businesses || []).length} of {accountLimit} used
               </span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              {businesses.map((biz) => {
+              {(businesses || []).map((biz) => {
                 const isActive = biz.id === session.activeBusinessId;
                 return (
                   <div
@@ -423,7 +423,7 @@ export function AccountSettingsView() {
               >
                 Configure Store Context
               </button>
-              {businesses.length < accountLimit && (
+              {(businesses || []).length < accountLimit && (
                 <button
                   className="btn-secondary"
                   style={{ flex: 1, justifyContent: 'center', fontSize: '12.5px' }}

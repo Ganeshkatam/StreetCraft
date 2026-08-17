@@ -59,11 +59,21 @@ export function useAuth() {
   };
 
   const getMyBusinesses = async () => {
-    return await api.getMyBusinesses();
+    try {
+      const list = await api.getMyBusinesses();
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
   };
 
   const getAccountLimits = async () => {
-    return await api.getAccountLimits();
+    try {
+      const res = await api.getAccountLimits();
+      return res && typeof res.limit === 'number' ? res : { limit: 2 };
+    } catch {
+      return { limit: 2 };
+    }
   };
 
   const switchBusiness = (businessId: string) => {

@@ -11,7 +11,7 @@ import { CampaignType, CampaignObjective, FullCampaignPack } from '../../../type
 import { ChannelCard } from '../../../components/ChannelCard';
 import { CalendarPicker } from '../../../components/CalendarPicker';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Printer, FileText, Code, Store } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Printer, FileText, Code, Store, Plus } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -24,7 +24,7 @@ export function CreateCampaignView() {
   const { session } = useAuth();
   const businessId = session.activeBusinessId || '';
 
-  const { profile } = useBusiness(businessId);
+  const { profile, loading } = useBusiness(businessId);
   const { usage, refreshUsage } = useUsage(businessId);
 
   const [step, setStep] = useState<number>(1);
@@ -60,6 +60,42 @@ export function CreateCampaignView() {
       }
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+          Loading campaign studio...
+        </div>
+      </div>
+    );
+  }
+
+  if (!businessId || !profile) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="card" style={{ maxWidth: '560px', margin: '60px auto', textAlign: 'center', padding: '48px 36px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Store size={26} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
+            No Storefront Selected
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+            You haven&apos;t set up a store profile yet. Complete the quick onboarding setup to configure your store before creating marketing campaigns.
+          </p>
+          <button
+            onClick={() => router.push('/setup')}
+            className="btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} />
+            Set Up Your Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (profile) {

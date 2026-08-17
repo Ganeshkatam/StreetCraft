@@ -34,8 +34,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   useEffect(() => {
     if (session.isAuthenticated) {
-      getMyBusinesses().then(setBusinesses);
-      getAccountLimits().then((res) => setAccountLimit(res.limit));
+      getMyBusinesses().then((res) => setBusinesses(Array.isArray(res) ? res : []));
+      getAccountLimits().then((res) => setAccountLimit(res?.limit || 2));
     }
   }, [session.isAuthenticated, session.activeBusinessId]);
 
@@ -52,7 +52,10 @@ export const Navigation: React.FC<NavigationProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const activeBizName = businesses.find(b => b.id === session.activeBusinessId)?.name || 'Loading...';
+  const safeBusinesses = Array.isArray(businesses) ? businesses : [];
+  const activeBizName =
+    safeBusinesses.find((b) => b && b.id === session.activeBusinessId)?.name ||
+    (safeBusinesses.length > 0 ? safeBusinesses[0].name : 'No Store Selected');
   const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();
 
   return (
@@ -74,49 +77,68 @@ export const Navigation: React.FC<NavigationProps> = ({
                 onClick={() => setShowSwitcher(!showSwitcher)}
               >
                 <Store size={14} color="var(--color-ink-muted)" />
-                {activeBizName}
+                <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {activeBizName}
+                </span>
                 <ChevronDown size={14} color="var(--color-ink-muted)" />
               </button>
 
               {showSwitcher && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '220px', boxShadow: 'var(--shadow-md)', zIndex: 100 }}>
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '230px', boxShadow: 'var(--shadow-md)', zIndex: 100 }}>
                   <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {businesses.map(biz => (
-                      <button
-                        key={biz.id}
-                        className="btn-ghost"
-                        style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px', fontSize: '13.5px', color: biz.id === session.activeBusinessId ? 'var(--color-primary)' : 'var(--color-ink)', background: biz.id === session.activeBusinessId ? 'var(--color-primary-subtle)' : 'transparent', fontWeight: biz.id === session.activeBusinessId ? 600 : 400 }}
-                        onClick={() => {
-                          switchBusiness(biz.id);
-                          setShowSwitcher(false);
-                        }}
-                      >
-                        {biz.name}
-                      </button>
-                    ))}
+                    <div style={{ padding: '4px 8px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      Storefronts
+                    </div>
+
+                    {safeBusinesses.length === 0 ? (
+                      <div style={{ padding: '6px 8px', fontSize: '12.5px', color: 'var(--color-ink-muted)' }}>
+                        No storefronts created
+                      </div>
+                    ) : (
+                      safeBusinesses.map(biz => (
+                        <button
+                          key={biz.id}
+                          className="btn-ghost"
+                          style={{ width: '100%', justifyContent: 'space-between', padding: '8px 10px', fontSize: '13px', color: biz.id === session.activeBusinessId ? 'var(--color-primary)' : 'var(--color-ink)', background: biz.id === session.activeBusinessId ? 'var(--color-primary-subtle)' : 'transparent', fontWeight: biz.id === session.activeBusinessId ? 600 : 400, borderRadius: 'var(--radius-xs)' }}
+                          onClick={() => {
+                            switchBusiness(biz.id);
+                            setShowSwitcher(false);
+                          }}
+                        >
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
+                            {biz.name}
+                          </span>
+                          {biz.id === session.activeBusinessId && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-primary)', background: 'var(--color-surface)', padding: '1px 6px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-primary-border)' }}>
+                              Active
+                            </span>
+                          )}
+                        </button>
+                      ))
+                    )}
                     
                     <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
                     
-                    <div style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--color-ink-muted)', textAlign: 'center' }}>
-                      {businesses.length} of {accountLimit} businesses used
+                    <div style={{ padding: '4px 8px', fontSize: '11.5px', color: 'var(--color-ink-muted)', textAlign: 'center' }}>
+                      {safeBusinesses.length} of {accountLimit} storefronts used
                     </div>
 
-                    {businesses.length < accountLimit ? (
+                    {safeBusinesses.length < accountLimit ? (
                       <button
                         className="btn-ghost"
-                        style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px', fontSize: '13.5px', color: 'var(--color-ink-muted)' }}
+                        style={{ width: '100%', justifyContent: 'flex-start', padding: '6px 8px', fontSize: '12.5px', color: 'var(--color-primary)', fontWeight: 500 }}
                         onClick={() => {
                           setShowSwitcher(false);
                           navigate('/setup');
                         }}
                       >
-                        <Plus size={14} style={{ marginRight: '6px' }} />
-                        Add another business
+                        <Plus size={13} style={{ marginRight: '6px' }} />
+                        {safeBusinesses.length === 0 ? 'Create first storefront' : 'Add another storefront'}
                       </button>
                     ) : (
                       <button
                         className="btn-ghost"
-                        style={{ width: '100%', justifyContent: 'center', padding: '8px 12px', fontSize: '13px', color: 'var(--color-primary)', fontWeight: 500 }}
+                        style={{ width: '100%', justifyContent: 'center', padding: '6px 8px', fontSize: '12px', color: 'var(--color-primary)', fontWeight: 500 }}
                         onClick={() => {
                           setShowSwitcher(false);
                           onOpenUpgrade();

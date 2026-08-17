@@ -504,9 +504,13 @@ BEGIN
     RAISE EXCEPTION 'Unauthorized: Caller must be authenticated.';
   END IF;
 
-  -- Ensure operator email is confirmed and profile exists
+  -- Ensure operator profile exists
   IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = v_user_id) THEN
-    RAISE EXCEPTION 'UNCONFIRMED_USER: Email confirmation is required before activating a store workspace.';
+    INSERT INTO public.profiles (id, email, full_name)
+    SELECT id, email, COALESCE(raw_user_meta_data->>'full_name', split_part(email, '@', 1))
+    FROM auth.users
+    WHERE id = v_user_id
+    ON CONFLICT (id) DO NOTHING;
   END IF;
 
   SELECT s.plan_id, p.business_limit, p.monthly_campaign_limit 

@@ -7,36 +7,67 @@ import { useBusiness } from '../../../hooks/useBusiness';
 import { useCampaign } from '../../../hooks/useCampaign';
 import { useUsage } from '../../../hooks/useUsage';
 import { api } from '../../../lib/api';
-import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent } from '../../../engine/briefing/opportunityEngine';
+import { generateDynamicBriefing, DynamicOpportunity, FestivalEvent, resolveUpcomingFestivals } from '../../../engine/briefing/opportunityEngine';
 import { CampaignStatusBadge } from '../../../components/CampaignStatusBadge';
 import { UsageMeter } from '../../../components/UsageMeter';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar, Sparkles, Store } from 'lucide-react';
 
 export function TodayView() {
   const router = useRouter();
   const { session } = useAuth();
   const businessId = session.activeBusinessId || '';
 
-  const { profile } = useBusiness(businessId);
+  const { profile, loading } = useBusiness(businessId);
   const { campaigns } = useCampaign(businessId);
   const { usage } = useUsage(businessId);
   const [festivals, setFestivals] = useState<FestivalEvent[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
-    api.getFestivalCalendar().then((data) => setFestivals(data as FestivalEvent[]));
+    api.getFestivalCalendar().then((data) => setFestivals(Array.isArray(data) ? (data as FestivalEvent[]) : []));
   }, []);
 
-  const rawCampaigns = campaigns.map((c) => c.campaign);
-  const briefing = profile
-    ? generateDynamicBriefing(profile, rawCampaigns, festivals)
-    : {
-        dateString: new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' }),
-        greeting: 'Good morning.',
-        subtitle: 'Here is what deserves your attention today.',
-        opportunities: [],
-      };
+  if (loading) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+          Loading daily workspace...
+        </div>
+      </div>
+    );
+  }
+
+  if (!businessId || !profile) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="card" style={{ maxWidth: '560px', margin: '60px auto', textAlign: 'center', padding: '48px 36px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Store size={26} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
+            No Storefront Selected
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+            You haven&apos;t set up a store profile yet. Complete the quick onboarding setup to activate your daily workspace and AI campaign briefing.
+          </p>
+          <button
+            onClick={() => router.push('/setup')}
+            className="btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} />
+            Set Up Your Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const upcomingFestivalsList = resolveUpcomingFestivals(Array.isArray(festivals) ? festivals : [], new Date(), 3);
+
+  const rawCampaigns = Array.isArray(campaigns) ? campaigns.map((c) => c.campaign) : [];
+  const briefing = generateDynamicBriefing(profile, rawCampaigns, Array.isArray(festivals) ? festivals : []);
 
   const handleLaunchPreset = (opportunity: DynamicOpportunity) => {
     sessionStorage.setItem('sc_launched_preset', JSON.stringify(opportunity.preset));
@@ -204,7 +235,7 @@ export function TodayView() {
             </div>
 
             <div style={{ fontSize: '18px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}>
-              {profile?.name || 'Your Store'}
+              {profile?.name || 'Store Name Not Set'}
             </div>
             <div style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '2px', marginBottom: '14px' }}>
               {profile?.neighborhood ? `${profile.neighborhood}${profile.city ? `, ${profile.city}` : ''}` : 'Location not set'}
@@ -223,11 +254,13 @@ export function TodayView() {
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', textTransform: 'uppercase' }}>
                 UPCOMING FESTIVALS
               </span>
-              <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>Database</span>
+              <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
+                Radar ({upcomingFestivalsList.length})
+              </span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {festivals.slice(0, 3).map((f) => (
+              {upcomingFestivalsList.map((f) => (
                 <div
                   key={f.id}
                   style={{
@@ -235,16 +268,58 @@ export function TodayView() {
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-xs)',
                     padding: '10px 12px',
+                    transition: 'var(--motion-fast)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
                     <strong style={{ fontSize: '13px', color: 'var(--color-ink)' }}>{f.name}</strong>
-                    <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>
-                      {new Date(f.starts_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 600,
+                          padding: '1px 6px',
+                          borderRadius: 'var(--radius-xs)',
+                          background: f.isTodayOrActive ? 'var(--color-accent-subtle)' : 'var(--color-primary-subtle)',
+                          color: f.isTodayOrActive ? 'var(--color-accent)' : 'var(--color-primary)',
+                          border: `1px solid ${f.isTodayOrActive ? 'var(--color-accent)' : 'var(--color-primary-border)'}`,
+                        }}
+                      >
+                        {f.relativeTimeLabel}
+                      </span>
+                      <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
+                        {f.formattedDate}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '4px', lineHeight: '1.4' }}>
                     {f.suggested_offer || f.marketing_relevance}
+                  </div>
+                  <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      className="btn-ghost"
+                      style={{ fontSize: '11px', padding: '2px 8px', color: 'var(--color-primary)', fontWeight: 600 }}
+                      onClick={() => {
+                        sessionStorage.setItem('sc_launched_preset', JSON.stringify({
+                          type: 'FESTIVAL_SPECIAL',
+                          objective: 'FESTIVAL_RUSH',
+                          offer: {
+                            title: f.suggested_offer || `${f.name} Special`,
+                            description: `${f.name} celebration special at our storefront.`,
+                            value: 'Festive Special',
+                            terms: `Valid during ${f.name} celebration`,
+                          },
+                          schedule: {
+                            timingLabel: `${f.name} (${f.formattedDate})`,
+                          },
+                          customNotes: `Focus on ${f.marketing_relevance}.`,
+                        }));
+                        router.push('/app/create');
+                      }}
+                    >
+                      Draft Promotion
+                    </button>
                   </div>
                 </div>
               ))}

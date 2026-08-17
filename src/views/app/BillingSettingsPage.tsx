@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUsage } from '../../hooks/useUsage';
 import { useBusiness } from '../../hooks/useBusiness';
 import { UserSession } from '../../types/business';
 import { UsageMeter } from '../../components/UsageMeter';
-import { CreditCard, Sparkles, AlertCircle, History, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { CreditCard, Sparkles, AlertCircle, History, ShieldCheck, CheckCircle2, Store, Plus } from 'lucide-react';
 import { api } from '../../lib/api';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { useDialog } from '../../context/DialogContext';
@@ -19,11 +20,46 @@ export const BillingSettingsPage: React.FC<BillingSettingsPageProps> = ({
   session,
   onOpenUpgrade,
 }) => {
+  const navigate = useNavigate();
   const { usage, events, refreshUsage } = useUsage(businessId);
   const { profile, refreshProfile } = useBusiness(businessId);
   const dialog = useDialog();
   const [cancelling, setCancelling] = useState(false);
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
+
+  if (!businessId) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="section-header">
+          <span className="section-eyebrow">WORKSPACE ADMINISTRATION &bull; COMMERCIAL STATE</span>
+          <h1 className="section-title">Billing &amp; Usage</h1>
+          <p className="section-subtitle">
+            Manage your subscription tier, monthly campaign allowances, and active store limits.
+          </p>
+        </div>
+
+        <div className="card" style={{ maxWidth: '560px', margin: '40px auto', textAlign: 'center', padding: '48px 36px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Store size={26} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
+            No Storefront Selected
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+            You have not set up a store profile yet. Complete the quick onboarding setup to activate and manage your workspace billing.
+          </p>
+          <button
+            onClick={() => navigate('/setup')}
+            className="btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} />
+            Set Up Your Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const plan = usage?.plan || 'FREE';
   const isPaid = plan !== 'FREE';

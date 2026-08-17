@@ -1217,9 +1217,9 @@ span.footer-link {
 }
 
 .auth-back-btn {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #1E3E2F;
   font-size: 13px;
@@ -1228,16 +1228,16 @@ span.footer-link {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
   transition: all var(--motion-fast);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(15, 30, 22, 0.06);
 }
 
 .auth-back-btn:hover {
   background: #FFFFFF;
   color: #0E2419;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(15, 30, 22, 0.12);
 }
 
 .auth-main-grid {
@@ -1254,7 +1254,7 @@ span.footer-link {
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
-  max-width: 460px;
+  max-width: 480px;
 }
 
 .auth-hero-title {
@@ -1279,7 +1279,7 @@ span.footer-link {
   line-height: 1.5;
   color: #1A3125;
   margin: 0 0 20px;
-  max-width: 440px;
+  max-width: 460px;
   font-weight: 550;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
@@ -1288,7 +1288,7 @@ span.footer-link {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 460px;
+  max-width: 480px;
 }
 
 .auth-value-item,
@@ -1351,11 +1351,11 @@ span.footer-link {
 
 .auth-card {
   background: #FFFFFF;
-  border-radius: 10px;
-  padding: 36px 34px 32px;
+  border-radius: 12px;
+  padding: 36px 36px 32px;
   width: 100%;
-  max-width: 410px;
-  box-shadow: 0 4px 16px rgba(15, 30, 22, 0.06);
+  max-width: 480px;
+  box-shadow: 0 6px 24px rgba(15, 30, 22, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
 }
@@ -1593,42 +1593,61 @@ span.footer-link {
 
 .auth-step-pill {
   display: flex;
-  gap: var(--space-2);
+  gap: 14px;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  border: 1px solid transparent;
-  transition: var(--motion-fast);
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 18px rgba(15, 30, 22, 0.08), 0 1px 3px rgba(15, 30, 22, 0.04);
+  transition: all var(--motion-fast);
+}
+
+.auth-step-pill:hover {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 6px 22px rgba(15, 30, 22, 0.12);
+  transform: translateY(-1px);
 }
 
 .auth-step-pill.active {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-subtle);
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-primary, #1A3E2D);
+  box-shadow: 0 8px 26px rgba(15, 30, 22, 0.14);
 }
 
 .auth-step-num {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  color: var(--color-ink-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #E8EFEA;
+  color: #375143;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .auth-step-num.active {
-  background: var(--color-primary-subtle);
-  color: var(--color-primary);
+  background: var(--color-primary-subtle, #E4ECE6);
+  color: var(--color-primary, #1A3E2D);
+  border: 1px solid var(--color-primary-border, #A7C4B0);
 }
 
 .auth-step-num.done {
-  background: var(--color-primary);
+  background: var(--color-primary, #1A3E2D);
   color: #FFFFFF;
+}
+
+.auth-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary, #1A3E2D);
+  flex-shrink: 0;
 }
 
 /* ==========================================================================

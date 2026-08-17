@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import { useBusiness } from '../../../hooks/useBusiness';
+import { api } from '../../../lib/api';
 import { BusinessProfile } from '../../../types/business';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, Store, Plus } from 'lucide-react';
 
 export function BusinessView() {
-  const { session } = useAuth();
+  const router = useRouter();
+  const { session, createBusiness } = useAuth();
   const businessId = session.activeBusinessId || '';
 
   const { profile, loading, updateProfile } = useBusiness(businessId);
@@ -21,19 +24,71 @@ export function BusinessView() {
     }
   }, [profile]);
 
-  if (loading || !formData) {
+  if (loading) {
     return (
-      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--color-ink-muted)' }}>
-        Loading store preferences...
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+          Loading business profile...
+        </div>
       </div>
     );
   }
+
+  // Zero-store state: Do not render empty forms if user has no store
+  if (!businessId || !profile) {
+    return (
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="section-header">
+          <span className="section-eyebrow">STORE PROFILE &bull; BUSINESS CONTEXT</span>
+          <h1 className="section-title">Business Profile</h1>
+          <p className="section-subtitle">
+            StreetCraft uses these details to shape every campaign. Updates apply immediately across your workspace.
+          </p>
+        </div>
+
+        <div className="card" style={{ maxWidth: '560px', margin: '40px auto', textAlign: 'center', padding: '48px 36px' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Store size={26} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
+            No Storefront Configured
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
+            You have not set up a store profile yet. Complete the quick onboarding setup to configure your store identity, neighborhood, and operating rhythm.
+          </p>
+          <button
+            onClick={() => router.push('/setup')}
+            className="btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} />
+            Set Up Your Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentData: BusinessProfile = formData || profile || api._getEmptyProfile(businessId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await updateProfile(formData);
+      if (!businessId) {
+        const newSess = await createBusiness(
+          currentData.name || 'My Store',
+          currentData.category || 'Café & Bakery',
+          currentData.neighborhood || '',
+          currentData.city || '',
+          currentData.phoneWhatsApp || ''
+        );
+        if (newSess.activeBusinessId) {
+          await updateProfile({ ...currentData, businessId: newSess.activeBusinessId });
+        }
+      } else {
+        await updateProfile(currentData);
+      }
       toast.success('Business profile updated successfully.');
     } catch {
       toast.error('Failed to update business profile. Please try again.');
@@ -66,8 +121,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={currentData.name}
+                  onChange={(e) => setFormData({ ...currentData, name: e.target.value })}
                   placeholder="The name customers know you by"
                   required
                 />
@@ -78,8 +133,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  value={currentData.category}
+                  onChange={(e) => setFormData({ ...currentData, category: e.target.value })}
                   placeholder="e.g. Café & Bakery, Restaurant, Boutique"
                   required
                 />
@@ -99,8 +154,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.neighborhood}
-                  onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                  value={currentData.neighborhood}
+                  onChange={(e) => setFormData({ ...currentData, neighborhood: e.target.value })}
                   placeholder="e.g. Indiranagar, Bandra"
                   required
                 />
@@ -111,8 +166,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  value={currentData.city}
+                  onChange={(e) => setFormData({ ...currentData, city: e.target.value })}
                   placeholder="e.g. Bengaluru, Mumbai"
                   required
                 />
@@ -124,8 +179,8 @@ export function BusinessView() {
               <input
                 type="text"
                 className="form-input"
-                value={formData.landmarks}
-                onChange={(e) => setFormData({ ...formData, landmarks: e.target.value })}
+                value={currentData.landmarks}
+                onChange={(e) => setFormData({ ...currentData, landmarks: e.target.value })}
                 placeholder="e.g. Near 12th Main junction, opposite the park"
               />
             </div>
@@ -142,8 +197,8 @@ export function BusinessView() {
               <input
                 type="text"
                 className="form-input"
-                value={formData.signatureItems}
-                onChange={(e) => setFormData({ ...formData, signatureItems: e.target.value })}
+                value={currentData.signatureItems}
+                onChange={(e) => setFormData({ ...currentData, signatureItems: e.target.value })}
                 placeholder="Your best products, dishes, or specialties"
               />
             </div>
@@ -153,8 +208,8 @@ export function BusinessView() {
               <input
                 type="text"
                 className="form-input"
-                value={formData.targetCustomer}
-                onChange={(e) => setFormData({ ...formData, targetCustomer: e.target.value })}
+                value={currentData.targetCustomer}
+                onChange={(e) => setFormData({ ...currentData, targetCustomer: e.target.value })}
                 placeholder="e.g. Neighborhood residents, working professionals, weekend brunchers"
               />
             </div>
@@ -164,8 +219,8 @@ export function BusinessView() {
               <input
                 type="text"
                 className="form-input"
-                value={formData.styleVoice}
-                onChange={(e) => setFormData({ ...formData, styleVoice: e.target.value })}
+                value={currentData.styleVoice}
+                onChange={(e) => setFormData({ ...currentData, styleVoice: e.target.value })}
                 placeholder="e.g. Warm, contemporary, artisanal yet unpretentious"
               />
             </div>
@@ -183,8 +238,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.slowHours}
-                  onChange={(e) => setFormData({ ...formData, slowHours: e.target.value })}
+                  value={currentData.slowHours}
+                  onChange={(e) => setFormData({ ...currentData, slowHours: e.target.value })}
                   placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
                 />
               </div>
@@ -194,8 +249,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.defaultOffer}
-                  onChange={(e) => setFormData({ ...formData, defaultOffer: e.target.value })}
+                  value={currentData.defaultOffer}
+                  onChange={(e) => setFormData({ ...currentData, defaultOffer: e.target.value })}
                   placeholder="e.g. 20% off pour-overs & fresh bakes"
                 />
               </div>
@@ -207,8 +262,8 @@ export function BusinessView() {
                 <input
                   type="number"
                   className="form-input"
-                  value={formData.avgTicketINR}
-                  onChange={(e) => setFormData({ ...formData, avgTicketINR: parseInt(e.target.value, 10) || 0 })}
+                  value={currentData.avgTicketINR || ''}
+                  onChange={(e) => setFormData({ ...currentData, avgTicketINR: parseInt(e.target.value, 10) || 0 })}
                   placeholder="350"
                 />
               </div>
@@ -218,8 +273,8 @@ export function BusinessView() {
                 <input
                   type="text"
                   className="form-input"
-                  value={formData.phoneWhatsApp}
-                  onChange={(e) => setFormData({ ...formData, phoneWhatsApp: e.target.value })}
+                  value={currentData.phoneWhatsApp}
+                  onChange={(e) => setFormData({ ...currentData, phoneWhatsApp: e.target.value })}
                   placeholder="+91 98765 43210"
                 />
               </div>
@@ -237,20 +292,20 @@ export function BusinessView() {
         <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
           <span className="section-eyebrow">PREFERENCES CARD</span>
           <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginTop: '4px' }}>
-            {formData.name || 'Your Store'}
+            {currentData.name || 'Store Name Not Set'}
           </h4>
           <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
-            {formData.neighborhood || 'Neighborhood'}, {formData.city || 'City'}
+            {currentData.neighborhood ? (currentData.city ? `${currentData.neighborhood}, ${currentData.city}` : currentData.neighborhood) : 'Location not set'}
           </div>
 
           <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', marginBottom: '14px' }}>
             <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>SIGNATURE ITEMS</div>
-            {formData.signatureItems || 'Signature roasts, fresh bakery bakes'}
+            {currentData.signatureItems || 'Not specified yet'}
           </div>
 
           <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
             <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>TARGET WINDOW</div>
-            {formData.slowHours || 'Weekday afternoons'}
+            {currentData.slowHours || 'Not specified yet'}
           </div>
         </div>
       </div>
