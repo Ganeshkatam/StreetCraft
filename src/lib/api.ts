@@ -53,14 +53,26 @@ class RealtimeApiClient {
       };
     }
 
-    // Query business membership
+    // Query business memberships
+    const savedActiveId = localStorage.getItem('sc_active_business_id');
     const { data: members } = await (supabase.from('business_members') as any)
       .select('business_id, role')
-      .eq('user_id', session.user.id)
-      .limit(1);
+      .eq('user_id', session.user.id);
 
-    const activeBusinessId = members && members.length > 0 ? members[0].business_id : '';
-    const role = (members && members.length > 0 ? members[0].role : 'owner') as 'owner' | 'admin' | 'member';
+    let activeBusinessId = '';
+    let role: 'owner' | 'admin' | 'member' = 'owner';
+
+    if (members && members.length > 0) {
+      const matched = savedActiveId ? members.find((m: any) => m.business_id === savedActiveId) : null;
+      if (matched) {
+        activeBusinessId = matched.business_id;
+        role = matched.role;
+      } else {
+        activeBusinessId = members[0].business_id;
+        role = members[0].role;
+        localStorage.setItem('sc_active_business_id', activeBusinessId);
+      }
+    }
 
     return {
       userId: session.user.id,
@@ -75,7 +87,7 @@ class RealtimeApiClient {
 
   public async getMyBusinesses(): Promise<Array<{ id: UUID; name: string }>> {
     if (!isSupabaseConfigured) {
-      return [{ id: 'biz_local', name: 'The Roasted Bean' }];
+      return [{ id: 'biz_local', name: 'My Business' }];
     }
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -204,6 +216,15 @@ class RealtimeApiClient {
     return this.getSession();
   }
 
+  public async resetPassword(email: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      if (error) throw error;
+    }
+  }
+
   public async signOut(): Promise<void> {
     if (isSupabaseConfigured) {
       await supabase.auth.signOut();
@@ -247,6 +268,19 @@ class RealtimeApiClient {
     }
 
     return data;
+  }
+
+  public async cancelSubscription(businessId?: UUID): Promise<{ success: boolean; status: string }> {
+    if (!isSupabaseConfigured) {
+      return { success: true, status: 'CANCELLED' };
+    }
+
+    const { data, error } = await supabase.rpc('cancel_user_subscription');
+    if (error) {
+      throw new Error(error.message || 'Failed to cancel subscription.');
+    }
+
+    return data as { success: boolean; status: string };
   }
 
   public async getFestivalCalendar() {
@@ -431,69 +465,48 @@ class RealtimeApiClient {
     }
 
     const profile = await this.getBusinessProfile(businessId);
+    const { outputs, validationStatus } = generateCampaignPack(profile, input);
+
+    if (onProgress) {
+      onProgress('GOOGLE_BUSINESS', 'generating');
+      onProgress('INSTAGRAM', 'generating');
+      onProgress('WHATSAPP', 'generating');
+      onProgress('IN_STORE_POSTER', 'generating');
+    }
 
     if (isSupabaseConfigured && businessId) {
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('reserve_and_create_campaign', {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('save_campaign_pack_atomically', {
         p_business_id: businessId,
-        p_type: input.type,
+        p_campaign_type: input.type,
         p_objective: input.objective,
         p_audience: input.audience || '',
         p_offer: input.offer,
         p_schedule: input.schedule,
+        p_google_content: outputs.googleBusiness,
+        p_instagram_content: outputs.instagram,
+        p_whatsapp_content: outputs.whatsapp,
+        p_poster_content: outputs.poster || {},
       });
 
       if (rpcError) {
         throw new Error(rpcError.message);
       }
 
-      const campaignId = (rpcResult as { campaign_id: string }).campaign_id;
-
-      try {
-        const channels = ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'] as const;
-        const { outputs, validationStatus } = generateCampaignPack(profile, input);
-
-        for (const channel of channels) {
-          if (onProgress) onProgress(channel, 'generating');
-
-          let content: Record<string, unknown> = {};
-          if (channel === 'GOOGLE_BUSINESS') content = outputs.googleBusiness as unknown as Record<string, unknown>;
-          if (channel === 'INSTAGRAM') content = outputs.instagram as unknown as Record<string, unknown>;
-          if (channel === 'WHATSAPP') content = outputs.whatsapp as unknown as Record<string, unknown>;
-          if (channel === 'IN_STORE_POSTER') content = (outputs.poster || {}) as unknown as Record<string, unknown>;
-
-          await (supabase.from('campaign_outputs') as any).upsert({
-            campaign_id: campaignId,
-            channel,
-            status: 'ready',
-            content,
-            validation_status: validationStatus,
-            updated_at: new Date().toISOString(),
-          });
-
-          if (onProgress) onProgress(channel, 'ready');
-        }
-
-        await (supabase.from('campaigns') as any)
-          .update({ status: 'ready', updated_at: new Date().toISOString() })
-          .eq('id', campaignId);
-
-        const fullPack = await this.getCampaign(campaignId);
-        if (!fullPack) throw new Error('Failed to retrieve newly generated campaign pack.');
-        return fullPack;
-      } catch (err) {
-        await (supabase.from('campaigns') as any)
-          .update({
-            status: 'failed',
-            error_message: (err as Error).message,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', campaignId);
-        throw err;
+      if (onProgress) {
+        onProgress('GOOGLE_BUSINESS', 'ready');
+        onProgress('INSTAGRAM', 'ready');
+        onProgress('WHATSAPP', 'ready');
+        onProgress('IN_STORE_POSTER', 'ready');
       }
+
+      const campaignId = (rpcResult as { campaign_id: string }).campaign_id;
+      const fullPack = await this.getCampaign(campaignId);
+      if (!fullPack) throw new Error('Failed to retrieve newly generated campaign.');
+      return fullPack;
     }
 
     // Local fallback
-    const { campaignData, outputs, validationStatus } = generateCampaignPack(profile, input);
+    const { campaignData } = generateCampaignPack(profile, input);
     const campaignId = 'cmp_' + Date.now();
     const now = new Date().toISOString();
 
@@ -726,6 +739,39 @@ class RealtimeApiClient {
   public async deleteCampaign(campaignId: UUID): Promise<void> {
     if (!campaignId || !isSupabaseConfigured) return;
     await (supabase.from('campaigns') as any).delete().eq('id', campaignId);
+  }
+
+  public async confirmPaymentAndActivateSubscription(
+    provider: string,
+    paymentId: string,
+    orderId: string,
+    planId: string,
+    billingCycle: string
+  ): Promise<{ success: boolean; plan: string; billingCycle: string; status: string; business_limit: number; monthly_campaign_limit: number }> {
+    if (!isSupabaseConfigured) {
+      return {
+        success: true,
+        plan: planId,
+        billingCycle,
+        status: 'ACTIVE',
+        business_limit: planId === 'GROWTH' ? 10 : 5,
+        monthly_campaign_limit: planId === 'GROWTH' ? 300 : 100,
+      };
+    }
+
+    const { data, error } = await (supabase as any).rpc('confirm_payment_and_activate_subscription', {
+      p_payment_provider: provider,
+      p_payment_id: paymentId,
+      p_order_id: orderId,
+      p_plan_id: planId,
+      p_billing_cycle: billingCycle,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
   }
 
   private _getEmptyProfile(businessId: UUID): BusinessProfile {

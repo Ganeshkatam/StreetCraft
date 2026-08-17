@@ -13,20 +13,14 @@ import {
   PosterOutput,
   StructuredOffer,
   StructuredSchedule,
+  CampaignGenerationInput,
 } from '../types/campaign';
 import { BusinessProfile } from '../types/business';
 import { ValidationStatus } from '../types/common';
 import { generateLocalTags } from './rules';
 import { validateAllOutputs, sanitizeGoogleBusiness, sanitizeInstagram, sanitizeWhatsApp, sanitizePoster } from './validator';
 
-export interface CampaignGenerationInput {
-  type: CampaignType;
-  objective: CampaignObjective;
-  audience?: string;
-  offer: StructuredOffer;
-  schedule: StructuredSchedule;
-  customNotes?: string;
-}
+export type { CampaignGenerationInput };
 
 export interface GeneratedCampaignPack {
   campaignData: Omit<Campaign, 'id' | 'businessId' | 'createdAt' | 'updatedAt'>;
@@ -40,31 +34,36 @@ export interface GeneratedCampaignPack {
 }
 
 export function generateCampaignPack(
-  profile: BusinessProfile,
+  profile: Partial<BusinessProfile> | BusinessProfile,
   input: CampaignGenerationInput
 ): GeneratedCampaignPack {
-  const {
-    name = 'Our Cafe',
-    neighborhood = 'the neighborhood',
-    city = 'City',
-    landmarks = '',
-    signatureItems = 'Fresh coffee and artisanal bakes',
-    category = 'Cafe',
-  } = profile;
+  const bizName = profile?.name || 'Our Store';
+  const neighborhood = profile?.neighborhood?.trim() || '';
+  const city = profile?.city?.trim() || '';
+  const landmarks = profile?.landmarks?.trim() || '';
+  const signatureItems = profile?.signatureItems?.trim() || '';
+  const category = profile?.category?.trim() || 'Store';
 
   const {
     type,
     objective,
-    audience = 'Local residents and professionals',
+    audience = 'Customers and visitors',
     offer,
     schedule,
     customNotes = '',
   } = input;
 
-  const localCues = landmarks ? `${neighborhood} (near ${landmarks})` : neighborhood;
+  const locationParts = [neighborhood, landmarks ? `near ${landmarks}` : '', city].filter(Boolean);
+  const locationText = locationParts.length > 0 ? locationParts.join(', ') : 'our store';
+  const hoodHeader = neighborhood ? ` in ${neighborhood}` : '';
+  const hoodCues = neighborhood ? `, ${neighborhood}` : '';
   const localTags = generateLocalTags(neighborhood, city, category);
-  const timing = schedule.timingLabel || 'Limited time';
-  const offerSummary = offer.title ? `${offer.title} - ${offer.value}` : offer.description;
+  const timing = schedule?.timingLabel || 'Limited time';
+  const offerText = offer.title || offer.description || 'Special promotion';
+  const offerValue = offer.value || offerText;
+  const offerSummary = offer.title && offer.value && offer.value !== offer.title ? `${offer.title} - ${offer.value}` : offerText;
+  const sigText = signatureItems ? ` Featuring our signature ${signatureItems}.` : '';
+  const termsText = offer.terms ? ` Terms: ${offer.terms}` : '';
 
   let googleRaw: Partial<GoogleBusinessOutput> = {};
   let instagramRaw: Partial<InstagramOutput> = {};
@@ -74,202 +73,202 @@ export function generateCampaignPack(
   switch (type) {
     case 'WEEKDAY_BOOST':
       googleRaw = {
-        headline: `Afternoon special at ${name} in ${neighborhood}`,
-        body: `Looking for a productive workspace or a quiet coffee catchup in ${neighborhood}? ${name} is offering ${offer.title || offer.description} during ${timing}.\n\nEnjoy our signature ${signatureItems} in a relaxed setting with reliable Wi-Fi, air conditioning, and comfortable seating located at ${localCues}, ${city}. ${offer.terms ? `Terms: ${offer.terms}` : ''}`,
+        headline: `Afternoon special at ${bizName}${hoodHeader}`,
+        body: `${bizName} is offering ${offerText} during ${timing}.${sigText} Visit us at ${locationText}.${termsText}`,
         ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/visit',
         offerSummary: offerSummary.slice(0, 95),
       };
       instagramRaw = {
-        hook: `Your afternoon break in ${neighborhood} just found its new home.`,
-        caption: `Quiet corners, fresh brews, and space to think.\n\nTake advantage of ${offer.title || offer.description} valid ${timing} at ${name}. Whether you are finishing up work or catching up with friends, our ${neighborhood} store has your table ready.\n\nTag someone who needs an afternoon reset.`,
+        hook: `Afternoon special now running at ${bizName}${hoodCues}.`,
+        caption: `Take advantage of ${offerText} valid ${timing} at ${bizName}.\n\nDrop by our store at ${locationText}.${sigText}\n\n${offer.terms ? `Terms: ${offer.terms}` : 'Valid during specified hours.'}`,
         storyFrames: [
-          `AFTERNOON RESET / ${timing.toUpperCase()}`,
-          `${(offer.value || offer.title).toUpperCase()}`,
-          `At ${name}, ${neighborhood}`,
+          `AFTERNOON SPECIAL / ${timing.toUpperCase()}`,
+          `${offerValue.toUpperCase()}`,
+          `At ${bizName}${hoodCues}`,
         ],
-        reelHook: `The quietest 3 PM workspace in ${neighborhood} that you probably did not know about.`,
+        reelHook: `Our afternoon promotion is live at ${bizName}${hoodCues}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Hi from ${name}, ${neighborhood}! Need a calm afternoon break or a change of workspace? We are running a special: ${offer.title || offer.description} during ${timing}. Simply show this message at the counter to redeem. See you soon!`,
+        broadcastMessage: `Hi from ${bizName}${hoodCues}! We are running a special: ${offerText} during ${timing}. Simply show this message at our counter to redeem.${termsText}`,
         cta: 'Show message at counter to redeem',
         quickReplyPreview: 'Claim Offer',
       };
       posterRaw = {
-        headline: `AFTERNOON PERKS / ${timing.toUpperCase()}`,
-        subheading: offer.title || offer.description,
-        body: `Enjoy our signature ${signatureItems}. Available ${timing} at ${name}, ${neighborhood}.`,
-        cta: 'Ask our barista at the counter to redeem.',
+        headline: `AFTERNOON SPECIAL / ${timing.toUpperCase()}`,
+        subheading: offerText,
+        body: `${signatureItems ? `Featuring our signature ${signatureItems}. ` : ''}Available ${timing} at ${bizName}${hoodCues}.`,
+        cta: 'Ask our counter team to redeem.',
       };
       break;
 
     case 'WEEKEND_MAGNET':
       googleRaw = {
-        headline: `Weekend brunch & specials at ${name}, ${neighborhood}`,
-        body: `Make your weekend unhurried at ${name}. Join us in ${neighborhood} for ${offer.title || offer.description} during ${timing}.\n\nFeaturing our freshly prepared ${signatureItems}. Outdoor and indoor seating available in ${city}.`,
+        headline: `Weekend specials at ${bizName}${hoodHeader}`,
+        body: `Join us at ${bizName}${hoodHeader} for ${offerText} during ${timing}.${sigText} Located at ${locationText}.${termsText}`,
         ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/book',
         offerSummary: offerSummary.slice(0, 95),
       };
       instagramRaw = {
-        hook: `The weekend table you will want to wake up early for.`,
-        caption: `Unwind this weekend at ${name}.\n\nWe are serving up ${offer.title || offer.description} all weekend long in ${neighborhood}. Pair it with our signature ${signatureItems} and take your time.\n\nWalk-ins and reservations welcome. Drop by early for the best window seats!`,
+        hook: `Weekend specials are live at ${bizName}${hoodCues}.`,
+        caption: `Join us this weekend at ${bizName}.\n\nWe are offering ${offerText} during ${timing}${hoodHeader}.${sigText}\n\nVisit us at ${locationText}.${termsText}`,
         storyFrames: [
-          `WEEKEND SPECIAL TABLE`,
-          `${(offer.value || offer.title).toUpperCase()}`,
-          `Serving all weekend at ${name}, ${neighborhood}`,
+          `WEEKEND SPECIAL`,
+          `${offerValue.toUpperCase()}`,
+          `At ${bizName}${hoodCues}`,
         ],
-        reelHook: `This is your official sign to plan a slow weekend brunch in ${neighborhood}.`,
+        reelHook: `Plan your weekend visit to ${bizName}${hoodCues}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Happy weekend from ${name}! Make your Saturday & Sunday special with our weekend treat: ${offer.title || offer.description}. Tables fill up fast, so drop by early or reply to reserve your spot!`,
-        cta: 'Reply to reserve your table',
-        quickReplyPreview: 'Reserve Table',
+        broadcastMessage: `Happy weekend from ${bizName}! Make the most of your weekend with our special offer: ${offerText}. Valid ${timing} at our store${hoodHeader}. Show this message at the counter to redeem!`,
+        cta: 'Show message at counter to redeem',
+        quickReplyPreview: 'Weekend Special',
       };
       posterRaw = {
-        headline: 'WEEKEND SPECIAL TABLE',
-        subheading: offer.title || offer.description,
-        body: `Handcrafted ${signatureItems} served fresh all weekend at ${name}, ${neighborhood}.`,
-        cta: 'Available Saturday & Sunday. Inquire at counter.',
+        headline: 'WEEKEND SPECIAL',
+        subheading: offerText,
+        body: `${signatureItems ? `Featuring our signature ${signatureItems} at ` : 'Available at '}${bizName}${hoodCues}.`,
+        cta: 'Available this weekend. Inquire at counter.',
       };
       break;
 
     case 'MENU_LAUNCH':
       googleRaw = {
-        headline: `New on the menu at ${name}, ${neighborhood}`,
-        body: `We are excited to introduce a fresh addition to our menu at ${name} in ${neighborhood}: ${customNotes || signatureItems}.\n\nTry it this week with our launch offer: ${offer.title || offer.description}. Visit us at ${localCues}, ${city}.`,
-        ctaType: 'Order Online',
+        headline: `New arrival at ${bizName}${hoodHeader}`,
+        body: `We are introducing a new addition at ${bizName}${hoodHeader}: ${customNotes || signatureItems || 'our latest specialty'}.\n\nEnjoy our launch offer: ${offerText}. Visit us at ${locationText}.${termsText}`,
+        ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/menu',
-        offerSummary: `New Drop: ${offerSummary}`.slice(0, 95),
+        offerSummary: `New: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
-        hook: `Something new just dropped on our counter in ${neighborhood}.`,
-        caption: `Introducing our latest creation at ${name}: ${customNotes || signatureItems}.\n\nCrafted with fresh ingredients and attention to detail. To celebrate the launch, enjoy ${offer.title || offer.description} when you visit this week in ${neighborhood}.\n\nTell us in the comments what you think after your first taste!`,
+        hook: `New addition just arrived at ${bizName}${hoodCues}.`,
+        caption: `Introducing ${customNotes || signatureItems || 'our latest specialty'} at ${bizName}.\n\nTo celebrate, enjoy our launch offer: ${offerText} when you visit our store.\n\n${termsText}`,
         storyFrames: [
-          `NEW MENU DROP`,
-          `${(customNotes || signatureItems).toUpperCase()}`,
-          `${(offer.value || offer.title).toUpperCase()}`,
+          `NEW ARRIVAL`,
+          `${(customNotes || signatureItems || 'NEW SPECIAL').toUpperCase()}`,
+          `${offerValue.toUpperCase()}`,
         ],
-        reelHook: `Behind the scenes of how we crafted our new ${customNotes || signatureItems}.`,
+        reelHook: `Now serving our new ${customNotes || signatureItems || 'specialty'} at ${bizName}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Exciting news from ${name}, ${neighborhood}! We just launched our newest special: ${customNotes || signatureItems}. As a loyal customer, enjoy our launch perk: ${offer.title || offer.description}. Show this text at the counter to redeem!`,
+        broadcastMessage: `Exciting update from ${bizName}${hoodCues}! We just introduced: ${customNotes || signatureItems || 'our latest specialty'}. Enjoy our launch offer: ${offerText}. Show this message at our counter to redeem!`,
         cta: 'Show this message at counter',
-        quickReplyPreview: 'Try New Special',
+        quickReplyPreview: 'New Special',
       };
       posterRaw = {
-        headline: 'JUST ARRIVED ON THE MENU',
-        subheading: `${customNotes || signatureItems} - ${offer.title || offer.description}`,
-        body: `Crafted in small batches daily at ${name}, ${neighborhood}.`,
-        cta: 'Ask for today’s fresh batch at the counter.',
+        headline: 'NEW ARRIVAL',
+        subheading: `${customNotes || signatureItems || 'New Item'} — ${offerText}`,
+        body: `Available now at ${bizName}${hoodCues}.`,
+        cta: 'Ask our team at the counter.',
       };
       break;
 
     case 'FESTIVAL_SPECIAL':
       googleRaw = {
-        headline: `Festive celebrations & treats at ${name}, ${neighborhood}`,
-        body: `Celebrate the festive season with handcrafted flavors at ${name} in ${neighborhood}.\n\nEnjoy our festive promotion: ${offer.title || offer.description} valid ${timing}. Perfect for family gatherings, gifting, and celebrations in ${city}.`,
+        headline: `Festive celebration at ${bizName}${hoodHeader}`,
+        body: `Celebrate the festive season with ${bizName}${hoodHeader}.\n\nEnjoy our festive offer: ${offerText} valid ${timing}.${sigText} Visit us at ${locationText}.${termsText}`,
         ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/festive',
         offerSummary: `Festive: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
-        hook: `Festive moments are sweeter shared with the neighborhood.`,
-        caption: `Celebrate the season with ${name} in ${neighborhood}!\n\nWe have prepared exclusive festive treats and our special promotion: ${offer.title || offer.description}.\n\nWhether you are gathering with loved ones or looking for handcrafted gifting boxes, stop by our ${neighborhood} store.`,
+        hook: `Festive season specials at ${bizName}${hoodCues}.`,
+        caption: `Celebrate the season with ${bizName}${hoodHeader}!\n\nWe are offering our festive special: ${offerText} valid ${timing}.\n\nVisit our store at ${locationText} to celebrate with us.`,
         storyFrames: [
-          `FESTIVE SEASON SPECIAL`,
-          `${(offer.title || offer.value).toUpperCase()}`,
-          `Handcrafted at ${name}, ${neighborhood}`,
+          `FESTIVE SPECIAL`,
+          `${offerValue.toUpperCase()}`,
+          `At ${bizName}${hoodCues}`,
         ],
-        reelHook: `Festive gift boxes and seasonal specials are now ready at ${name}.`,
+        reelHook: `Festive specials are now available at ${bizName}${hoodCues}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Festive greetings from ${name}, ${neighborhood}! Celebrate the season with our special festive offer: ${offer.title || offer.description}. Valid ${timing}. We look forward to hosting you and your family!`,
-        cta: 'Visit us or reply to pre-order',
-        quickReplyPreview: 'Pre-order Hampers',
+        broadcastMessage: `Festive greetings from ${bizName}${hoodCues}! Celebrate the season with our special offer: ${offerText}. Valid ${timing}. Show this message at the counter to redeem!`,
+        cta: 'Show message at counter',
+        quickReplyPreview: 'Festive Offer',
       };
       posterRaw = {
-        headline: 'FESTIVE GATHERINGS SPECIAL',
-        subheading: offer.title || offer.description,
-        body: `Celebrate with handcrafted bakes and artisan roasts at ${name}, ${neighborhood}.`,
-        cta: 'Ask our team about celebration boxes & table reservations.',
+        headline: 'FESTIVE SPECIAL',
+        subheading: offerText,
+        body: `${signatureItems ? `Featuring our signature ${signatureItems} at ` : 'Celebrating at '}${bizName}${hoodCues}.`,
+        cta: 'Ask our counter team to redeem.',
       };
       break;
 
     case 'REVIEW_SPOTLIGHT':
       googleRaw = {
-        headline: `What our ${neighborhood} community is saying about ${name}`,
-        body: `“The coffee and fresh bakes here are hands-down the best in ${neighborhood}!” — Thank you to our wonderful local community for your continuous support.\n\nCome experience our signature ${signatureItems} at ${name}. Enjoy ${offer.title || offer.description} on your next visit.`,
+        headline: `Thank you from ${bizName}${hoodHeader}`,
+        body: `To our customers and community${hoodHeader} — thank you for your continuous support.\n\nTo show our appreciation, enjoy ${offerText} on your next visit to ${bizName} at ${locationText}.${sigText}${termsText}`,
         ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/community',
-        offerSummary: `Community: ${offerSummary}`.slice(0, 95),
+        offerSummary: `Appreciation: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
-        hook: `Words like this keep our baristas smiling all day.`,
-        caption: `“Our favorite spot in ${neighborhood} for great food and calm conversations.”\n\nThank you to our amazing regulars for making ${name} part of your daily routine. To say thanks, we are running ${offer.title || offer.description} this week.\n\nSave this post and drop by soon!`,
+        hook: `A note of appreciation to our customers from ${bizName}${hoodCues}.`,
+        caption: `Thank you for making ${bizName} part of your routine${hoodHeader}.\n\nTo show our appreciation, enjoy our special treat: ${offerText} on your next visit.\n\nVisit our counter at ${locationText}!`,
         storyFrames: [
-          `COMMUNITY LOVE / ${neighborhood.toUpperCase()}`,
-          `“OUR FAVORITE LOCAL SPOT”`,
-          `${(offer.title || offer.value).toUpperCase()}`,
+          `COMMUNITY APPRECIATION`,
+          `${offerValue.toUpperCase()}`,
+          `At ${bizName}${hoodCues}`,
         ],
-        reelHook: `Reading our favorite customer reviews of the week at ${name}.`,
+        reelHook: `Thank you to our amazing customers at ${bizName}${hoodCues}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Thank you for being part of the ${name} family in ${neighborhood}! To show our appreciation, we are offering ${offer.title || offer.description} on your next visit. Just mention this text at checkout.`,
-        cta: 'Mention this message at checkout',
-        quickReplyPreview: 'Thank You',
+        broadcastMessage: `Thank you for being part of the ${bizName} family${hoodHeader}! To show our appreciation, we are offering ${offerText} on your next visit. Mention this message at our counter to redeem.`,
+        cta: 'Mention this message at counter',
+        quickReplyPreview: 'Thank You Offer',
       };
       posterRaw = {
-        headline: 'THANK YOU TO OUR COMMUNITY',
-        subheading: offer.title || offer.description,
-        body: `Proudly serving the neighborhood of ${neighborhood} with fresh ${signatureItems}.`,
-        cta: 'Mention our community review at checkout.',
+        headline: 'COMMUNITY APPRECIATION',
+        subheading: offerText,
+        body: `Thank you for supporting ${bizName}${hoodHeader}.${sigText}`,
+        cta: 'Mention this offer at the counter to redeem.',
       };
       break;
 
     case 'WIN_BACK_REGULARS':
     default:
       googleRaw = {
-        headline: `We have missed you at ${name}, ${neighborhood}`,
-        body: `It has been a while! Come back to ${name} in ${neighborhood} and enjoy our welcoming treat: ${offer.title || offer.description}.\n\nRelax with your favorite ${signatureItems} at ${localCues}, ${city}. Valid ${timing}.`,
+        headline: `Welcome back to ${bizName}${hoodHeader}`,
+        body: `We would love to welcome you back to ${bizName}${hoodHeader}. Enjoy our welcoming special: ${offerText}.${sigText} Visit us at ${locationText}.${timing ? ` Valid ${timing}.` : ''}${termsText}`,
         ctaType: 'Visit Us',
         ctaValue: 'https://streetcraft.local/welcome-back',
-        offerSummary: `Comeback: ${offerSummary}`.slice(0, 95),
+        offerSummary: `Welcome Back: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
-        hook: `Consider this your official sign to revisit your favorite table.`,
-        caption: `Haven’t stopped by ${name} recently? We have fresh roasts, new seasonal bakes, and your favorite corner waiting in ${neighborhood}.\n\nEnjoy ${offer.title || offer.description} on your next visit.\n\nSee you soon!`,
+        hook: `A special invitation to revisit ${bizName}${hoodCues}.`,
+        caption: `Haven't stopped by ${bizName} in a while? We would love to see you again.\n\nEnjoy our welcoming special: ${offerText} on your next visit${hoodHeader}.\n\nVisit us at ${locationText}!`,
         storyFrames: [
-          `COME BACK & UNWIND`,
-          `YOUR TABLE IS WAITING`,
-          `${(offer.title || offer.value).toUpperCase()}`,
+          `WELCOME BACK`,
+          `${offerValue.toUpperCase()}`,
+          `At ${bizName}${hoodCues}`,
         ],
-        reelHook: `A reminder of why your favorite corner at ${name} is the best spot to recharge.`,
+        reelHook: `We would love to welcome you back to ${bizName}${hoodCues}.`,
         localTags,
       };
       whatsappRaw = {
-        broadcastMessage: `Hi from ${name}! We noticed it’s been a while since your last visit to our ${neighborhood} outlet. We’d love to welcome you back with a special treat: ${offer.title || offer.description}. Show this message on your next visit!`,
+        broadcastMessage: `Hi from ${bizName}! We would love to welcome you back to our store${hoodHeader}. Enjoy our special welcoming treat: ${offerText}. Show this message on your next visit!`,
         cta: 'Show this message on your next visit',
         quickReplyPreview: 'Welcome Back',
       };
       posterRaw = {
-        headline: 'YOUR FAVORITE TABLE AWAITS',
-        subheading: offer.title || offer.description,
-        body: `Welcome back to ${name}, ${neighborhood}. Handcrafted ${signatureItems} fresh every morning.`,
-        cta: 'Ask our team about your welcome back offer.',
+        headline: 'WELCOME BACK SPECIAL',
+        subheading: offerText,
+        body: `Welcome back to ${bizName}${hoodCues}.${sigText}`,
+        cta: 'Ask our counter team to redeem.',
       };
       break;
   }
 
-  const googleBusiness = sanitizeGoogleBusiness(googleRaw, name);
+  const googleBusiness = sanitizeGoogleBusiness(googleRaw, bizName);
   const instagram = sanitizeInstagram(instagramRaw, localTags);
-  const whatsapp = sanitizeWhatsApp(whatsappRaw, name);
-  const poster = sanitizePoster(posterRaw, name);
+  const whatsapp = sanitizeWhatsApp(whatsappRaw, bizName);
+  const poster = sanitizePoster(posterRaw, bizName);
 
   const outputs = {
     googleBusiness,

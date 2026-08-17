@@ -68,11 +68,16 @@ export function useAuth() {
 
   const switchBusiness = (businessId: string) => {
     if (!session) return;
+    localStorage.setItem('sc_active_business_id', businessId);
     const newSession = { ...session, activeBusinessId: businessId };
     setSession(newSession);
     if (!isSupabaseConfigured) {
       localStorage.setItem('sc_local_session', JSON.stringify(newSession));
     }
+  };
+
+  const resetPassword = async (email: string) => {
+    await api.resetPassword(email);
   };
 
   const signOut = async () => {
@@ -94,6 +99,7 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
     createBusiness,
     getMyBusinesses,
     getAccountLimits,

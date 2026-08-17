@@ -33,18 +33,26 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleUpgrade = (plan: DatabasePlan) => {
+  const handleUpgrade = async (plan: DatabasePlan) => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${plan.monthly_pack_limit} campaign packs.`);
+    try {
+      const paymentRef = 'pay_' + Math.random().toString(36).substring(2, 11);
+      const orderRef = 'order_' + Math.random().toString(36).substring(2, 11);
+
+      await api.confirmPaymentAndActivateSubscription('razorpay', paymentRef, orderRef, plan.id, 'monthly');
+
+      setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${plan.monthly_pack_limit} monthly campaigns.`);
       if (onPlanUpdated) onPlanUpdated();
       if (onSuccess) onSuccess();
       setTimeout(() => {
         setSuccessNotice(null);
         onClose();
-      }, 1200);
-    }, 600);
+      }, 1400);
+    } catch (err: any) {
+      alert(err.message || 'Payment confirmation failed.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -99,7 +107,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                           <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}>/mo</span>
                         </div>
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px' }}>
-                          {plan.monthly_pack_limit} packs / month
+                          {plan.monthly_pack_limit} campaigns / month
                         </div>
                         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-ink-soft)' }}>
                           {plan.features.slice(0, 3).map((f, i) => (

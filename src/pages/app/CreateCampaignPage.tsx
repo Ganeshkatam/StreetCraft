@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBusiness } from '../../hooks/useBusiness';
 import { useUsage } from '../../hooks/useUsage';
@@ -6,6 +6,7 @@ import { api } from '../../lib/api';
 import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
+import { CalendarPicker } from '../../components/CalendarPicker';
 import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface CreateCampaignPageProps {
@@ -27,7 +28,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
   const [type, setType] = useState<CampaignType>(initialPreset?.preset.type || 'WEEKDAY_BOOST');
   const [objective, setObjective] = useState<CampaignObjective>(initialPreset?.preset.objective || 'MORE_WALK_INS');
   const [audience, setAudience] = useState<string>(
-    initialPreset ? 'Local customers and neighborhood residents' : profile?.targetCustomer || ''
+    initialPreset ? 'Customers and neighborhood residents' : profile?.targetCustomer || ''
   );
   const [offerTitle, setOfferTitle] = useState<string>(initialPreset?.preset.offer.title || '');
   const [offerDesc, setOfferDesc] = useState<string>(
@@ -40,6 +41,21 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
   );
   const [customNotes, setCustomNotes] = useState<string>(initialPreset?.preset.customNotes || '');
 
+  // Reset draft if user switches active business in header
+  useEffect(() => {
+    if (!initialPreset) {
+      setStep(1);
+      setGeneratedPack(null);
+      setGenerationError(null);
+      setOfferTitle('');
+      setOfferDesc(profile?.defaultOffer || '');
+      setOfferValue('');
+      setOfferTerms('');
+      setTimingLabel(profile?.slowHours || '');
+      setAudience(profile?.targetCustomer || '');
+    }
+  }, [businessId]);
+
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -51,7 +67,16 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
   });
 
   const handleGenerate = async () => {
-    if (!businessId) return;
+    if (!businessId) {
+      setGenerationError("A business must be selected before creating a campaign.");
+      return;
+    }
+
+    if (!offerTitle.trim() && !offerDesc.trim()) {
+      setGenerationError("Please provide an offer headline or description before creating the campaign.");
+      return;
+    }
+
     setIsGenerating(true);
     setGenerationError(null);
 
@@ -68,7 +93,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
         {
           type,
           objective,
-          audience,
+          audience: audience || 'Neighborhood customers and visitors',
           offer: {
             title: offerTitle || offerDesc,
             description: offerDesc || offerTitle,
@@ -94,7 +119,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       setStep(4);
       await refreshUsage();
     } catch (err) {
-      setGenerationError((err as Error).message);
+      setGenerationError((err as Error).message || 'Failed to create campaign. Your monthly usage was not deducted.');
     } finally {
       setIsGenerating(false);
     }
@@ -116,7 +141,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
       {isQuotaExceeded && (
         <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', fontSize: '13.5px', fontWeight: 600 }}>
-            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} packs). Upgrade for additional quota.
+            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} campaigns). Upgrade for additional quota.
           </div>
           <button className="btn-secondary" onClick={onOpenUpgrade}>
             Upgrade Tier &rarr;
@@ -163,7 +188,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
             What is happening at your store?
           </h3>
           <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px' }}>
-            Select the local trigger or moment you want to promote.
+            Select the store trigger or moment you want to promote.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
@@ -171,9 +196,9 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
               { type: 'WEEKDAY_BOOST' as CampaignType, title: 'Quiet Weekday Afternoon', desc: 'Promote slow 3–6 PM hours with special pairing perks' },
               { type: 'MENU_LAUNCH' as CampaignType, title: 'New Dish or Item Launch', desc: 'Introduce a single-origin brew, bakery drop, or seasonal special' },
               { type: 'WEEKEND_MAGNET' as CampaignType, title: 'Weekend Rush Special', desc: 'Capture brunch crowds, table reservations & unhurried dining' },
-              { type: 'FESTIVAL_SPECIAL' as CampaignType, title: 'Holiday or Local Festival', desc: 'Seasonal festive celebration, gift packs, and special menus' },
+              { type: 'FESTIVAL_SPECIAL' as CampaignType, title: 'Holiday or Festival', desc: 'Seasonal festive celebration, gift bundles, and special menus' },
               { type: 'REVIEW_SPOTLIGHT' as CampaignType, title: 'Re-engage Inactive Regulars', desc: 'Spotlight 5-star neighborhood love to drive repeat visits' },
-              { type: 'FLASH_OFFER' as CampaignType, title: 'Flash Counter Promotion', desc: 'Time-sensitive counter incentive for immediate local walk-ins' },
+              { type: 'FLASH_OFFER' as CampaignType, title: 'Flash Counter Promotion', desc: 'Time-sensitive counter incentive for immediate walk-ins' },
             ].map((ct) => (
               <div
                 key={ct.type}
@@ -218,7 +243,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {[
-              { obj: 'MORE_WALK_INS' as CampaignObjective, label: 'More Counter Walk-ins', desc: 'Encourage locals and neighbors to drop by your counter today' },
+              { obj: 'MORE_WALK_INS' as CampaignObjective, label: 'More Counter Walk-ins', desc: 'Encourage neighbors and passersby to drop by your counter today' },
               { obj: 'MORE_ORDERS' as CampaignObjective, label: 'More Takeaway Orders', desc: 'Drive counter takeaways and direct parcel orders' },
               { obj: 'MORE_BOOKINGS' as CampaignObjective, label: 'Table Reservations', desc: 'Secure advance table bookings for lunch, dinner or brunch' },
               { obj: 'REPEAT_VISITS' as CampaignObjective, label: 'Bring Back Regulars', desc: 'Re-engage nearby customers who haven’t visited in 14+ days' },
@@ -308,16 +333,12 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Schedule / Timing</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={timingLabel}
-                  onChange={(e) => setTimingLabel(e.target.value)}
-                  placeholder="e.g. Monday–Thursday, 3 PM – 6 PM"
-                />
-              </div>
+              <CalendarPicker
+                label="Target Time Window"
+                value={timingLabel}
+                onChange={(newTiming) => setTimingLabel(newTiming)}
+                placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
+              />
             </div>
 
             <div className="form-group">
@@ -349,10 +370,10 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
           <div className="card" style={{ background: 'var(--color-surface-raised)' }}>
             <span className="section-eyebrow">DRAFT PARAMETERS</span>
             <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginTop: '4px' }}>
-              {profile?.name || 'The Roasted Bean'}
+              {profile?.name || 'Your Store'}
             </h4>
             <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
-              {profile?.neighborhood || 'Indiranagar'}, {profile?.city || 'Bengaluru'}
+              {profile?.neighborhood ? `${profile.neighborhood}${profile.city ? `, ${profile.city}` : ''}` : 'Location configured in preferences'}
             </div>
 
             <div style={{ padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', marginBottom: '16px' }}>
@@ -360,7 +381,7 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
                 {offerTitle || 'Afternoon Promotion'}
               </div>
               <div style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
-                {offerDesc || 'Special promotional pairing for local neighborhood visitors.'}
+                {offerDesc || 'Special promotional pairing for neighborhood visitors.'}
               </div>
               <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', marginTop: '10px' }}>
                 {timingLabel || 'Valid during specified window'} &bull; {offerValue || 'Special Perk'}

@@ -126,8 +126,8 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
         category: targetCategory,
         neighborhood: targetNeighborhood || 'Neighborhood',
         city: targetCity || 'City',
-        landmarks: 'Near neighborhood central park and local transit',
-        targetCustomer: 'Local neighborhood residents, remote workers, and food enthusiasts',
+        landmarks: 'Near neighborhood central park and transit hub',
+        targetCustomer: 'Neighborhood residents, remote workers, and food enthusiasts',
         styleVoice: 'Warm, contemporary, artisanal yet unpretentious',
         signatureItems: 'Signature items and fresh daily offerings',
         primaryGoal: 'Increase walk-in foot traffic',
@@ -144,7 +144,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
         {
           type: targetType,
           objective: 'MORE_WALK_INS',
-          audience: 'Local neighborhood customers and nearby office workers',
+          audience: 'Neighborhood customers and nearby office workers',
           offer: {
             title: targetOffer,
             description: targetOffer,
@@ -204,7 +204,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
           Free Campaign Proof Generator
         </h1>
         <p style={{ fontSize: '16.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6', maxWidth: '680px', margin: '0 auto' }}>
-          Enter your shop details and promotional offer to generate a coordinated campaign pack across Google, Instagram, WhatsApp, and in-store print.
+          Enter your shop details and promotional offer to generate a coordinated campaign across Google, Instagram, WhatsApp, and in-store print.
         </p>
       </div>
 
@@ -298,7 +298,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. The Roasted Bean"
+              placeholder="e.g. Blue Door Cafe"
               required
             />
           </div>
@@ -374,7 +374,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
             disabled={isGenerating}
           >
             {isGenerating ? <RefreshCw size={14} className="spin" /> : <RefreshCw size={14} />}
-            {isGenerating ? 'Generating campaign pack...' : 'Generate Campaign Pack'}
+            {isGenerating ? 'Generating campaign...' : 'Generate Campaign Proofs'}
           </button>
         </form>
 
@@ -411,7 +411,7 @@ export const FreeToolPage: React.FC<FreeToolPageProps> = ({ onOpenAuthWithClaim 
           {generatedPack && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ fontSize: '13px', color: 'var(--color-ink)' }}>
-                <strong>Generated Pack:</strong> <span style={{ color: 'var(--color-ink-muted)' }}>{name} &bull; {neighborhood}</span>
+                <strong>Generated Campaign:</strong> <span style={{ color: 'var(--color-ink-muted)' }}>{name} &bull; {neighborhood}</span>
               </div>
 
               <div style={{ display: 'flex', gap: '6px', background: 'var(--color-surface-raised)', padding: '4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>

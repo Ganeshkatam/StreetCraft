@@ -1,9 +1,9 @@
 # StreetCraft Project Directory Structure
 
-Generated automatically on: 2026-08-16T18:00:05.147Z
+Generated automatically on: 2026-08-16T21:16:06.070Z
 
-Total Directories: 19  
-Total Files: 73
+Total Directories: 20  
+Total Files: 91
 
 ```text
 streetcraft/
@@ -14,8 +14,20 @@ streetcraft/
 │   ├── streetcraft-ai-content-studio-plan.md
 │   ├── streetcraft-growth-engine-v1-plan.md
 │   └── streetcraft-local-growth-engine-plan.md
+├── public/
+│   ├── login_full.jpg
+│   ├── onboarding_sketch.jpg
+│   ├── reset_full.jpg
+│   ├── reset_sketch.jpg
+│   ├── setup_full.jpg
+│   ├── signup_full.jpg
+│   ├── signup_sketch.jpg
+│   └── street_sketch.jpg
 ├── scripts/
-│   └── generate-project-tree.js
+│   ├── generate-project-tree.js
+│   ├── test-content-generation-quality.js
+│   ├── test-content-generation-quality.ts
+│   └── test-v1-vertical-slice.js
 ├── src/
 │   ├── components/
 │   │   ├── CalendarPicker.tsx
@@ -48,7 +60,8 @@ streetcraft/
 │   ├── lib/
 │   │   ├── api.ts
 │   │   ├── entitlements.ts
-│   │   └── supabase.ts
+│   │   ├── supabase.ts
+│   │   └── telemetry.ts
 │   ├── pages/
 │   │   ├── app/
 │   │   │   ├── BusinessPage.tsx
@@ -56,11 +69,14 @@ streetcraft/
 │   │   │   ├── CreateCampaignPage.tsx
 │   │   │   ├── DashboardPage.tsx
 │   │   │   └── SettingsPage.tsx
+│   │   ├── ForgotPasswordPage.tsx
 │   │   ├── FreeToolPage.tsx
 │   │   ├── HowItWorksPage.tsx
 │   │   ├── LandingPage.tsx
 │   │   ├── LoginPage.tsx
-│   │   └── PricingPage.tsx
+│   │   ├── OnboardingPage.tsx
+│   │   ├── PricingPage.tsx
+│   │   └── SignupPage.tsx
 │   ├── theme/
 │   │   ├── themes/
 │   │   │   ├── high-contrast.css
@@ -87,7 +103,10 @@ streetcraft/
 ├── supabase/
 │   ├── migrations/
 │   │   ├── 20260816000000_streetcraft_core.sql
-│   │   └── 20260816000001_streetcraft_realtime_saas.sql
+│   │   ├── 20260816000001_streetcraft_realtime_saas.sql
+│   │   ├── 20260817000000_streetcraft_v1_database_hardening.sql
+│   │   ├── 20260817000001_streetcraft_commercial_limits_and_founder_rpc.sql
+│   │   └── 20260817000002_streetcraft_payment_confirmation_rpc.sql
 │   └── seed/
 │       └── reference-data.sql
 ├── .env

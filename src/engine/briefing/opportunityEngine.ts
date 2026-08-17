@@ -96,25 +96,26 @@ export function generateDynamicBriefing(
   if (upcomingFestival) {
     const hasFestivalCampaign = activeCampaigns.some((c) => c.type === 'FESTIVAL_SPECIAL');
     if (!hasFestivalCampaign) {
+      const festDate = new Date(upcomingFestival.starts_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
       opportunities.push({
         id: `opp_fest_${upcomingFestival.id}`,
-        tag: 'CALENDAR MOMENT',
-        title: `${upcomingFestival.name} Marketing Window`,
-        description: `${upcomingFestival.name} (${upcomingFestival.marketing_relevance}) is approaching. Launch a coordinated local pack to capture holiday demand.`,
-        actionLabel: 'Launch Festival Pack',
+        tag: 'CALENDAR',
+        title: `${upcomingFestival.name} approaching (${festDate})`,
+        description: `${upcomingFestival.marketing_relevance}. Launch a campaign to capture holiday and celebration foot traffic.`,
+        actionLabel: 'Create festive campaign',
         preset: {
           type: 'FESTIVAL_SPECIAL',
           objective: 'FESTIVAL_RUSH',
           offer: {
-            title: upcomingFestival.suggested_offer || `${upcomingFestival.name} Special Celebration Combo`,
-            description: `${upcomingFestival.name} celebratory specials at ${profile.name || 'our shop'}.`,
-            value: 'Festival Special',
-            terms: `Valid during ${upcomingFestival.name} festive window`,
+            title: upcomingFestival.suggested_offer || `${upcomingFestival.name} Special`,
+            description: `${upcomingFestival.name} celebration special at ${profile.name || 'our store'}.`,
+            value: 'Festive Special',
+            terms: `Valid during ${upcomingFestival.name} window`,
           },
           schedule: {
-            timingLabel: `${upcomingFestival.name} Window (${upcomingFestival.starts_at} to ${upcomingFestival.ends_at})`,
+            timingLabel: `${upcomingFestival.name} (${upcomingFestival.starts_at} to ${upcomingFestival.ends_at})`,
           },
-          customNotes: `Focus on ${upcomingFestival.marketing_relevance} for local neighborhood customers.`,
+          customNotes: `Focus on ${upcomingFestival.marketing_relevance}.`,
         },
       });
     }
@@ -127,23 +128,23 @@ export function generateDynamicBriefing(
     if (!hasWeekdayCampaign) {
       opportunities.push({
         id: 'opp_weekday_boost',
-        tag: 'FOOT TRAFFIC OPPORTUNITY',
-        title: `Slow ${weekday} Afternoon Foot Traffic`,
-        description: `No active afternoon campaign is scheduled for ${profile.slowHours || '2:30 PM - 5:30 PM'}. A work-from-cafe or snack pairing can convert idle tables into revenue.`,
-        actionLabel: 'Fill Quiet Afternoon Hours',
+        tag: 'QUIET HOURS',
+        title: `Quiet period coming up (${weekday}s)`,
+        description: `${profile.name || 'Your store'} usually slows down during ${profile.slowHours || 'afternoon hours'}. A targeted offer can fill idle counter capacity.`,
+        actionLabel: 'Create weekday offer',
         preset: {
           type: 'WEEKDAY_BOOST',
           objective: 'MORE_WALK_INS',
           offer: {
-            title: profile.defaultOffer || 'Afternoon Focus Hour Pairing',
-            description: profile.defaultOffer || 'Special discount on fresh pour-overs and bakery combos',
-            value: '20% Off',
-            terms: `Valid Monday to Thursday during ${profile.slowHours || '3 PM - 6 PM'}`,
+            title: profile.defaultOffer || 'Afternoon Special Pairing',
+            description: profile.defaultOffer || `Special discount on signature ${profile.signatureItems || 'items'}`,
+            value: 'Special Perk',
+            terms: `Valid during ${profile.slowHours || 'slow hours'}`,
           },
           schedule: {
-            timingLabel: 'Monday to Thursday, 3:00 PM – 6:00 PM',
+            timingLabel: profile.slowHours || 'Monday to Thursday, 3:00 PM – 6:00 PM',
           },
-          customNotes: 'Target remote workers, freelancers, and afternoon walk-ins.',
+          customNotes: 'Target afternoon visitors and nearby customers.',
         },
       });
     }
@@ -156,57 +157,32 @@ export function generateDynamicBriefing(
     if (!hasWeekendCampaign) {
       opportunities.push({
         id: 'opp_weekend_magnet',
-        tag: 'WEEKEND REVENUE DRIVER',
-        title: 'Upcoming Weekend Crowd & Brunch Magnet',
-        description: `Weekend dining demand surges in ${profile.neighborhood || 'your neighborhood'}. Promote your signature creations (${profile.signatureItems || 'signature specials'}) to secure tables.`,
-        actionLabel: 'Create Weekend Campaign',
+        tag: 'WEEKEND',
+        title: 'Weekend has no active campaign',
+        description: `You don't currently have an active promotion covering the weekend. Promote ${profile.signatureItems || 'your best items'} to drive table visits.`,
+        actionLabel: 'Create weekend campaign',
         preset: {
           type: 'WEEKEND_MAGNET',
           objective: 'WEEKEND_CROWD',
           offer: {
-            title: 'Weekend Tasting & Table Special',
-            description: `Signature weekend creations and artisan specials at ${profile.name || 'our shop'}.`,
+            title: 'Weekend Special',
+            description: `Signature weekend creations at ${profile.name || 'our store'}.`,
             value: 'Weekend Special',
-            terms: 'Valid Friday evening to Sunday night',
+            terms: 'Valid Friday evening through Sunday',
           },
           schedule: {
             timingLabel: 'Friday to Sunday',
           },
-          customNotes: 'Highlight group tables, brunch specials, and relaxed weekend ambiance.',
+          customNotes: 'Highlight weekend specials and customer favorites.',
         },
       });
     }
   }
 
-  // Rule 4: Cadence Win-Back Check (if fewer than 2 active campaigns)
-  if (activeCampaigns.length === 0) {
-    opportunities.push({
-      id: 'opp_win_back',
-      tag: 'RETENTION ENGINE',
-      title: 'Win-Back Inactive Regulars',
-      description: 'You currently have zero active campaigns running in the vault. Send a direct WhatsApp broadcast and Google update to reconnect with past visitors.',
-      actionLabel: 'Launch Win-Back Pack',
-      preset: {
-        type: 'WIN_BACK_REGULARS',
-        objective: 'CUSTOMER_RETENTION',
-        offer: {
-          title: 'We Miss You — Regulars Welcome Treat',
-          description: 'Special complimentary treat or discount for returning neighborhood regulars.',
-          value: 'Welcome Back Treat',
-          terms: 'Show message at counter to redeem',
-        },
-        schedule: {
-          timingLabel: 'This Week',
-        },
-        customNotes: 'Personalized tone thanking them for being part of the neighborhood community.',
-      },
-    });
-  }
-
   const subtitle =
     opportunities.length > 0
-      ? `Identified ${opportunities.length} data-backed marketing ${opportunities.length === 1 ? 'opportunity' : 'opportunities'} based on your live store preferences and schedule.`
-      : 'Your marketing calendar is fully active and scheduled. All target time windows have active coverage.';
+      ? `${opportunities.length} ${opportunities.length === 1 ? 'opportunity' : 'opportunities'} suggested from your store rhythm and calendar.`
+      : 'All current store periods are covered by active campaigns.';
 
   return {
     dateString: formattedDate,

@@ -41,8 +41,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
 
   const pricingFaqs = [
     {
-      q: 'How does the monthly campaign pack limit work?',
-      a: 'Each campaign pack generates coordinated outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
+      q: 'How does the monthly campaign quota work?',
+      a: 'Each campaign generates coordinated outputs simultaneously: Google Search/Maps update, Instagram Reel hook + Story sequence, WhatsApp broadcast copy, and printable counter card. Quota resets on the 1st of every calendar month.',
     },
     {
       q: 'Are there any hidden fees or sales commissions?',
@@ -50,7 +50,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
     },
     {
       q: 'Can I start for free without a credit card?',
-      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete campaign packs every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
+      a: `Yes. The Neighborhood Starter tier includes ${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} complete campaigns every month, Store Preferences, and the Daily Opportunity Radar. No payment card is required.`,
     },
     {
       q: 'Can I upgrade or cancel my plan at any time?',
@@ -65,7 +65,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <span className="section-eyebrow">STRAIGHTFORWARD RATES</span>
         <h1 className="section-title" style={{ fontSize: '40px', letterSpacing: '-0.02em' }}>
-          Scale Your Local Marketing
+          Scale Your Store Marketing
         </h1>
         <p className="section-subtitle" style={{ margin: '10px auto 0', maxWidth: '580px', fontSize: '15.5px' }}>
           One single afternoon promotion covers the entire monthly subscription. No commissions, no agency retainers.
@@ -171,19 +171,18 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                       </span>
                     </div>
                   </div>
-                  
-                  {/* Features Box */}
+                                {/* Features Box */}
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
                        <CheckCircle2 size={18} color="var(--color-ink)" />
-                       <span style={{ fontWeight: 600 }}>{founderPlan.monthly_pack_limit} campaign packs</span>
+                       <span style={{ fontWeight: 600 }}>{founderPlan.monthly_pack_limit} campaigns</span>
                      </div>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--color-ink)' }}>
                        <CheckCircle2 size={18} color="var(--color-ink)" />
                        <span style={{ fontWeight: 600 }}>{founderPlan.business_limit} businesses</span>
                      </div>
                   </div>
-  
+   
                   {/* CTA Box */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
                     <button className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '14.5px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => navigate('/login')}>
@@ -274,7 +273,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
                 </div>
 
                 <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '24px', paddingBottom: '14px', borderBottom: '1px solid var(--color-border)' }}>
-                  {p.monthly_pack_limit} campaign packs monthly
+                  {p.monthly_pack_limit} campaigns monthly
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', marginBottom: '32px' }}>
@@ -305,7 +304,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
         })}
       </div>
 
-      {/* The Local Unit Economics / ROI Panel */}
+      {/* The Store Unit Economics / ROI Panel */}
       <section className="card" style={{ padding: '32px 36px', marginBottom: '64px', background: 'var(--color-surface-raised)' }}>
         {(() => {
           const proPlan = plans.find(p => p.id === 'PRO');
@@ -369,8 +368,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onOpenUpgrade }) => {
             </thead>
             <tbody>
               {[
-                { feature: 'Monthly Campaign Packs', starter: `${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} packs`, pro: `${plans.find(p => p.id === 'PRO')?.monthly_pack_limit ?? 100} packs`, growth: `${plans.find(p => p.id === 'GROWTH')?.monthly_pack_limit ?? 300} packs` },
-                { feature: 'Google Search & Maps Local Updates', starter: 'Included', pro: 'Included', growth: 'Included' },
+                { feature: 'Monthly Campaign Limit', starter: `${plans.find(p => p.id === 'FREE')?.monthly_pack_limit ?? 3} campaigns`, pro: `${plans.find(p => p.id === 'PRO')?.monthly_pack_limit ?? 100} campaigns`, growth: `${plans.find(p => p.id === 'GROWTH')?.monthly_pack_limit ?? 300} campaigns` },
+                { feature: 'Google Search & Maps Store Updates', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'Instagram Reel Hook & Stories', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'WhatsApp Broadcast Copy', starter: 'Included', pro: 'Included', growth: 'Included' },
                 { feature: 'Print-Ready Counter QR Cards', starter: 'Standard', pro: 'High-Res A5/A4', growth: 'Custom Formats' },

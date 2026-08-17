@@ -1,56 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
 import {
   Store,
   Megaphone,
   Sparkles,
   Mail,
   Lock,
+  User,
   Eye,
   EyeOff,
   ShieldCheck
 } from 'lucide-react';
 
-interface LoginPageProps {
+interface SignupPageProps {
   claimToken?: string | null;
   onSuccess?: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) => {
+export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [agreeTerms, setAgreeTerms] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setIsSubmitting(true);
     try {
-      const session = await signIn(email, password);
-      if (claimToken && session.activeBusinessId) {
-        await api.claimAnonymousCampaign(claimToken, session.activeBusinessId);
-      }
+      await signUp(email, password, name);
       if (onSuccess) onSuccess();
-
-      if (session.activeBusinessId) {
-        navigate('/app/today');
-      } else {
-        navigate('/setup');
-      }
+      navigate('/setup');
     } catch (err) {
-      const raw = (err as Error).message || 'Failed to sign in';
-      if (raw.toLowerCase().includes('invalid login credentials')) {
-        setErrorMsg('Invalid email or password. Please verify your credentials and try again.');
-      } else if (raw.toLowerCase().includes('email not confirmed')) {
-        setErrorMsg('Please confirm your email address via the link sent to your inbox.');
+      const raw = (err as Error).message || 'Failed to create account';
+      if (raw.toLowerCase().includes('user already registered') || raw.toLowerCase().includes('already exists')) {
+        setErrorMsg('An account with this email address already exists. Please sign in instead.');
+      } else if (raw.toLowerCase().includes('password should be at least')) {
+        setErrorMsg('Password must be at least 6 characters long.');
       } else {
         setErrorMsg(raw);
       }
@@ -62,7 +55,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
   return (
     <div
       className="auth-full-viewport"
-      style={{ backgroundImage: "url('/login_full.jpg')" }}
+      style={{ backgroundImage: "url('/signup_full.jpg')" }}
     >
       {/* Soft warm paper backdrop overlay for typography legibility */}
       <div className="auth-backdrop-overlay" />
@@ -91,12 +84,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
           {/* Left Column: Brand Story & Value Props */}
           <div className="auth-hero-col">
             <h1 className="auth-hero-title">
-              Welcome back,<br />
-              <span className="auth-hero-italic">let&apos;s grow your store.</span>
+              Start growing,<br />
+              <span className="auth-hero-italic">your storefront awaits.</span>
             </h1>
 
             <p className="auth-hero-subtitle">
-              Your store, campaigns, and opportunities are waiting.
+              Create your free account and turn slow hours, new arrivals,
+              and business opportunities into customers.
             </p>
 
             <div className="auth-value-props">
@@ -105,8 +99,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   <Store size={17} strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="auth-value-title">Built for physical businesses</div>
-                  <div className="auth-value-desc">Cafés, restaurants, bakeries, boutiques, salons, and specialty stores.</div>
+                  <div className="auth-value-title">Zero setup friction</div>
+                  <div className="auth-value-desc">Teach StreetCraft about your store in under 60 seconds.</div>
                 </div>
               </div>
 
@@ -116,7 +110,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                 </div>
                 <div>
                   <div className="auth-value-title">One opportunity. Everything customers need to see.</div>
-                  <div className="auth-value-desc">Turn one business opportunity into coordinated storefront content instantly.</div>
+                  <div className="auth-value-desc">Google, Instagram, WhatsApp, and counter poster generated simultaneously.</div>
                 </div>
               </div>
 
@@ -125,14 +119,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   <Sparkles size={17} strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="auth-value-title">Built around your business</div>
-                  <div className="auth-value-desc">Your products, offers, operating rhythm, and store context shape every campaign.</div>
+                  <div className="auth-value-title">Free tier included</div>
+                  <div className="auth-value-desc">Manage up to 2 physical stores with 3 free campaigns every month.</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Floating Auth Card */}
+          {/* Right Column: Floating Signup Card */}
           <div className="auth-card-col">
             <div className="auth-card">
               {errorMsg && (
@@ -141,12 +135,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                 </div>
               )}
 
-              <h2 className="auth-card-title">Sign in to StreetCraft</h2>
-              <p className="auth-card-subtitle">Enter your details to continue.</p>
+              <h2 className="auth-card-title">Create your account</h2>
+              <p className="auth-card-subtitle">Start your free store workspace today.</p>
 
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleSignup}>
                 <div className="auth-form-field">
-                  <label className="auth-form-label">Email</label>
+                  <label className="auth-form-label">Your Name</label>
+                  <div className="auth-input-wrapper">
+                    <User size={15} className="auth-input-icon" />
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Maya Sharma"
+                      className="auth-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="auth-form-field">
+                  <label className="auth-form-label">Email Address</label>
                   <div className="auth-input-wrapper">
                     <Mail size={15} className="auth-input-icon" />
                     <input
@@ -154,7 +163,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@yourbusiness.com"
+                      placeholder="you@yourstore.com"
                       className="auth-input"
                     />
                   </div>
@@ -167,9 +176,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
+                      minLength={6}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder="At least 6 characters"
                       className="auth-input auth-input-password"
                     />
                     <button
@@ -182,32 +192,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
                   </div>
                 </div>
 
-                <div className="auth-options-row">
+                <div className="auth-form-field">
                   <label className="auth-checkbox-label">
                     <input
                       type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
                       className="auth-checkbox-input"
                     />
-                    Remember me
+                    <span>I agree to the Terms of Service and Privacy Policy.</span>
                   </label>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/forgot-password')}
-                    className="auth-forgot-link"
-                  >
-                    Forgot password?
-                  </button>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !name || !email || !password || !agreeTerms}
                   className="auth-submit-btn"
                 >
-                  {isSubmitting ? 'Signing in...' : 'Sign in \u2192'}
+                  {isSubmitting ? 'Creating account...' : 'Create Account \u2192'}
                 </button>
               </form>
 
@@ -243,13 +245,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ claimToken, onSuccess }) =
               </button>
 
               <div className="auth-switch-text">
-                New to StreetCraft?{' '}
+                Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => navigate('/signup')}
+                  onClick={() => navigate('/login')}
                   className="auth-switch-link"
                 >
-                  Create an account &rarr;
+                  Sign in &rarr;
                 </button>
               </div>
             </div>

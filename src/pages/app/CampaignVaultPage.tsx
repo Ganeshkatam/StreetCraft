@@ -45,7 +45,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
 
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
-        {(['ALL', 'PUBLISHED', 'COMPLETED', 'ARCHIVED'] as const).map((tab) => (
+        {(['ALL', 'READY', 'PUBLISHED', 'COMPLETED', 'ARCHIVED'] as const).map((tab) => (
           <button
             key={tab}
             style={{
@@ -59,9 +59,9 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
               boxShadow: filter === tab ? 'var(--shadow-subtle)' : 'none',
               transition: 'var(--motion-fast)',
             }}
-            onClick={() => setFilter(tab)}
+            onClick={() => setFilter(tab as any)}
           >
-            {tab === 'ALL' ? 'All Campaigns' : tab.charAt(0) + tab.slice(1).toLowerCase()}
+            {tab === 'ALL' ? 'All Campaigns' : tab === 'READY' ? 'Ready Proofs' : tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
         ))}
       </div>
@@ -77,7 +77,7 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
           </h3>
           <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', maxWidth: '380px', margin: '0 auto 20px' }}>
             {filter === 'ALL'
-              ? 'You have not created any campaign packs yet. Create your first promotion to build your vault.'
+              ? 'You have not created any campaigns yet. Create your first promotion to build your vault.'
               : `No campaigns with status ${filter.toLowerCase()} found.`}
           </p>
           <button className="btn-primary" onClick={() => navigate('/app/create')}>
@@ -97,7 +97,10 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                     <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', background: 'var(--color-accent-subtle)', padding: '2px 8px', borderRadius: 'var(--radius-xs)', fontWeight: 600 }}>
                       {item.campaign.type.replace(/_/g, ' ')}
                     </span>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '6px' }}>
+                    <h3
+                      style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '6px', cursor: 'pointer' }}
+                      onClick={() => navigate(`/app/campaigns/${item.campaign.id}`)}
+                    >
                       {item.campaign.offer.title || item.campaign.offer.description}
                     </h3>
                     <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
@@ -106,6 +109,14 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      className="btn-primary"
+                      style={{ fontSize: '12px', padding: '5px 12px' }}
+                      onClick={() => navigate(`/app/campaigns/${item.campaign.id}`)}
+                    >
+                      Open &rarr;
+                    </button>
+
                     <CampaignStatusBadge status={item.campaign.status} />
 
                     <select
@@ -119,15 +130,6 @@ export const CampaignVaultPage: React.FC<CampaignVaultPageProps> = ({ businessId
                       <option value="completed">Completed</option>
                       <option value="archived">Archived</option>
                     </select>
-
-                    <button
-                      className="btn-secondary"
-                      style={{ fontSize: '12px', padding: '5px 10px' }}
-                      onClick={() => setExpandedId(isExpanded ? null : item.campaign.id)}
-                    >
-                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                      {isExpanded ? 'Hide Proofs' : 'View Proofs'}
-                    </button>
                   </div>
                 </div>
 

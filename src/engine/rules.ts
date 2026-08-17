@@ -97,19 +97,42 @@ export const CATEGORY_VOCABULARY = {
 /**
  * Builds authentic, human local hashtag bundles without spamming.
  */
-export function generateLocalTags(neighborhood: string, city: string, category: string = 'Cafe'): string[] {
+export function generateLocalTags(neighborhood: string = '', city: string = '', category: string = 'Store'): string[] {
   const cleanHood = (neighborhood || '').replace(/[^a-zA-Z0-9]/g, '');
   const cleanCity = (city || '').replace(/[^a-zA-Z0-9]/g, '');
-  const cleanCat = (category || 'Cafe').replace(/[^a-zA-Z0-9]/g, '');
+  const cleanCat = (category || 'Store').replace(/[^a-zA-Z0-9]/g, '');
+  const catLower = (category || '').toLowerCase();
 
   const tags: string[] = [];
-  if (cleanHood) tags.push(`#${cleanHood}Eats`);
-  if (cleanCity) tags.push(`#${cleanCity}Foodies`);
+
+  if (cleanHood) tags.push(`#${cleanHood}`);
+  if (cleanCity) tags.push(`#${cleanCity}`);
   if (cleanHood && cleanCity) tags.push(`#${cleanHood}${cleanCity}`);
-  if (cleanCat) tags.push(`#${cleanCat}Lovers`);
-  tags.push('#LocalCafe');
-  tags.push('#SpecialtyCoffee');
-  if (cleanCity) tags.push(`#${cleanCity}Cafes`);
+  if (cleanCat && cleanCat !== 'Store') tags.push(`#${cleanCat}`);
+
+  if (catLower.includes('cafe') || catLower.includes('coffee')) {
+    if (cleanCity) tags.push(`#${cleanCity}Cafes`);
+    tags.push('#CoffeeSpecialty');
+  } else if (catLower.includes('bakery') || catLower.includes('patisserie')) {
+    if (cleanCity) tags.push(`#${cleanCity}Bakes`);
+    tags.push('#FreshBakes');
+  } else if (catLower.includes('restaurant') || catLower.includes('diner') || catLower.includes('food')) {
+    if (cleanCity) tags.push(`#${cleanCity}Eats`);
+    tags.push('#NeighborhoodEats');
+  } else if (catLower.includes('salon') || catLower.includes('wellness') || catLower.includes('spa')) {
+    if (cleanCity) tags.push(`#${cleanCity}Salon`);
+    tags.push('#SelfCare');
+  } else if (catLower.includes('boutique') || catLower.includes('retail')) {
+    if (cleanCity) tags.push(`#${cleanCity}Shopping`);
+    tags.push('#StoreFinds');
+  }
+
+  const defaultFallbacks = ['#StoreSpecial', '#ShopVisit', '#CommunitySpot'];
+  for (const fb of defaultFallbacks) {
+    if (tags.length < 3 && !tags.includes(fb)) {
+      tags.push(fb);
+    }
+  }
 
   return Array.from(new Set(tags)).slice(0, 5);
 }

@@ -26,7 +26,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     priceINR: 0,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     features: [
-      `${LIMITS.FREE} Coordinated Campaign Packs / mo`,
+      `${LIMITS.FREE} Coordinated Campaigns / mo`,
       'Google Business Profile Updates',
       'Instagram Post & Reels Generator',
       'WhatsApp Broadcast Copy',
@@ -41,7 +41,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     priceINR: 399,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
-      `${LIMITS.PRO} Coordinated Campaign Packs / mo`,
+      `${LIMITS.PRO} Coordinated Campaigns / mo`,
       'All Storefront Marketing Formats Included',
       'Print-Ready In-Store Poster Layouts',
       'Advanced Festival & Holiday Strategy',
@@ -56,7 +56,7 @@ export const STATIC_PLANS: Record<'FREE' | 'PRO' | 'GROWTH', PlanConfig> = {
     priceINR: 799,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
-      `${LIMITS.GROWTH} Coordinated Campaign Packs / mo`,
+      `${LIMITS.GROWTH} Coordinated Campaigns / mo`,
       'Full Multi-Touchpoint Distribution Engine',
       'Dedicated Fast Lane Generation',
       'Custom Brand Tone & Voice Presets',

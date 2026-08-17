@@ -18,7 +18,7 @@ export const CHANNELS: Record<MarketingChannel, ChannelMeta> = {
     displayName: 'Google Business Profile',
     badgeClass: 'channel-badge-google',
     charLimit: 1500,
-    description: 'Local search discovery updates with neighborhood tags and clear CTA.',
+    description: 'Search discovery updates with neighborhood tags and clear CTA.',
   },
   INSTAGRAM: {
     key: 'INSTAGRAM',

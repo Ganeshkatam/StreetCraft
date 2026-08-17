@@ -50,8 +50,8 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
       return (
         <div style={{ padding: '40px 20px', textAlign: 'center' }}>
           <div className="spin-animate" style={{ display: 'inline-block', width: '28px', height: '28px', border: '2px solid var(--color-border)', borderTopColor: 'var(--color-primary)', borderRadius: '50%', marginBottom: '12px' }} />
-          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>Generating {meta?.displayName}...</div>
-          <p style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>Injecting local cues and enforcing Zod character constraints</p>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>Creating {meta?.displayName}...</div>
+          <p style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>Formatting proof with your business details...</p>
         </div>
       );
     }
@@ -271,7 +271,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
       {renderChannelBody()}
 
       <div className="channel-meta-bar">
-        <span>{meta?.description || 'Validated schema'}</span>
+        <span>{meta?.description || 'Campaign proof'}</span>
         <span style={{ color: status === 'ready' ? 'var(--color-primary)' : 'var(--color-ink-muted)' }}>
           {status === 'ready' ? 'READY' : status.toUpperCase()}
         </span>

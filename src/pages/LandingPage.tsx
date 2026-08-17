@@ -98,7 +98,7 @@ export const LandingPage: React.FC = () => {
         neighborhood: targetNeighborhood,
         city: city,
         landmarks: landmarks,
-        targetCustomer: 'Local neighborhood residents and nearby office workers',
+        targetCustomer: 'Neighborhood residents, nearby office workers, and visitors',
         styleVoice: 'Warm, artisan, welcoming',
         signatureItems: 'Single-Origin Pour Overs, Almond Croissants, Handmade Sourdough',
         primaryGoal: 'Drive quiet hour walk-ins',
@@ -115,7 +115,7 @@ export const LandingPage: React.FC = () => {
         {
           type: targetType,
           objective: 'MORE_WALK_INS',
-          audience: 'Local neighborhood residents and nearby office workers',
+          audience: 'Neighborhood residents, nearby office workers, and visitors',
           offer: {
             title: targetOffer,
             description: targetOffer,
@@ -179,7 +179,7 @@ export const LandingPage: React.FC = () => {
     },
     {
       q: 'What happens on the Free plan?',
-      a: 'The Free plan gives you 3 complete campaign packs every month, store preferences, and access to regional calendar triggers. No payment card is required.',
+      a: 'The Free plan gives you 3 complete campaigns every month, store preferences, and access to regional calendar triggers. No payment card is required.',
     },
     {
       q: 'How does Founder pricing work?',
@@ -203,7 +203,7 @@ export const LandingPage: React.FC = () => {
           {/* Left: Outcome Framing */}
           <div>
             <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '16px', fontWeight: 600 }}>
-              STREETCRAFT &bull; LOCAL STOREFRONT MARKETING
+              STREETCRAFT &bull; GROWTH ENGINE FOR PHYSICAL BUSINESSES
             </span>
 
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '54px', color: 'var(--color-ink)', lineHeight: '1.12', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
@@ -211,7 +211,7 @@ export const LandingPage: React.FC = () => {
             </h1>
 
             <p style={{ fontSize: '17px', color: 'var(--color-ink-muted)', lineHeight: '1.65', margin: '0 0 32px', maxWidth: '620px' }}>
-              Your slow hours are predictable. Your regulars are two blocks away. StreetCraft turns local opportunities into coordinated customer promotions across Google, Instagram, WhatsApp, and your counter.
+              Your slow hours are predictable. Your regulars are two blocks away. StreetCraft turns business opportunities into coordinated customer promotions across Google, Instagram, WhatsApp, and your counter.
             </p>
 
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '36px' }}>
@@ -272,7 +272,7 @@ export const LandingPage: React.FC = () => {
                   "Your 3 PM coffee reset."
                 </strong>
                 <p style={{ fontSize: '11.5px', color: 'var(--color-ink-soft)', lineHeight: '1.45', margin: 0 }}>
-                  Reel hook + 3 Story frames + local Indiranagar hashtags.
+                  Reel hook + 3 Story frames + area hashtags.
                 </p>
               </div>
 
@@ -305,7 +305,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12.5px', color: 'var(--color-ink-muted)' }}>
-              All 4 formats generated together in one coordinated pack.
+              All 4 formats generated together in one coordinated campaign.
             </div>
           </div>
 
@@ -318,9 +318,9 @@ export const LandingPage: React.FC = () => {
       <section style={{ margin: '0 auto 72px' }}>
         <div className="card" style={{ padding: '44px 48px', background: 'var(--color-surface)' }}>
           <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <span className="section-eyebrow">THE LOCAL MARKETING REALITY</span>
+            <span className="section-eyebrow">THE STORE MARKETING REALITY</span>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', marginTop: '4px' }}>
-              Local businesses don't need more marketing work.
+              Physical businesses don't need more marketing work.
             </h2>
             <p style={{ fontSize: '15px', color: 'var(--color-ink-muted)', maxWidth: '640px', margin: '8px auto 0', lineHeight: '1.6' }}>
               You don't need another generic text box. You need a simple way to turn an opportunity into walk-in foot traffic.
@@ -339,7 +339,7 @@ export const LandingPage: React.FC = () => {
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>2. Write Instagram caption and search for hashtags</li>
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>3. Reformat message for WhatsApp regulars</li>
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>4. Design a poster in external design tools</li>
-                <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>5. Log into Google Business to post local update</li>
+                <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>5. Log into Google Business to post store update</li>
                 <li style={{ color: 'var(--color-accent)', fontWeight: 600, paddingTop: '4px' }}>&rarr; Hours spent, inconsistent messaging</li>
               </ul>
             </div>
@@ -352,7 +352,7 @@ export const LandingPage: React.FC = () => {
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13.5px', color: 'var(--color-ink)' }}>
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}><strong>1. Select the Opportunity:</strong> Tuesday 3–6 PM Slump</li>
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}><strong>2. Instant Coordination:</strong> StreetCraft applies Store Preferences</li>
-                <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}><strong>3. Complete Pack:</strong> Google + IG + WhatsApp + Poster</li>
+                <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}><strong>3. Complete Formats:</strong> Google + IG + WhatsApp + Poster</li>
                 <li style={{ paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}><strong>4. Ready to Publish:</strong> Clean, character-compliant formats</li>
                 <li style={{ color: 'var(--color-primary)', fontWeight: 700, paddingTop: '4px' }}>&rarr; 10 seconds total, 100% walk-in margin retained</li>
               </ul>
@@ -363,13 +363,13 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          03 — HOW STREETCRAFT WORKS (Remember -> Find -> Create)
+          03 — ENGINE ARCHITECTURE
           ========================================================================= */}
-      <section id="how-it-works" style={{ margin: '0 auto 72px', scrollMarginTop: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <span className="section-eyebrow">SIMPLE THREE-STEP WORKFLOW</span>
+      <section style={{ margin: '0 auto 72px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+          <span className="section-eyebrow">ENGINE ARCHITECTURE</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--color-ink)', marginTop: '4px' }}>
-            How StreetCraft Works
+            From raw opportunity to live multi-touchpoint reach.
           </h2>
         </div>
 
@@ -404,7 +404,7 @@ export const LandingPage: React.FC = () => {
               03 &mdash; CREATE EVERYTHING AT ONCE
             </span>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '21px', color: 'var(--color-ink)', marginBottom: '10px' }}>
-              Coordinated Campaign Pack
+              Coordinated Campaign
             </h3>
             <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.65' }}>
               One idea becomes coordinated, character-compliant marketing for Google Search &amp; Maps, Instagram, WhatsApp, and physical in-store counter cards.
@@ -469,7 +469,7 @@ export const LandingPage: React.FC = () => {
               Google Business Profile
             </h4>
             <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.55' }}>
-              Clear local updates built for Google Maps and Local Search cards with neighborhood anchors.
+              Clear store updates built for Google Maps and Search cards with neighborhood anchors.
             </p>
           </div>
 
@@ -481,7 +481,7 @@ export const LandingPage: React.FC = () => {
               Reels &amp; Story Frames
             </h4>
             <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.55' }}>
-              3-second video hook, 3 sequential story frames, caption, and hyper-local discovery tags.
+              3-second video hook, 3 sequential story frames, caption, and discovery tags.
             </p>
           </div>
 
@@ -630,7 +630,7 @@ export const LandingPage: React.FC = () => {
                 onClick={() => executeDemoGeneration()}
               >
                 {isGenerating ? <RefreshCw size={14} className="spin" /> : <RefreshCw size={14} />}
-                {isGenerating ? 'Generating Campaign Pack...' : 'Generate Demo Pack'}
+                {isGenerating ? 'Generating Campaign...' : 'Generate Demo Campaign'}
               </button>
             </div>
 
@@ -696,7 +696,7 @@ export const LandingPage: React.FC = () => {
                         style={{ fontSize: '13px', padding: '7px 16px' }}
                         onClick={() => navigate('/free-tool')}
                       >
-                        Create your first local campaign &rarr;
+                        Create your first campaign &rarr;
                       </button>
                     </div>
                   )}
@@ -714,7 +714,7 @@ export const LandingPage: React.FC = () => {
       {festivals.length > 0 && (
         <section style={{ margin: '0 auto 72px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <span className="section-eyebrow">UPCOMING LOCAL OPPORTUNITIES</span>
+            <span className="section-eyebrow">UPCOMING OPPORTUNITIES</span>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '30px', color: 'var(--color-ink)', marginTop: '4px' }}>
               Regional Calendar Triggers
             </h2>
@@ -819,7 +819,7 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
                   <div>
-                    <strong style={{ color: 'var(--color-primary)', display: 'block' }}>StreetCraft Local Marketing</strong>
+                    <strong style={{ color: 'var(--color-primary)', display: 'block' }}>StreetCraft Growth Engine</strong>
                     <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>Free starter or flat subscription</span>
                   </div>
                   <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 700, fontSize: '14.5px' }}>
@@ -874,7 +874,7 @@ export const LandingPage: React.FC = () => {
       {/* Final Action Frame */}
       <section style={{ textAlign: 'center', padding: '52px 32px', background: 'var(--color-surface)', border: '2px solid var(--color-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-paper)' }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '34px', color: 'var(--color-ink)', marginBottom: '10px' }}>
-          Create your first local campaign.
+          Create your first campaign.
         </h2>
         <p style={{ fontSize: '15.5px', color: 'var(--color-ink-muted)', maxWidth: '540px', margin: '0 auto 28px', lineHeight: '1.6' }}>
           Test the tool with your store name and neighborhood in 10 seconds. No credit card required.

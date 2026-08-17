@@ -13,7 +13,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthlyPackLimit: 3,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP'],
     features: [
-      '3 complete campaign packs / month',
+      '3 complete campaigns / month',
       'Google Business, Instagram & WhatsApp copy',
       'Basic business profile preferences',
       'One-click clipboard export',
@@ -27,7 +27,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthlyPackLimit: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
-      '100 complete campaign packs / month',
+      '100 complete campaigns / month',
       'All storefront formats (Google, IG, WhatsApp, In-Store Poster)',
       'Permanent Business Preferences & neighborhood context',
       'Daily Morning Opportunity Briefings',
@@ -43,9 +43,9 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthlyPackLimit: 300,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
-      '300 complete campaign packs / month',
+      '300 complete campaigns / month',
       'Multi-team seats & roles (owner, admin, member)',
-      'Priority local relevance enrichment',
+      'Priority contextual relevance enrichment',
       'Custom keyword prioritization',
       'Audit log access',
     ],
@@ -58,7 +58,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     monthlyPackLimit: 100,
     channels: ['GOOGLE_BUSINESS', 'INSTAGRAM', 'WHATSAPP', 'IN_STORE_POSTER'],
     features: [
-      '100 complete campaign packs / month',
+      '100 complete campaigns / month',
       'All storefront formats (Google, IG, WhatsApp, In-Store Poster)',
       'Permanent Business Preferences & neighborhood context',
       'Daily Morning Opportunity Briefings',

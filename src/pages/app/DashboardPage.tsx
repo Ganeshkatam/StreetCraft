@@ -74,10 +74,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px', paddingBottom: '14px', borderBottom: '1px solid var(--color-border)' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-ink-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                PRIORITY PROMOTIONS TO DROP
+                WHAT SHOULD YOU DO TODAY?
               </span>
               <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)' }}>
-                {briefing.opportunities.length} opportunities detected
+                {briefing.opportunities.length > 0 ? `${briefing.opportunities.length} action items` : 'All clear'}
               </span>
             </div>
 
@@ -124,7 +124,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               </div>
             ) : (
               <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--color-ink-muted)' }}>
-                All current store windows are covered by active campaigns.
+                <p style={{ fontSize: '14px', color: 'var(--color-ink)', fontWeight: 600, marginBottom: '4px' }}>
+                  Nothing needs your attention right now.
+                </p>
+                <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', margin: 0 }}>
+                  All current store periods are covered by active campaigns.
+                </p>
               </div>
             )}
           </div>
@@ -133,7 +138,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>
-                Active Campaign Vault
+                Campaign Vault
               </h3>
               <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => navigate('/app/campaigns')}>
                 View all in vault ({campaigns.length}) &rarr;
@@ -142,7 +147,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
             {campaigns.length === 0 ? (
               <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', padding: '16px 0' }}>
-                No campaign drops yet. Click 'Create promotion' to draft your first campaign pack.
+                No campaign drops yet. Click 'Create promotion' to draft your first campaign.
               </p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
@@ -194,20 +199,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 STORE CONTEXT
               </span>
               <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => navigate('/app/business')}>
-                Edit Preferences &rarr;
+                Edit &rarr;
               </button>
             </div>
 
             <div style={{ fontSize: '18px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}>
-              {profile?.name || 'The Roasted Bean'}
+              {profile?.name || 'Your Store'}
             </div>
             <div style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '2px', marginBottom: '14px' }}>
-              {profile?.neighborhood ? `${profile.neighborhood}, ${profile.city}` : 'Indiranagar, Bengaluru'}
+              {profile?.neighborhood ? `${profile.neighborhood}${profile.city ? `, ${profile.city}` : ''}` : 'Location not set'}
             </div>
 
             <div style={{ background: 'var(--color-surface-raised)', padding: '12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.5' }}>
-              <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '3px' }}>TARGET AUDIENCE</div>
-              {profile?.targetCustomer || 'Working professionals, freelancers, and local residents'}
+              <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '3px' }}>SPECIALTIES</div>
+              {profile?.signatureItems || 'Not specified yet'}
             </div>
           </div>
 

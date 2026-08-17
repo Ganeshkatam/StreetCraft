@@ -17,14 +17,21 @@ import { LandingPage } from './pages/LandingPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
 import { FreeToolPage } from './pages/FreeToolPage';
 import { PricingPage } from './pages/PricingPage';
+import { ContactPage } from './pages/ContactPage';
 import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 import { DashboardPage } from './pages/app/DashboardPage';
 import { BusinessPage } from './pages/app/BusinessPage';
 import { CreateCampaignPage } from './pages/app/CreateCampaignPage';
 import { CampaignVaultPage } from './pages/app/CampaignVaultPage';
-import { SettingsPage } from './pages/app/SettingsPage';
-import { LayoutDashboard, Sparkles, FolderArchive, Store, Settings } from 'lucide-react';
+import { CampaignDetailPage } from './pages/app/CampaignDetailPage';
+import { BillingSettingsPage } from './pages/app/BillingSettingsPage';
+import { AccountSettingsPage } from './pages/app/AccountSettingsPage';
+import { LayoutDashboard, Sparkles, FolderArchive, Store, CreditCard, User } from 'lucide-react';
 
 function AppLayout() {
   const navigate = useNavigate();
@@ -42,7 +49,10 @@ function AppLayout() {
   const isAuthView =
     location.pathname === '/login' ||
     location.pathname === '/signup' ||
-    location.pathname === '/forgot-password';
+    location.pathname === '/setup' ||
+    location.pathname === '/onboarding' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password';
 
   const handleLaunchOpportunity = (opp: DynamicOpportunity) => {
     setCampaignPreset(opp);
@@ -81,6 +91,7 @@ function AppLayout() {
               path="/pricing"
               element={<PricingPage onOpenUpgrade={() => setUpgradeModalOpen(true)} />}
             />
+            <Route path="/contact" element={<ContactPage />} />
             <Route
               path="/login"
               element={
@@ -93,7 +104,25 @@ function AppLayout() {
             <Route
               path="/signup"
               element={
-                <LoginPage
+                <SignupPage
+                  claimToken={claimToken}
+                  onSuccess={() => setClaimToken(null)}
+                />
+              }
+            />
+            <Route
+              path="/setup"
+              element={
+                <OnboardingPage
+                  claimToken={claimToken}
+                  onSuccess={() => setClaimToken(null)}
+                />
+              }
+            />
+            <Route
+              path="/onboarding"
+              element={
+                <OnboardingPage
                   claimToken={claimToken}
                   onSuccess={() => setClaimToken(null)}
                 />
@@ -101,7 +130,11 @@ function AppLayout() {
             />
             <Route
               path="/forgot-password"
-              element={<LoginPage />}
+              element={<ForgotPasswordPage />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPasswordPage />}
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -112,8 +145,8 @@ function AppLayout() {
           <aside className="sidebar">
             <div className="sidebar-nav">
               <button
-                className={`sidebar-link ${location.pathname === '/app/dashboard' ? 'active' : ''}`}
-                onClick={() => navigate('/app/dashboard')}
+                className={`sidebar-link ${location.pathname === '/app/today' || location.pathname === '/app/dashboard' ? 'active' : ''}`}
+                onClick={() => navigate('/app/today')}
               >
                 <LayoutDashboard size={16} /> Today
               </button>
@@ -129,7 +162,7 @@ function AppLayout() {
               </button>
 
               <button
-                className={`sidebar-link ${location.pathname === '/app/campaigns' ? 'active' : ''}`}
+                className={`sidebar-link ${location.pathname.startsWith('/app/campaigns') ? 'active' : ''}`}
                 onClick={() => navigate('/app/campaigns')}
               >
                 <FolderArchive size={16} /> Campaigns
@@ -139,23 +172,35 @@ function AppLayout() {
                 className={`sidebar-link ${location.pathname === '/app/business' ? 'active' : ''}`}
                 onClick={() => navigate('/app/business')}
               >
-                <Store size={16} /> Store Preferences
+                <Store size={16} /> Business
               </button>
             </div>
 
             <div>
+              <div style={{ padding: '0 8px 8px', fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Settings
+              </div>
+
               <button
-                className={`sidebar-link ${location.pathname === '/app/settings' ? 'active' : ''}`}
-                style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginBottom: '16px' }}
-                onClick={() => navigate('/app/settings')}
+                className={`sidebar-link ${location.pathname === '/app/settings/billing' ? 'active' : ''}`}
+                style={{ fontSize: '13px', marginBottom: '4px' }}
+                onClick={() => navigate('/app/settings/billing')}
               >
-                <Settings size={15} /> Settings & Quota
+                <CreditCard size={14} /> Billing & Usage
+              </button>
+
+              <button
+                className={`sidebar-link ${location.pathname === '/app/settings/account' ? 'active' : ''}`}
+                style={{ fontSize: '13px', marginBottom: '16px' }}
+                onClick={() => navigate('/app/settings/account')}
+              >
+                <User size={14} /> Account Security
               </button>
 
               <div className="sidebar-tenant-card">
-                <div className="sidebar-tenant-name">{profile?.name || 'The Roasted Bean'}</div>
+                <div className="sidebar-tenant-name">{profile?.name || 'Your Store'}</div>
                 <div className="sidebar-tenant-sub">
-                  {profile?.neighborhood ? `${profile.neighborhood}` : 'ACTIVE STORE'}
+                  {profile?.neighborhood ? `${profile.neighborhood}` : 'Active Business'}
                 </div>
               </div>
             </div>
@@ -165,7 +210,7 @@ function AppLayout() {
           <main className="main-content">
             <Routes>
               <Route
-                path="/app/dashboard"
+                path="/app/today"
                 element={
                   <DashboardPage
                     businessId={session.activeBusinessId}
@@ -173,6 +218,10 @@ function AppLayout() {
                     onOpenUpgrade={() => setUpgradeModalOpen(true)}
                   />
                 }
+              />
+              <Route
+                path="/app/dashboard"
+                element={<Navigate to="/app/today" replace />}
               />
               <Route
                 path="/app/create"
@@ -189,20 +238,32 @@ function AppLayout() {
                 element={<CampaignVaultPage businessId={session.activeBusinessId} />}
               />
               <Route
+                path="/app/campaigns/:id"
+                element={<CampaignDetailPage businessId={session.activeBusinessId} />}
+              />
+              <Route
                 path="/app/business"
                 element={<BusinessPage businessId={session.activeBusinessId} />}
               />
               <Route
                 path="/app/settings"
+                element={<Navigate to="/app/settings/billing" replace />}
+              />
+              <Route
+                path="/app/settings/billing"
                 element={
-                  <SettingsPage
+                  <BillingSettingsPage
                     businessId={session.activeBusinessId}
                     session={session}
                     onOpenUpgrade={() => setUpgradeModalOpen(true)}
                   />
                 }
               />
-              <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+              <Route
+                path="/app/settings/account"
+                element={<AccountSettingsPage session={session} />}
+              />
+              <Route path="*" element={<Navigate to="/app/today" replace />} />
             </Routes>
           </main>
         </div>

@@ -15,7 +15,7 @@ export const UsageMeter: React.FC<UsageMeterProps> = ({ usage, onUpgrade, compac
     return (
       <button className="usage-pill" onClick={onUpgrade} title="View quota and subscription">
         <Zap size={12} />
-        <span>{usage.planName} &bull; {usage.remainingPacks} packs left</span>
+        <span>{usage.planName} &bull; {usage.remainingPacks} remaining</span>
       </button>
     );
   }
@@ -39,7 +39,7 @@ export const UsageMeter: React.FC<UsageMeterProps> = ({ usage, onUpgrade, compac
           {usage.usedPacks}
         </span>
         <span style={{ fontSize: '13px', color: 'var(--color-ink-muted)' }}>
-          of {usage.monthlyLimit} packs ({usage.percentUsed}%)
+          of {usage.monthlyLimit} campaigns ({usage.percentUsed}%)
         </span>
       </div>
 

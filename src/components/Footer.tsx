@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
               <Logo size="md" />
             </div>
             <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.65', margin: 0, maxWidth: '340px' }}>
-              The local storefront marketing instrument. Turn quiet afternoons, signature dishes, and neighborhood occasions into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
+              A growth engine for physical businesses. Turn one business opportunity into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
             </p>
           </div>
 
@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
               <button className="footer-link" onClick={() => navigate('/how-it-works')}>How it works</button>
               <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
               <button className="footer-link" onClick={() => navigate('/pricing')}>Plans &amp; pricing</button>
-              <button className="footer-link" onClick={() => navigate('/how-it-works')}>Marketing pipeline</button>
+              <button className="footer-link" onClick={() => navigate('/contact')}>Talk to us</button>
             </div>
           </div>
 
@@ -49,9 +49,9 @@ export const Footer: React.FC = () => {
             <div className="footer-col-title">Storefronts</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <span className="footer-link" style={{ cursor: 'default' }}>Cafes &amp; Bakeries</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Artisanal Bistros</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Heritage Sweets</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Neighborhood Retail</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Restaurants &amp; Bistros</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Boutiques &amp; Salons</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Studios &amp; Retail</span>
             </div>
           </div>
 
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
           <div>
             <div className="footer-col-title">Workspace</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="footer-link" onClick={() => navigate('/app/dashboard')}>Today's briefing</button>
+              <button className="footer-link" onClick={() => navigate('/app/today')}>Today's briefing</button>
               <button className="footer-link" onClick={() => navigate('/app/create')}>Compose campaign</button>
               <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaign vault</button>
               <button className="footer-link" onClick={() => navigate('/app/business')}>Store preferences</button>
@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar / Colophon */}
         <div style={{ paddingTop: '24px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}>
-          &copy; {new Date().getFullYear()} StreetCraft. Built for independent neighborhood stores.
+          &copy; {new Date().getFullYear()} StreetCraft. Built for physical businesses.
         </div>
 
       </div>

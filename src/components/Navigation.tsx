@@ -66,7 +66,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <div
             className="brand-wrapper"
-            onClick={() => navigate(session.isAuthenticated ? '/app/dashboard' : '/')}
+            onClick={() => navigate(session.isAuthenticated ? '/app/today' : '/')}
           >
             <Logo size="sm" />
           </div>
@@ -112,7 +112,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                         style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px', fontSize: '13.5px', color: 'var(--color-ink-muted)' }}
                         onClick={() => {
                           setShowSwitcher(false);
-                          navigate('/login', { state: { intent: 'setup' } });
+                          navigate('/setup');
                         }}
                       >
                         <Plus size={14} style={{ marginRight: '6px' }} />
@@ -147,12 +147,6 @@ export const Navigation: React.FC<NavigationProps> = ({
                 How it works
               </button>
               <button
-                className={`nav-item ${currentPath === '/free-tool' ? 'active' : ''}`}
-                onClick={() => navigate('/free-tool')}
-              >
-                Free tool
-              </button>
-              <button
                 className={`nav-item ${currentPath === '/pricing' ? 'active' : ''}`}
                 onClick={() => navigate('/pricing')}
               >
@@ -162,8 +156,8 @@ export const Navigation: React.FC<NavigationProps> = ({
           ) : (
             <>
               <button
-                className={`nav-item ${currentPath === '/app/dashboard' ? 'active' : ''}`}
-                onClick={() => navigate('/app/dashboard')}
+                className={`nav-item ${currentPath === '/app/today' || currentPath === '/app/dashboard' ? 'active' : ''}`}
+                onClick={() => navigate('/app/today')}
               >
                 Today
               </button>
@@ -174,7 +168,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 Create
               </button>
               <button
-                className={`nav-item ${currentPath === '/app/campaigns' ? 'active' : ''}`}
+                className={`nav-item ${currentPath.startsWith('/app/campaigns') ? 'active' : ''}`}
                 onClick={() => navigate('/app/campaigns')}
               >
                 Campaigns
@@ -183,7 +177,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 className={`nav-item ${currentPath === '/app/business' ? 'active' : ''}`}
                 onClick={() => navigate('/app/business')}
               >
-                Store Preferences
+                Business
               </button>
             </>
           )}
@@ -194,12 +188,12 @@ export const Navigation: React.FC<NavigationProps> = ({
             <>
               {usage && (
                 <button className="usage-pill" onClick={onOpenUpgrade} title="View quota and subscription">
-                  <span><strong>{usage.remainingPacks}</strong> packs left</span>
+                  <span><strong>{usage.remainingPacks}</strong> remaining</span>
                 </button>
               )}
 
               {!isAppView ? (
-                <button className="btn-primary" onClick={() => navigate('/app/dashboard')}>
+                <button className="btn-primary" onClick={() => navigate('/app/today')}>
                   Open Workspace <ArrowRight size={13} />
                 </button>
               ) : (
@@ -211,10 +205,10 @@ export const Navigation: React.FC<NavigationProps> = ({
           ) : (
             <>
               <button className="btn-ghost" onClick={() => navigate('/login')}>
-                Sign In
+                Sign in
               </button>
               <button className="btn-primary" onClick={() => navigate('/free-tool')}>
-                Start creating &rarr;
+                Try StreetCraft &rarr;
               </button>
             </>
           )}

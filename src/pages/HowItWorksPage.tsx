@@ -39,11 +39,11 @@ export const HowItWorksPage: React.FC = () => {
       step: 2,
       tag: 'OPPORTUNITY DETECTION',
       title: 'Opportunity Radar',
-      summary: 'Every campaign begins with a tangible local trigger rather than a blank prompt. Choose slow-hour boosts, weekend brunch rushes, seasonal items, or regional festival triggers.',
+      summary: 'Every campaign begins with a tangible business trigger rather than a blank prompt. Choose slow-hour boosts, weekend rushes, seasonal items, or calendar triggers.',
       details: [
-        'Deterministic local trigger library',
-        'Live regional calendar triggers with local relevance',
-        'Custom flash promotional windows',
+        'Store opportunity trigger library',
+        'Live regional calendar triggers with contextual relevance',
+        'Custom promotional windows',
         'Objective-driven campaign structuring'
       ],
       icon: Clock,
@@ -51,26 +51,26 @@ export const HowItWorksPage: React.FC = () => {
     {
       step: 3,
       tag: 'COORDINATED GENERATION',
-      title: 'Coordinated Campaign Pack',
+      title: 'Coordinated Campaign Formats',
       summary: 'StreetCraft transforms your opportunity into production-ready, character-compliant marketing assets simultaneously—not disconnected generic text.',
       details: [
-        'Google Business: Local search & Maps update with neighborhood landmarks',
-        'Instagram: 3-second Reel hook, 3 Story frames, caption, and local tags',
-        'WhatsApp: Broadcast-ready message with counter flash redemption code',
-        'In-Store: Printable table tent and counter card with QR code placement'
+        'Google Business: Search & Maps update with neighborhood landmarks',
+        'Instagram: 3-second Reel hook, 3 Story frames, caption, and discovery tags',
+        'WhatsApp: Broadcast-ready message with counter redemption callout',
+        'In-Store: Printable table tent and counter card'
       ],
       icon: Layers,
     },
     {
       step: 4,
       tag: 'QUALITY & COMPLIANCE',
-      title: 'Deterministic Rules & Validation',
-      summary: 'Every output passes through strict format-specific character limits, hashtag budgets, and structured layout validators before you see it.',
+      title: 'Formatting Rules & Verification',
+      summary: 'Every output passes through strict format-specific character limits, hashtag budgets, and structured layout rules before you see it.',
       details: [
-        'Zod schema output verification',
+        'Format and character-limit verification',
         'Exact character boundary enforcement per platform',
         'Zero generic hallucinations or irrelevant buzzwords',
-        'One-click clipboard copying and print layout export'
+        'One-click clipboard copying and text file export'
       ],
       icon: ShieldCheck,
     },
@@ -90,7 +90,7 @@ export const HowItWorksPage: React.FC = () => {
           From store opportunity to coordinated foot traffic.
         </h1>
         <p style={{ fontSize: '17px', color: 'var(--color-ink-muted)', lineHeight: '1.65', maxWidth: '720px', margin: '0 auto 36px' }}>
-          StreetCraft is not a generic text box. It is a purpose-built local marketing instrument designed to convert slow hours, signature items, and neighborhood occasions into physical walk-ins.
+          StreetCraft is a growth engine for physical businesses, turning one business opportunity into everything customers need to see across Google, Instagram, WhatsApp, and your counter.
         </p>
 
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -160,7 +160,7 @@ export const HowItWorksPage: React.FC = () => {
                 INPUT &bull; STAGE 01
               </span>
               <strong style={{ fontSize: '16px', color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
-                Local Trigger
+                Store Trigger
               </strong>
               <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5', margin: 0 }}>
                 Slow 3–6 PM slump, weekend rush, or regional festival
@@ -237,7 +237,7 @@ export const HowItWorksPage: React.FC = () => {
                 OUTPUT &bull; STAGE 03
               </span>
               <strong style={{ fontSize: '16px', color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
-                Multi-Touchpoint Pack
+                Multi-Touchpoint Campaign
               </strong>
               <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5', margin: 0 }}>
                 Google &bull; Instagram &bull; WhatsApp &bull; Counter Print
@@ -386,7 +386,7 @@ export const HowItWorksPage: React.FC = () => {
               Google Business Profile
             </h4>
             <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
-              Structured local updates for Google Maps search cards, designed to capture neighborhood searchers searching for food or coffee nearby.
+              Structured store updates for Google Maps search cards, designed to capture nearby searchers looking for food or coffee.
             </p>
             <div style={{ background: 'var(--color-surface-raised)', padding: '12px 14px', borderRadius: 'var(--radius-xs)', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-soft)' }}>
               Includes: Headline, descriptive update, call-to-action button, and landmark anchor.
@@ -405,7 +405,7 @@ export const HowItWorksPage: React.FC = () => {
               3-second video hook for Reels, a 3-frame sequenced Story narrative, plus a character-limited caption and curated neighborhood hashtags.
             </p>
             <div style={{ background: 'var(--color-surface-raised)', padding: '12px 14px', borderRadius: 'var(--radius-xs)', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-soft)' }}>
-              Includes: 3s video hook, 3 Story frames, Instagram caption, 8-12 local tags.
+              Includes: 3s video hook, 3 Story frames, Instagram caption, 8-12 discovery tags.
             </div>
           </div>
 
@@ -460,7 +460,7 @@ export const HowItWorksPage: React.FC = () => {
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '36px', alignItems: 'center' }}>
             <div>
-              <span className="section-eyebrow">THE LOCAL COMMERCE EQUATION</span>
+              <span className="section-eyebrow">THE STORE COMMERCE EQUATION</span>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '30px', color: 'var(--color-ink)', margin: '8px 0 14px', lineHeight: '1.2' }}>
                 Why direct walk-in marketing matters.
               </h2>

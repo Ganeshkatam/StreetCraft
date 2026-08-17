@@ -19,6 +19,7 @@ export type CampaignObjective =
   | 'MORE_BOOKINGS'
   | 'PROMOTE_PRODUCT'
   | 'BRING_BACK_CUSTOMERS'
+  | 'REPEAT_VISITS'
   | 'INCREASE_AWARENESS'
   | 'WEEKEND_CROWD'
   | 'FESTIVAL_RUSH'
@@ -49,6 +50,15 @@ export interface StructuredSchedule {
   startsAt: string;
   endsAt: string;
   timingLabel: string;
+}
+
+export interface CampaignGenerationInput {
+  type: CampaignType;
+  objective: CampaignObjective;
+  audience?: string;
+  offer: StructuredOffer;
+  schedule: StructuredSchedule;
+  customNotes?: string;
 }
 
 export interface Campaign {

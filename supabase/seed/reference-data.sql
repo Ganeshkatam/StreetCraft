@@ -4,9 +4,9 @@
 -- 1. Plans Reference Data
 INSERT INTO public.plans (id, name, monthly_pack_limit, price_inr, channels, features, active)
 VALUES 
-  ('FREE', 'Neighborhood Starter', 5, 0, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP"}', '{"5 Coordinated Campaign Packs / mo","Google Business Profile Updates","Instagram Post & Reels Generator","WhatsApp Broadcast Copy","Realtime Campaign Vault","Daily Opportunity Briefing"}', true),
-  ('PRO', 'High-Street Pro', 100, 799, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP","IN_STORE_POSTER"}', '{"100 Coordinated Campaign Packs / mo","All Storefront Marketing Formats Included","Print-Ready In-Store Poster Layouts","Advanced Festival & Holiday Strategy","Permanent Business Preferences Studio","Priority Generation Latency"}', true),
-  ('GROWTH', 'Multi-Store Growth', 300, 1499, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP","IN_STORE_POSTER"}', '{"300 Coordinated Campaign Packs / mo","Full Multi-Touchpoint Distribution Engine","Dedicated Fast Lane Generation","Custom Brand Tone & Voice Presets","Role-Based Team Collaboration","Audit Log & Usage Metering"}', true)
+  ('FREE', 'Neighborhood Starter', 3, 0, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP"}', '{"3 Coordinated Campaigns / mo","Google Business Profile Updates","Instagram Post & Reels Generator","WhatsApp Broadcast Copy","Realtime Campaign Vault","Daily Opportunity Briefing"}', true),
+  ('PRO', 'High-Street Pro', 100, 399, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP","IN_STORE_POSTER"}', '{"100 Coordinated Campaigns / mo","All Storefront Marketing Formats Included","Print-Ready In-Store Poster Layouts","Advanced Festival & Holiday Strategy","Permanent Business Preferences Studio","Priority Generation Latency"}', true),
+  ('GROWTH', 'Multi-Store Growth', 300, 799, '{"GOOGLE_BUSINESS","INSTAGRAM","WHATSAPP","IN_STORE_POSTER"}', '{"300 Coordinated Campaigns / mo","Full Multi-Touchpoint Distribution Engine","Dedicated Fast Lane Generation","Custom Brand Tone & Voice Presets","Role-Based Team Collaboration","Audit Log & Usage Metering"}', true)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   monthly_pack_limit = EXCLUDED.monthly_pack_limit,

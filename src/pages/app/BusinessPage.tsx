@@ -42,16 +42,16 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
   return (
     <div>
       <div className="section-header">
-        <span className="section-eyebrow">PERSISTENT CONTEXT &bull; STORE PREFERENCES</span>
-        <h1 className="section-title">Store Profile & Preferences</h1>
+        <span className="section-eyebrow">STORE PROFILE &bull; BUSINESS CONTEXT</span>
+        <h1 className="section-title">Business Profile</h1>
         <p className="section-subtitle">
-          StreetCraft injects these exact parameters into every campaign proof. Updates save directly to PostgreSQL.
+          StreetCraft uses these details to shape every campaign. Updates apply immediately across your workspace.
         </p>
       </div>
 
       {savedSuccess && (
         <div style={{ padding: '14px 18px', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontSize: '13.5px', fontWeight: 600 }}>
-          <CheckCircle2 size={16} /> Store Preferences updated and saved to database.
+          <CheckCircle2 size={16} /> Business details saved successfully.
         </div>
       )}
 
@@ -60,30 +60,30 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
           {/* Basic Identity */}
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Store Identity
+              Business Identity
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Shop / Business Name</label>
+                <label className="form-label">What is your business called?</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. The Roasted Bean"
+                  placeholder="The name customers know you by"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Category</label>
+                <label className="form-label">What kind of place is it?</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g. Artisanal Cafe & Bakery"
+                  placeholder="e.g. Café & Bakery, Restaurant, Boutique"
                   required
                 />
               </div>
@@ -93,18 +93,18 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
           {/* Location & Neighborhood */}
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Neighborhood & Landmarks
+              Where Customers Find You
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Neighborhood / Area</label>
+                <label className="form-label">Area / Neighborhood</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.neighborhood}
                   onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                  placeholder="e.g. Indiranagar"
+                  placeholder="e.g. Indiranagar, Bandra"
                   required
                 />
               </div>
@@ -116,20 +116,20 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
                   className="form-input"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="e.g. Bengaluru"
+                  placeholder="e.g. Bengaluru, Mumbai"
                   required
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Landmarks / Street Cue (Crucial for Local Discovery)</label>
+              <label className="form-label">Landmark or Street Cue</label>
               <input
                 type="text"
                 className="form-input"
                 value={formData.landmarks}
                 onChange={(e) => setFormData({ ...formData, landmarks: e.target.value })}
-                placeholder="e.g. Near 12th Main & Defense Colony Playground"
+                placeholder="e.g. Near 12th Main junction, opposite the park"
               />
             </div>
           </div>
@@ -137,33 +137,33 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
           {/* Customer & Voice */}
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Audience & Brand Voice
+              Products & Specialties
             </h3>
 
             <div className="form-group">
-              <label className="form-label">Target Customer Persona</label>
-              <input
-                type="text"
-                className="form-input"
-                value={formData.targetCustomer}
-                onChange={(e) => setFormData({ ...formData, targetCustomer: e.target.value })}
-                placeholder="e.g. Working professionals, freelancers, and weekend brunch crowds"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Signature Items / Best Sellers</label>
+              <label className="form-label">What should customers remember you for?</label>
               <input
                 type="text"
                 className="form-input"
                 value={formData.signatureItems}
                 onChange={(e) => setFormData({ ...formData, signatureItems: e.target.value })}
-                placeholder="e.g. Cinnamon Cold Brew, Sourdough Sandwiches, Single-Origin Pour-overs"
+                placeholder="Your best products, dishes, or specialties"
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Brand Voice & Style Guide</label>
+              <label className="form-label">Who are your typical customers?</label>
+              <input
+                type="text"
+                className="form-input"
+                value={formData.targetCustomer}
+                onChange={(e) => setFormData({ ...formData, targetCustomer: e.target.value })}
+                placeholder="e.g. Neighborhood residents, working professionals, weekend brunchers"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Tone & Brand Voice</label>
               <input
                 type="text"
                 className="form-input"
@@ -177,36 +177,36 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
           {/* Operational Rhythm */}
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
-              Operating Hours & Counter Offer
+              Operating Rhythm & Counter Contact
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Slow Hours (Promotions Target This)</label>
+                <label className="form-label">When does the business get quiet?</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.slowHours}
                   onChange={(e) => setFormData({ ...formData, slowHours: e.target.value })}
-                  placeholder="e.g. 2:30 PM - 5:30 PM (Weekdays)"
+                  placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Default Counter Offer</label>
+                <label className="form-label">Default Counter Offer / Special</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.defaultOffer}
                   onChange={(e) => setFormData({ ...formData, defaultOffer: e.target.value })}
-                  placeholder="e.g. 20% off pour-overs & bakes"
+                  placeholder="e.g. 20% off pour-overs & fresh bakes"
                 />
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Average Ticket Size (INR)</label>
+                <label className="form-label">Average Customer Spend (INR)</label>
                 <input
                   type="number"
                   className="form-input"
@@ -217,13 +217,13 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ businessId }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Store WhatsApp Phone</label>
+                <label className="form-label">Store WhatsApp or Phone</label>
                 <input
                   type="text"
                   className="form-input"
                   value={formData.phoneWhatsApp}
                   onChange={(e) => setFormData({ ...formData, phoneWhatsApp: e.target.value })}
-                  placeholder="+91 98450 12345"
+                  placeholder="+91 98765 43210"
                 />
               </div>
             </div>
