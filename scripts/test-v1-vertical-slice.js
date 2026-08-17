@@ -1,8 +1,24 @@
-// StreetCraft V1 End-to-End Vertical Slice Automated Integration Test
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const SUPABASE_URL = 'https://iodwiyfjwzdvqtrczttb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZHdpeWZqd3pkdnF0cmN6dHRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NzY2NDAsImV4cCI6MjEwMjQ1MjY0MH0.IMI3FnB75slarSrrXao18WBhNHSRyKarUX2JW017E6Y';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, '../.env');
+let envContent = '';
+try {
+  envContent = fs.readFileSync(envPath, 'utf8');
+} catch {
+  // ignore
+}
+
+function getEnvVal(key) {
+  const match = envContent.match(new RegExp(`^${key}=(.*)$`, 'm'));
+  return match ? match[1].trim() : process.env[key] || '';
+}
+
+const SUPABASE_URL = getEnvVal('VITE_SUPABASE_URL');
+const SUPABASE_ANON_KEY = getEnvVal('VITE_SUPABASE_ANON_KEY');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
