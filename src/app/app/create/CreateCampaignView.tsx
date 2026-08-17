@@ -1,36 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusiness } from '../../../hooks/useBusiness';
-import { useUsage } from '../../../hooks/useUsage';
-import { api } from '../../../lib/api';
-import { getUserFacingErrorMessage } from '../../../lib/userFacingError';
-import { CampaignType, CampaignObjective, FullCampaignPack } from '../../../types/campaign';
+import { CampaignType, CampaignObjective } from '../../../types/campaign';
 import { ChannelCard } from '../../../components/ChannelCard';
 import { CalendarPicker } from '../../../components/CalendarPicker';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { CheckCircle2, AlertCircle, Printer, FileText, Code, Store, Plus, RefreshCw } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Printer, FileText, Code, Store, Plus, Loader2 } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
   downloadFullCampaignPackJson,
   triggerPrintPoster,
 } from '../../../utils/exportUtils';
+import { CreateContext } from '../../../lib/server/create/getCreateContext';
+import { createCampaignAction, CreateCampaignActionState } from '../../../lib/server/create/createCampaignAction';
+import { toast } from 'sonner';
 
-export function CreateCampaignView() {
+interface CreateCampaignViewProps {
+  context: CreateContext;
+}
+
+const initialState: CreateCampaignActionState = { success: false, message: '' };
+
+export function CreateCampaignView({ context }: CreateCampaignViewProps) {
   const router = useRouter();
-  const { session } = useAuth();
-  const businessId = session.activeBusinessId || '';
-
-  const { profile, loading } = useBusiness(businessId);
-  const { usage, refreshUsage } = useUsage(businessId);
+  const { business, profile, usagePeriod } = context;
 
   const [step, setStep] = useState<number>(1);
   const [type, setType] = useState<CampaignType>('WEEKDAY_BOOST');
   const [objective, setObjective] = useState<CampaignObjective>('MORE_WALK_INS');
   const [audience, setAudience] = useState<string>('');
+
+  // Step 3 state
   const [offerTitle, setOfferTitle] = useState<string>('');
   const [offerDesc, setOfferDesc] = useState<string>('');
   const [offerValue, setOfferValue] = useState<string>('');
@@ -39,17 +41,11 @@ export function CreateCampaignView() {
   const [customNotes, setCustomNotes] = useState<string>('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Generation & Realtime progress state
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
+  // React 19 Action State
+  const [actionState, formAction, isPending] = useActionState(createCampaignAction, initialState);
 
-  const [channelProgress, setChannelProgress] = useState<Record<string, 'pending' | 'generating' | 'ready' | 'failed'>>({
-    GOOGLE_BUSINESS: 'pending',
-    INSTAGRAM: 'pending',
-    WHATSAPP: 'pending',
-    IN_STORE_POSTER: 'pending',
-  });
+  // Result state
+  const [generatedPack, setGeneratedPack] = useState<any>(null);
 
   // Check for preset in sessionStorage
   useEffect(() => {
@@ -73,17 +69,27 @@ export function CreateCampaignView() {
     }
   }, []);
 
-  if (loading) {
-    return (
-      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
-          Loading campaign composer...
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (profile) {
+      if (!offerDesc) setOfferDesc(profile.default_offer || '');
+      if (!timingLabel) setTimingLabel(profile.slow_hours || '');
+      if (!audience) setAudience(profile.target_customer || '');
+    }
+  }, [profile]);
 
-  if (!businessId || !profile) {
+  // Handle action success transition
+  useEffect(() => {
+    if (actionState.success && actionState.data && !isPending) {
+      setGeneratedPack(actionState.data);
+      setStep(4);
+      toast.success(actionState.message);
+    }
+  }, [actionState, isPending]);
+
+  // Determine quota status strictly from server props
+  const isQuotaExceeded = usagePeriod ? usagePeriod.campaigns_used >= usagePeriod.campaign_limit : true;
+
+  if (!business || !profile) {
     return (
       <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
         <div className="card" style={{ maxWidth: '560px', margin: '60px auto', textAlign: 'center', padding: '48px 36px' }}>
@@ -91,7 +97,7 @@ export function CreateCampaignView() {
             <Store size={26} />
           </div>
           <h2 style={{ fontSize: '22px', fontFamily: 'var(--font-display)', marginBottom: '8px', color: 'var(--color-ink)' }}>
-            No Storefront Selected
+            No Storefront Profile
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px', lineHeight: '1.5' }}>
             You haven&apos;t set up a store profile yet. Complete the quick onboarding setup to configure your store before creating marketing campaigns.
@@ -109,72 +115,6 @@ export function CreateCampaignView() {
     );
   }
 
-  useEffect(() => {
-    if (profile) {
-      if (!offerDesc) setOfferDesc(profile.defaultOffer || '');
-      if (!timingLabel) setTimingLabel(profile.slowHours || '');
-      if (!audience) setAudience(profile.targetCustomer || '');
-    }
-  }, [profile]);
-
-  const handleGenerate = async () => {
-    if (!businessId || !profile) {
-      setGenerationError("A storefront must be selected before creating a campaign.");
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerationError(null);
-
-    setChannelProgress({
-      GOOGLE_BUSINESS: 'generating',
-      INSTAGRAM: 'generating',
-      WHATSAPP: 'generating',
-      IN_STORE_POSTER: 'generating',
-    });
-
-    try {
-      const input = {
-        type,
-        objective,
-        audience: audience || profile.targetCustomer || 'Neighborhood residents and visitors',
-        offer: {
-          title: offerTitle || profile.defaultOffer || 'Featured Special',
-          description: offerDesc || offerTitle || 'Featured seasonal special',
-          value: offerValue || 'Special Promotional Value',
-          terms: offerTerms || 'Show message at counter to redeem.',
-        },
-        schedule: {
-          startsAt: new Date().toISOString(),
-          endsAt: new Date(Date.now() + 7 * 86400000).toISOString(),
-          timingLabel: timingLabel || 'Valid this week',
-        },
-        customNotes,
-      };
-
-      const result = await api.generateAndSaveCampaign(
-        businessId,
-        input,
-        (channel: string, status: 'pending' | 'generating' | 'ready' | 'failed') => {
-          setChannelProgress((prev) => ({
-            ...prev,
-            [channel]: status,
-          }));
-        }
-      );
-
-      setGeneratedPack(result);
-      setStep(4);
-      await refreshUsage();
-    } catch (err: unknown) {
-      setGenerationError(getUserFacingErrorMessage(err, 'Failed to create campaign. Your monthly allowance was not deducted. Please try again.'));
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const isQuotaExceeded = usage && !usage.canGenerate;
-
   return (
     <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
       <div className="section-header">
@@ -185,10 +125,18 @@ export function CreateCampaignView() {
         </p>
       </div>
 
-      {isQuotaExceeded && (
+      {!usagePeriod && (
         <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', fontSize: '13.5px', fontWeight: 600 }}>
-            <AlertCircle size={16} /> Monthly limit reached ({usage?.monthlyLimit} campaigns). Upgrade for additional quota.
+            <AlertCircle size={16} /> Entitlement unavailable. You do not have an active subscription or usage plan for this month.
+          </div>
+        </div>
+      )}
+
+      {usagePeriod && isQuotaExceeded && (
+        <div style={{ background: 'var(--color-danger-subtle)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', fontSize: '13.5px', fontWeight: 600 }}>
+            <AlertCircle size={16} /> Monthly limit reached ({usagePeriod.campaign_limit} campaigns). Upgrade for additional quota.
           </div>
           <button className="btn-secondary" onClick={() => setShowUpgradeModal(true)}>
             Upgrade Tier
@@ -196,21 +144,19 @@ export function CreateCampaignView() {
         </div>
       )}
 
-      {generationError && (
+      {!actionState.success && actionState.message && (
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xs)', padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: 'var(--shadow-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-ink)', fontSize: '13.5px' }}>
             <AlertCircle size={18} color="#C53030" style={{ flexShrink: 0 }} />
-            <span>{generationError}</span>
+            <span>{actionState.message}</span>
           </div>
           <button
             type="button"
             className="btn-secondary"
-            onClick={handleGenerate}
-            disabled={isGenerating}
+            onClick={() => setStep(3)} // Return to step 3 to fix errors
             style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            <RefreshCw size={12} className={isGenerating ? 'spin' : ''} />
-            Try Again
+            Review Inputs
           </button>
         </div>
       )}
@@ -347,7 +293,14 @@ export function CreateCampaignView() {
 
       {/* STEP 3 */}
       {step === 3 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px', alignItems: 'start' }}>
+        <form action={formAction} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px', alignItems: 'start' }}>
+          {/* Hidden inputs to pass state to server action */}
+          <input type="hidden" name="businessId" value={business.id} />
+          <input type="hidden" name="type" value={type} />
+          <input type="hidden" name="objective" value={objective} />
+          <input type="hidden" name="audience" value={audience} />
+          <input type="hidden" name="timingLabel" value={timingLabel} />
+
           <div className="card">
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '6px' }}>
               The Offer & Schedule
@@ -360,24 +313,28 @@ export function CreateCampaignView() {
               <label className="form-label">Offer Headline / Name</label>
               <input
                 type="text"
-                className="form-input"
+                name="offerTitle"
+                className={`form-input ${actionState.errors?.offerTitle ? 'error' : ''}`}
                 value={offerTitle}
                 onChange={(e) => setOfferTitle(e.target.value)}
                 placeholder="e.g. Afternoon Focus Hour Combo"
                 required
               />
+              {actionState.errors?.offerTitle && <div className="form-error">{actionState.errors.offerTitle[0]}</div>}
             </div>
 
             <div className="form-group">
               <label className="form-label">Offer Description</label>
               <input
                 type="text"
-                className="form-input"
+                name="offerDesc"
+                className={`form-input ${actionState.errors?.offerDesc ? 'error' : ''}`}
                 value={offerDesc}
                 onChange={(e) => setOfferDesc(e.target.value)}
                 placeholder="e.g. 20% off all specialty pour-overs paired with warm artisanal bakes"
                 required
               />
+              {actionState.errors?.offerDesc && <div className="form-error">{actionState.errors.offerDesc[0]}</div>}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -385,11 +342,13 @@ export function CreateCampaignView() {
                 <label className="form-label">Promotional Value</label>
                 <input
                   type="text"
-                  className="form-input"
+                  name="offerValue"
+                  className={`form-input ${actionState.errors?.offerValue ? 'error' : ''}`}
                   value={offerValue}
                   onChange={(e) => setOfferValue(e.target.value)}
                   placeholder="e.g. 20% Off or ₹299 Combo"
                 />
+                {actionState.errors?.offerValue && <div className="form-error">{actionState.errors.offerValue[0]}</div>}
               </div>
 
               <CalendarPicker
@@ -404,23 +363,40 @@ export function CreateCampaignView() {
               <label className="form-label">Redemption Terms</label>
               <input
                 type="text"
-                className="form-input"
+                name="offerTerms"
+                className={`form-input ${actionState.errors?.offerTerms ? 'error' : ''}`}
                 value={offerTerms}
                 onChange={(e) => setOfferTerms(e.target.value)}
                 placeholder="e.g. Flash message at counter to redeem. Dine-in only."
               />
+              {actionState.errors?.offerTerms && <div className="form-error">{actionState.errors.offerTerms[0]}</div>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Custom Notes (Optional)</label>
+              <input
+                type="text"
+                name="customNotes"
+                className={`form-input ${actionState.errors?.customNotes ? 'error' : ''}`}
+                value={customNotes}
+                onChange={(e) => setCustomNotes(e.target.value)}
+                placeholder="Any special instructions for the AI..."
+              />
+              {actionState.errors?.customNotes && <div className="form-error">{actionState.errors.customNotes[0]}</div>}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '28px' }}>
-              <button className="btn-secondary" onClick={() => setStep(2)}>
+              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>
                 Back
               </button>
               <button
+                type="submit"
                 className="btn-primary"
-                onClick={handleGenerate}
-                disabled={isGenerating || Boolean(isQuotaExceeded)}
+                disabled={isPending || isQuotaExceeded || !usagePeriod}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
-                {isGenerating ? 'Generating proofs...' : 'Generate 4 Campaign Proofs'}
+                {isPending && <Loader2 size={16} className="spin" />}
+                {isPending ? 'Generating proofs...' : 'Generate 4 Campaign Proofs'}
               </button>
             </div>
           </div>
@@ -447,10 +423,10 @@ export function CreateCampaignView() {
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--color-ink-subtle)', lineHeight: '1.5' }}>
-              Clicking generate will simultaneously create coordinated Google, Instagram, WhatsApp, and in-store poster copy.
+              Clicking generate will simultaneously create coordinated Google, Instagram, WhatsApp, and in-store poster copy securely on the server.
             </div>
           </div>
-        </div>
+        </form>
       )}
 
       {/* STEP 4 */}
@@ -507,26 +483,26 @@ export function CreateCampaignView() {
           <div className="proofs-grid-2x2">
             <ChannelCard
               channel="GOOGLE_BUSINESS"
-              status={channelProgress.GOOGLE_BUSINESS}
+              status="ready"
               content={generatedPack.outputs.googleBusiness as unknown as Record<string, unknown>}
             />
 
             <ChannelCard
               channel="INSTAGRAM"
-              status={channelProgress.INSTAGRAM}
+              status="ready"
               content={generatedPack.outputs.instagram as unknown as Record<string, unknown>}
             />
 
             <ChannelCard
               channel="WHATSAPP"
-              status={channelProgress.WHATSAPP}
+              status="ready"
               content={generatedPack.outputs.whatsapp as unknown as Record<string, unknown>}
             />
 
             {generatedPack.outputs.poster && (
               <ChannelCard
                 channel="IN_STORE_POSTER"
-                status={channelProgress.IN_STORE_POSTER}
+                status="ready"
                 content={generatedPack.outputs.poster as unknown as Record<string, unknown>}
               />
             )}

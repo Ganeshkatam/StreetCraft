@@ -1,42 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusiness } from '../../../hooks/useBusiness';
-import { api } from '../../../lib/api';
-import { BusinessProfile } from '../../../types/business';
-import { getUserFacingErrorMessage } from '../../../lib/userFacingError';
+import { Store, Plus, Save } from 'lucide-react';
+import { updateBusinessProfile, ActionState } from '../../../lib/server/business/updateBusinessProfile';
+import { WorkspaceTodayViewModel } from '../../../lib/server/workspace/getWorkspaceTodayData';
 import { toast } from 'sonner';
-import { Save, Store, Plus } from 'lucide-react';
 
-export function BusinessView() {
+export function BusinessView({ initialData }: { initialData: WorkspaceTodayViewModel | null }) {
   const router = useRouter();
-  const { session, createBusiness } = useAuth();
-  const businessId = session.activeBusinessId || '';
-
-  const { profile, loading, updateProfile } = useBusiness(businessId);
-  const [formData, setFormData] = useState<BusinessProfile | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  
+  // React 19 Action State
+  const boundAction = updateBusinessProfile.bind(null, initialData?.business.id);
+  const [state, formAction, isPending] = useActionState(boundAction, { success: false } as ActionState);
 
   useEffect(() => {
-    if (profile) {
-      setFormData(profile);
+    if (state.message && state.success) {
+      toast.success(state.message);
+    } else if (state.message && !state.success) {
+      toast.error(state.message);
     }
-  }, [profile]);
-
-  if (loading) {
-    return (
-      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-muted)' }}>
-          Loading business profile...
-        </div>
-      </div>
-    );
-  }
+  }, [state]);
 
   // Zero-store state: Do not render empty forms if user has no store
-  if (!businessId || !profile) {
+  if (!initialData) {
     return (
       <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
         <div className="section-header">
@@ -70,33 +57,9 @@ export function BusinessView() {
     );
   }
 
-  const currentData: BusinessProfile = formData || profile || api._getEmptyProfile(businessId);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      if (!businessId) {
-        const newSess = await createBusiness(
-          currentData.name || 'My Store',
-          currentData.category || 'Café & Bakery',
-          currentData.neighborhood || '',
-          currentData.city || '',
-          currentData.phoneWhatsApp || ''
-        );
-        if (newSess.activeBusinessId) {
-          await updateProfile({ ...currentData, businessId: newSess.activeBusinessId });
-        }
-      } else {
-        await updateProfile(currentData);
-      }
-      toast.success('Business profile updated successfully.');
-    } catch (err: unknown) {
-      toast.error(getUserFacingErrorMessage(err, 'Failed to update business profile. Please try again.'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const { profile } = initialData;
+  const currentData = profile || {} as any; // Fallback if no profile row exists, which shouldn't happen with proper onboarding
+  const errors = state.errors || {};
 
   return (
     <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
@@ -109,7 +72,7 @@ export function BusinessView() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', alignItems: 'start' }}>
-        <form onSubmit={handleSubmit} className="card">
+        <form action={formAction} className="card">
           {/* Basic Identity */}
           <div style={{ marginBottom: '28px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', marginBottom: '16px' }}>
@@ -118,27 +81,31 @@ export function BusinessView() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label className="form-label">What is your business called?</label>
+                <label className="form-label" htmlFor="name">What is your business called?</label>
                 <input
                   type="text"
+                  id="name"
+                  name="name"
                   className="form-input"
-                  value={currentData.name}
-                  onChange={(e) => setFormData({ ...currentData, name: e.target.value })}
+                  defaultValue={currentData.name || ''}
                   placeholder="The name customers know you by"
                   required
                 />
+                {errors.name && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.name[0]}</div>}
               </div>
 
               <div className="form-group">
-                <label className="form-label">What kind of place is it?</label>
+                <label className="form-label" htmlFor="category">What kind of place is it?</label>
                 <input
                   type="text"
+                  id="category"
+                  name="category"
                   className="form-input"
-                  value={currentData.category}
-                  onChange={(e) => setFormData({ ...currentData, category: e.target.value })}
+                  defaultValue={currentData.category || ''}
                   placeholder="e.g. Café & Bakery, Restaurant, Boutique"
                   required
                 />
+                {errors.category && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.category[0]}</div>}
               </div>
             </div>
           </div>
@@ -151,39 +118,43 @@ export function BusinessView() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Area / Neighborhood</label>
+                <label className="form-label" htmlFor="neighborhood">Area / Neighborhood</label>
                 <input
                   type="text"
+                  id="neighborhood"
+                  name="neighborhood"
                   className="form-input"
-                  value={currentData.neighborhood}
-                  onChange={(e) => setFormData({ ...currentData, neighborhood: e.target.value })}
+                  defaultValue={currentData.neighborhood || ''}
                   placeholder="e.g. Indiranagar, Bandra"
-                  required
                 />
+                {errors.neighborhood && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.neighborhood[0]}</div>}
               </div>
 
               <div className="form-group">
-                <label className="form-label">City</label>
+                <label className="form-label" htmlFor="city">City</label>
                 <input
                   type="text"
+                  id="city"
+                  name="city"
                   className="form-input"
-                  value={currentData.city}
-                  onChange={(e) => setFormData({ ...currentData, city: e.target.value })}
+                  defaultValue={currentData.city || ''}
                   placeholder="e.g. Bengaluru, Mumbai"
-                  required
                 />
+                {errors.city && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.city[0]}</div>}
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Landmark or Street Cue</label>
+              <label className="form-label" htmlFor="landmarks">Landmark or Street Cue</label>
               <input
                 type="text"
+                id="landmarks"
+                name="landmarks"
                 className="form-input"
-                value={currentData.landmarks}
-                onChange={(e) => setFormData({ ...currentData, landmarks: e.target.value })}
+                defaultValue={currentData.landmarks || ''}
                 placeholder="e.g. Near 12th Main junction, opposite the park"
               />
+              {errors.landmarks && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.landmarks[0]}</div>}
             </div>
           </div>
 
@@ -194,36 +165,42 @@ export function BusinessView() {
             </h3>
 
             <div className="form-group">
-              <label className="form-label">What should customers remember you for?</label>
+              <label className="form-label" htmlFor="signature_items">What should customers remember you for?</label>
               <input
                 type="text"
+                id="signature_items"
+                name="signature_items"
                 className="form-input"
-                value={currentData.signatureItems}
-                onChange={(e) => setFormData({ ...currentData, signatureItems: e.target.value })}
+                defaultValue={currentData.signature_items || ''}
                 placeholder="Your best products, dishes, or specialties"
               />
+              {errors.signature_items && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.signature_items[0]}</div>}
             </div>
 
             <div className="form-group">
-              <label className="form-label">Who are your typical customers?</label>
+              <label className="form-label" htmlFor="target_customer">Who are your typical customers?</label>
               <input
                 type="text"
+                id="target_customer"
+                name="target_customer"
                 className="form-input"
-                value={currentData.targetCustomer}
-                onChange={(e) => setFormData({ ...currentData, targetCustomer: e.target.value })}
+                defaultValue={currentData.target_customer || ''}
                 placeholder="e.g. Neighborhood residents, working professionals, weekend brunchers"
               />
+              {errors.target_customer && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.target_customer[0]}</div>}
             </div>
 
             <div className="form-group">
-              <label className="form-label">Tone & Brand Voice</label>
+              <label className="form-label" htmlFor="style_voice">Tone & Brand Voice</label>
               <input
                 type="text"
+                id="style_voice"
+                name="style_voice"
                 className="form-input"
-                value={currentData.styleVoice}
-                onChange={(e) => setFormData({ ...currentData, styleVoice: e.target.value })}
+                defaultValue={currentData.style_voice || ''}
                 placeholder="e.g. Warm, contemporary, artisanal yet unpretentious"
               />
+              {errors.style_voice && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.style_voice[0]}</div>}
             </div>
           </div>
 
@@ -235,56 +212,65 @@ export function BusinessView() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="form-group">
-                <label className="form-label">When does the business get quiet?</label>
+                <label className="form-label" htmlFor="slow_hours">When does the business get quiet?</label>
                 <input
                   type="text"
+                  id="slow_hours"
+                  name="slow_hours"
                   className="form-input"
-                  value={currentData.slowHours}
-                  onChange={(e) => setFormData({ ...currentData, slowHours: e.target.value })}
+                  defaultValue={currentData.slow_hours || ''}
                   placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
                 />
+                {errors.slow_hours && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.slow_hours[0]}</div>}
               </div>
 
               <div className="form-group">
-                <label className="form-label">Default Counter Offer / Special</label>
+                <label className="form-label" htmlFor="default_offer">Default Counter Offer / Special</label>
                 <input
                   type="text"
+                  id="default_offer"
+                  name="default_offer"
                   className="form-input"
-                  value={currentData.defaultOffer}
-                  onChange={(e) => setFormData({ ...currentData, defaultOffer: e.target.value })}
+                  defaultValue={currentData.default_offer || ''}
                   placeholder="e.g. 20% off pour-overs & fresh bakes"
                 />
+                {errors.default_offer && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.default_offer[0]}</div>}
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Average Customer Spend (INR)</label>
+                <label className="form-label" htmlFor="avg_ticket_inr">Average Customer Spend (INR)</label>
                 <input
                   type="number"
+                  id="avg_ticket_inr"
+                  name="avg_ticket_inr"
                   className="form-input"
-                  value={currentData.avgTicketINR || ''}
-                  onChange={(e) => setFormData({ ...currentData, avgTicketINR: parseInt(e.target.value, 10) || 0 })}
+                  defaultValue={currentData.avg_ticket_inr || ''}
                   placeholder="350"
+                  min="0"
                 />
+                {errors.avg_ticket_inr && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.avg_ticket_inr[0]}</div>}
               </div>
 
               <div className="form-group">
-                <label className="form-label">Store WhatsApp or Phone</label>
+                <label className="form-label" htmlFor="phone_whatsapp">Store WhatsApp or Phone</label>
                 <input
                   type="text"
+                  id="phone_whatsapp"
+                  name="phone_whatsapp"
                   className="form-input"
-                  value={currentData.phoneWhatsApp}
-                  onChange={(e) => setFormData({ ...currentData, phoneWhatsApp: e.target.value })}
+                  defaultValue={currentData.phone_whatsapp || ''}
                   placeholder="+91 98765 43210"
                 />
+                {errors.phone_whatsapp && <div style={{ color: 'var(--color-danger)', fontSize: '12px', marginTop: '4px' }}>{errors.phone_whatsapp[0]}</div>}
               </div>
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-            <button type="submit" className="btn-primary" disabled={isSaving}>
-              <Save size={14} /> {isSaving ? 'Saving...' : 'Save Store Preferences'}
+            <button type="submit" className="btn-primary" disabled={isPending}>
+              <Save size={14} /> {isPending ? 'Saving...' : 'Save Store Preferences'}
             </button>
           </div>
         </form>
@@ -301,12 +287,12 @@ export function BusinessView() {
 
           <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)', marginBottom: '14px' }}>
             <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>SIGNATURE ITEMS</div>
-            {currentData.signatureItems || 'Not specified yet'}
+            {currentData.signature_items || 'Not specified yet'}
           </div>
 
           <div style={{ fontSize: '12.5px', color: 'var(--color-ink)', lineHeight: '1.6', background: 'var(--color-surface)', padding: '14px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
             <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>TARGET WINDOW</div>
-            {currentData.slowHours || 'Not specified yet'}
+            {currentData.slow_hours || 'Not specified yet'}
           </div>
         </div>
       </div>
