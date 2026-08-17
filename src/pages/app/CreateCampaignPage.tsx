@@ -8,7 +8,7 @@ import { DynamicOpportunity } from '../../engine/briefing/opportunityEngine';
 import { CampaignType, CampaignObjective, FullCampaignPack } from '../../types/campaign';
 import { ChannelCard } from '../../components/ChannelCard';
 import { CalendarPicker } from '../../components/CalendarPicker';
-import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Download, Printer, FileText, Code } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Download, Printer, FileText, Code, Store } from 'lucide-react';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -30,6 +30,26 @@ export const CreateCampaignPage: React.FC<CreateCampaignPageProps> = ({
   const navigate = useNavigate();
   const { profile } = useBusiness(businessId);
   const { usage, refreshUsage } = useUsage(businessId);
+
+  if (!businessId || !businessId.trim()) {
+    return (
+      <div className="card" style={{ maxWidth: '580px', margin: '60px auto', padding: '48px 32px', textAlign: 'center', boxShadow: 'var(--shadow-overlay)' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-sm)', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: 'var(--color-primary)' }}>
+          <Store size={28} />
+        </div>
+        <span className="section-eyebrow" style={{ marginBottom: '8px' }}>STORE CONTEXT REQUIRED</span>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--color-ink)', marginBottom: '12px' }}>
+          Connect a Business First
+        </h2>
+        <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.6', marginBottom: '28px' }}>
+          Campaigns require your physical store context, products, and operating schedule. Please set up your first business to begin creating marketing campaigns.
+        </p>
+        <button className="btn-primary" onClick={() => navigate('/setup')} style={{ margin: '0 auto' }}>
+          Set Up Storefront &rarr;
+        </button>
+      </div>
+    );
+  }
 
   const [step, setStep] = useState<number>(initialPreset ? 3 : 1);
   const [type, setType] = useState<CampaignType>(initialPreset?.preset.type || 'WEEKDAY_BOOST');

@@ -537,12 +537,15 @@ class RealtimeApiClient {
     }));
   }
 
-  // 5. ATOMIC REALTIME CAMPAIGN GENERATION (Server-Side State Machine)
   public async generateAndSaveCampaign(
     businessId: UUID,
     input: CampaignGenerationInput,
     onProgress?: (channel: string, status: 'generating' | 'ready') => void
   ): Promise<FullCampaignPack> {
+    if (!businessId || typeof businessId !== 'string' || businessId.trim() === '') {
+      throw new Error('Cannot create campaigns without an active business. Please select or create a business storefront first.');
+    }
+
     if (isSupabaseConfigured) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session || !session.user) throw new Error('Not authenticated.');
