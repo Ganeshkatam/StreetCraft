@@ -9,9 +9,9 @@
     "url": "https://github.com/Ganeshkatam/StreetCraft.git"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3018",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3018",
     "typecheck": "tsc --noEmit",
     "tree": "node scripts/generate-project-tree.js"
   },

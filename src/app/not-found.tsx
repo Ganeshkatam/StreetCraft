@@ -1,90 +1,79 @@
 import React from 'react';
 import Link from 'next/link';
-import { Logo } from '../components/Logo';
-import { Compass, ArrowLeft } from 'lucide-react';
+import { Compass, LayoutDashboard } from 'lucide-react';
 
 export default function NotFound() {
   return (
     <div
       style={{
-        minHeight: '100dvh',
+        minHeight: '70vh',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'var(--space-gutter)',
-        background: 'var(--color-page)',
-        textAlign: 'center',
+        padding: '40px 24px',
       }}
     >
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <Logo size="lg" />
-      </div>
-
       <div
+        className="card"
         style={{
-          maxWidth: '480px',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--space-card)',
-          boxShadow: 'var(--shadow-sm)',
+          maxWidth: '520px',
+          width: '100%',
+          padding: '48px 36px',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-overlay)',
         }}
       >
         <div
           style={{
-            display: 'inline-flex',
+            width: '56px',
+            height: '56px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--color-primary-subtle)',
+            border: '1px solid var(--color-primary-border)',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'var(--color-primary-highlight)',
+            margin: '0 auto 20px',
             color: 'var(--color-primary)',
-            marginBottom: 'var(--space-4)',
           }}
         >
-          <Compass size={24} />
+          <Compass size={28} />
         </div>
+
+        <span className="section-eyebrow" style={{ marginBottom: '8px' }}>
+          404 &bull; PAGE NOT FOUND
+        </span>
 
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'var(--type-heading-size)',
+            fontSize: '26px',
             color: 'var(--color-ink)',
-            marginBottom: 'var(--space-2)',
+            marginBottom: '12px',
           }}
         >
-          Page not found
+          Lost on the Street?
         </h1>
 
         <p
           style={{
-            fontSize: 'var(--type-body-small-size)',
+            fontSize: '14px',
             color: 'var(--color-ink-muted)',
-            lineHeight: 1.6,
-            marginBottom: 'var(--space-6)',
+            lineHeight: '1.6',
+            marginBottom: '28px',
           }}
         >
-          The page or opportunity you are looking for does not exist or may have been moved.
+          The page or storefront you were looking for doesn&apos;t exist, was moved, or requires different access permissions.
         </p>
 
-        <Link
-          href="/"
-          className="btn-primary"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px 24px',
-            fontSize: '14px',
-            width: '100%',
-            justifyContent: 'center',
-          }}
-        >
-          <ArrowLeft size={16} />
-          Return to Home
-        </Link>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link href="/" className="btn-secondary">
+            &larr; Home
+          </Link>
+          <Link href="/app/today" className="btn-primary">
+            <LayoutDashboard size={14} /> Workspace
+          </Link>
+        </div>
       </div>
     </div>
   );

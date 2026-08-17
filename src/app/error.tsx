@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { AlertCircle, RotateCcw } from 'lucide-react';
-import { Logo } from '../components/Logo';
+import Link from 'next/link';
+import { AlertCircle, RefreshCw, LayoutDashboard } from 'lucide-react';
 
 export default function GlobalError({
   error,
@@ -12,91 +12,80 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error securely
-    console.error('StreetCraft Runtime Error Boundary caught:', error);
+    console.error('Unhandled app error:', error);
   }, [error]);
 
   return (
     <div
       style={{
-        minHeight: '100dvh',
+        minHeight: '70vh',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'var(--space-gutter)',
-        background: 'var(--color-page)',
-        textAlign: 'center',
+        padding: '40px 24px',
       }}
     >
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <Logo size="lg" />
-      </div>
-
       <div
+        className="card"
         style={{
-          maxWidth: '480px',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--space-card)',
-          boxShadow: 'var(--shadow-sm)',
+          maxWidth: '520px',
+          width: '100%',
+          padding: '48px 36px',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-overlay)',
         }}
       >
         <div
           style={{
-            display: 'inline-flex',
+            width: '56px',
+            height: '56px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--color-surface-raised)',
+            border: '1px solid var(--color-border)',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'var(--color-error-highlight, rgba(180, 40, 40, 0.1))',
-            color: 'var(--color-error, #b42828)',
-            marginBottom: 'var(--space-4)',
+            margin: '0 auto 20px',
+            color: 'var(--color-ink-muted)',
           }}
         >
-          <AlertCircle size={24} />
+          <AlertCircle size={28} />
         </div>
+
+        <span className="section-eyebrow" style={{ marginBottom: '8px' }}>
+          SYSTEM &bull; UNEXPECTED STATE
+        </span>
 
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'var(--type-heading-size)',
+            fontSize: '26px',
             color: 'var(--color-ink)',
-            marginBottom: 'var(--space-2)',
+            marginBottom: '12px',
           }}
         >
-          Something went wrong
+          Something Went Wrong
         </h1>
 
         <p
           style={{
-            fontSize: 'var(--type-body-small-size)',
+            fontSize: '14px',
             color: 'var(--color-ink-muted)',
-            lineHeight: 1.6,
-            marginBottom: 'var(--space-6)',
+            lineHeight: '1.6',
+            marginBottom: '28px',
           }}
         >
-          An unexpected error occurred while rendering this view. Your store data remains secure.
+          {error.message || 'An unexpected error occurred while loading this workspace view. Your data is safe.'}
         </p>
 
-        <button
-          onClick={() => reset()}
-          className="btn-primary"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px 24px',
-            fontSize: '14px',
-            width: '100%',
-            justifyContent: 'center',
-          }}
-        >
-          <RotateCcw size={16} />
-          Retry action
-        </button>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button className="btn-secondary" onClick={() => reset()}>
+            <RefreshCw size={14} /> Try Again
+          </button>
+          <Link href="/app/today" className="btn-primary">
+            <LayoutDashboard size={14} /> Workspace
+          </Link>
+        </div>
       </div>
     </div>
   );
