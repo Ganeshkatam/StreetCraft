@@ -70,8 +70,12 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar / Colophon */}
-        <div style={{ paddingTop: '24px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}>
-          &copy; {new Date().getFullYear()} StreetCraft. Built for physical businesses.
+        <div style={{ paddingTop: '24px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div>&copy; {new Date().getFullYear()} StreetCraft. Built for physical businesses.</div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/privacy')}>Privacy Policy</button>
+            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/terms')}>Terms of Service</button>
+          </div>
         </div>
 
       </div>

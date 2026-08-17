@@ -24,6 +24,9 @@ import { SignupPage } from './pages/SignupPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { TermsPage } from './pages/TermsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 import { DashboardPage } from './pages/app/DashboardPage';
 import { BusinessPage } from './pages/app/BusinessPage';
@@ -88,11 +91,10 @@ function AppLayout() {
               path="/free-tool"
               element={<FreeToolPage onOpenAuthWithClaim={handleOpenAuthWithClaim} />}
             />
-            <Route
-              path="/pricing"
-              element={<PricingPage onOpenUpgrade={() => setUpgradeModalOpen(true)} />}
-            />
+            <Route path="/pricing" element={<PricingPage onOpenUpgrade={() => setUpgradeModalOpen(true)} />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route
               path="/login"
               element={
@@ -122,12 +124,7 @@ function AppLayout() {
             />
             <Route
               path="/onboarding"
-              element={
-                <OnboardingPage
-                  claimToken={claimToken}
-                  onSuccess={() => setClaimToken(null)}
-                />
-              }
+              element={<Navigate to="/setup" replace />}
             />
             <Route
               path="/forgot-password"
@@ -137,7 +134,7 @@ function AppLayout() {
               path="/reset-password"
               element={<ResetPasswordPage />}
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       ) : (

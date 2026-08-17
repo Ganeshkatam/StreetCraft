@@ -271,9 +271,17 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSuccess }) => {
               </div>
             </div>
 
-            <footer className="auth-security-badge">
-              <ShieldCheck size={13} />
-              <span>Your data is secure and never shared.</span>
+            <footer className="auth-security-badge" style={{ flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldCheck size={13} />
+                <span>Your data is secure and never shared.</span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)' }}>
+                By signing up, you agree to our{' '}
+                <button type="button" onClick={() => navigate('/terms')} style={{ textDecoration: 'underline', color: 'inherit' }}>Terms</button>
+                {' '}&amp;{' '}
+                <button type="button" onClick={() => navigate('/privacy')} style={{ textDecoration: 'underline', color: 'inherit' }}>Privacy Policy</button>.
+              </div>
             </footer>
           </div>
         </main>
