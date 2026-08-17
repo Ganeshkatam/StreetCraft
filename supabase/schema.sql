@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.businesses (
 CREATE TABLE IF NOT EXISTS public.business_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'owner' CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text])),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT business_members_business_id_user_id_key UNIQUE (business_id, user_id)
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS public.plans (
 -- 1.6 Subscriptions Table (Commercial ledger and payments)
 CREATE TABLE IF NOT EXISTS public.subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   plan_id TEXT NOT NULL REFERENCES public.plans(id),
   provider TEXT NOT NULL DEFAULT 'RAZORPAY',
   provider_subscription_id TEXT,
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS public.founder_allocation (
 
 CREATE TABLE IF NOT EXISTS public.founder_claims (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
   claimed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   billing_cycle TEXT NOT NULL CHECK (lower(billing_cycle) = ANY (ARRAY['quarterly'::text, 'annual'::text]))
 );
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS public.campaign_outputs (
 CREATE TABLE IF NOT EXISTS public.usage_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL DEFAULT 'CAMPAIGN_GENERATION' CHECK (event_type = ANY (ARRAY['CAMPAIGN_GENERATION'::text, 'MANUAL_ADJUSTMENT'::text, 'SUBSCRIPTION_RESET'::text])),
   units INTEGER NOT NULL DEFAULT 1,
   campaign_id UUID REFERENCES public.campaigns(id) ON DELETE SET NULL,
