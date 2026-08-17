@@ -11,7 +11,7 @@ import { useUsage } from './hooks/useUsage';
 import { DynamicOpportunity } from './engine/briefing/opportunityEngine';
 
 import { Navigation } from './components/Navigation';
-import { Footer } from './components/Footer';
+import { Footer, FooterVariant } from './components/Footer';
 import { UpgradeModal } from './components/UpgradeModal';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -52,7 +52,6 @@ function AppLayout() {
   const { usage } = useUsage(session.activeBusinessId);
 
   const isAppView = location.pathname.startsWith('/app');
-  const isFreeToolView = location.pathname === '/free-tool';
   const isAuthView =
     location.pathname === '/login' ||
     location.pathname === '/signup' ||
@@ -60,6 +59,21 @@ function AppLayout() {
     location.pathname === '/onboarding' ||
     location.pathname === '/forgot-password' ||
     location.pathname === '/reset-password';
+  const isSystemView =
+    location.pathname === '/unauthorized' ||
+    location.pathname === '/not-found' ||
+    location.pathname === '/error';
+
+  // Footer variant selection based on route context
+  const getFooterVariant = (): FooterVariant | null => {
+    if (isAppView || isAuthView || isSystemView) return null;
+    const path = location.pathname;
+    if (path === '/privacy' || path === '/terms') return 'legal';
+    if (path === '/free-tool' || path === '/contact') return 'compact';
+    if (path === '/' || path === '/how-it-works' || path === '/pricing') return 'full';
+    return null;
+  };
+  const footerVariant = getFooterVariant();
 
   const handleLaunchOpportunity = (opp: DynamicOpportunity) => {
     setCampaignPreset(opp);
@@ -330,7 +344,7 @@ function AppLayout() {
         </div>
       )}
 
-      {!isAuthView && !isFreeToolView && <Footer />}
+      {footerVariant && <Footer variant={footerVariant} />}
 
       <UpgradeModal
         isOpen={upgradeModalOpen}
