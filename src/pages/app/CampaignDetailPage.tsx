@@ -72,10 +72,10 @@ export const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ business
           Campaign Not Found
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '24px' }}>
-          This campaign may have been removed or belongs to another business.
+          We couldn&apos;t find that campaign. It may have been archived or removed from your vault.
         </p>
         <button className="btn-primary" onClick={() => navigate('/app/campaigns')}>
-          &larr; Back to Campaigns
+          &larr; Back to Campaign Vault
         </button>
       </div>
     );

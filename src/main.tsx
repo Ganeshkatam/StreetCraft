@@ -27,6 +27,8 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { UnauthorizedPage } from './pages/UnauthorizedPage';
+import { ErrorPage } from './pages/ErrorPage';
 
 import { DashboardPage } from './pages/app/DashboardPage';
 import { BusinessPage } from './pages/app/BusinessPage';
@@ -134,6 +136,9 @@ function AppLayout() {
               path="/reset-password"
               element={<ResetPasswordPage />}
             />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/not-found" element={<NotFoundPage />} />
+            <Route path="/error" element={<ErrorPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
