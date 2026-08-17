@@ -1,10 +1,10 @@
 /* ==========================================================================
-   STREETCRAFT AI — FOUNDATION TOKENS: SPACING & LAYOUT
-   Editorial spacing scale and layout boundaries.
+   STREETCRAFT — FOUNDATION TOKENS: SPACING, LAYOUT & VIEWPORT
+   Phase 1 Presentation Contract: Fluid spacing, reading measure & safe areas.
    ========================================================================== */
 
 :root {
-  /* Editorial Spacing Scale */
+  /* Discrete Editorial Spacing Scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -15,12 +15,30 @@
   --space-8: 64px;
   --space-9: 80px;
 
-  /* Semantic Layout Tokens */
-  --layout-page-max: 1400px;
-  --layout-reading-max: 720px;
+  /* Fluid Spacing Scale (Interpolates dynamically across viewports) */
+  --space-gutter: clamp(16px, 3.5vw, 40px);
+  --space-section: clamp(40px, 6vw + 16px, 88px);
+  --space-card: clamp(18px, 2.5vw, 32px);
+  --space-stack: clamp(16px, 2vw + 8px, 28px);
+
+  /* Semantic Layout & Measure Boundaries */
+  --layout-page-max: 1360px;
+  --layout-reading-max: 68ch;               /* Content measure: optimal line-length for readability */
+  --layout-form-max: 560px;                  /* Focused form measure */
   --layout-sidebar-width: 250px;
   --layout-header-height: 68px;
-  --layout-content-gutter: var(--space-7);
-  --layout-card-padding: var(--space-6);
-  --layout-grid-gap: var(--space-6);
+  --layout-card-padding: var(--space-card);
+  --layout-grid-gap: var(--space-stack);
+
+  /* Device Safe Areas & Viewport Heights */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Dynamic Viewport Units */
+  --viewport-height: 100dvh;
+
+  /* Minimum Accessible Tap Targets */
+  --target-min-size: 44px;
 }
