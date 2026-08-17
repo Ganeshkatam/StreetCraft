@@ -13,12 +13,18 @@ export const Footer: React.FC = () => {
         <div className="footer-top-grid">
 
           {/* Brand Column */}
-          <div>
+          <div style={{ maxWidth: '360px' }}>
             <div style={{ marginBottom: '16px', cursor: 'pointer' }} onClick={() => navigate('/')}>
               <Logo size="md" />
             </div>
-            <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', lineHeight: '1.65', margin: 0, maxWidth: '340px' }}>
-              A growth engine for physical businesses. Turn one business opportunity into coordinated campaign proofs across Google, Instagram, WhatsApp, and your counter.
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)', lineHeight: '1.45', margin: '0 0 8px 0', fontFamily: 'var(--font-display)' }}>
+              Turn one business opportunity into everything customers need to see.
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.6', margin: '0 0 10px 0' }}>
+              Google, Instagram, WhatsApp, and your counter &mdash; prepared together.
+            </p>
+            <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', lineHeight: '1.55', margin: 0 }}>
+              For physical businesses that want more customers through the door without more marketing work.
             </p>
           </div>
 
@@ -28,30 +34,30 @@ export const Footer: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button className="footer-link" onClick={() => navigate('/how-it-works')}>How it works</button>
               <button className="footer-link" onClick={() => navigate('/free-tool')}>Free campaign tool</button>
-              <button className="footer-link" onClick={() => navigate('/pricing')}>Plans &amp; pricing</button>
-              <button className="footer-link" onClick={() => navigate('/contact')}>Talk to us</button>
+              <button className="footer-link" onClick={() => navigate('/pricing')}>Pricing</button>
+              <button className="footer-link" onClick={() => navigate('/contact')}>Contact</button>
             </div>
           </div>
 
-          {/* Col 2: Channel Outputs */}
+          {/* Col 2: Customer Touchpoints */}
           <div>
-            <div className="footer-col-title">Touchpoints</div>
+            <div className="footer-col-title">Customer Touchpoints</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <span className="footer-link" style={{ cursor: 'default' }}>Google Business</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Instagram Reels &amp; Stories</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>WhatsApp VIP Broadcast</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Printable Counter Cards</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Instagram</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>WhatsApp</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>In-store print</span>
             </div>
           </div>
 
-          {/* Col 3: Store Categories */}
+          {/* Col 3: For Your Business */}
           <div>
-            <div className="footer-col-title">Storefronts</div>
+            <div className="footer-col-title">For Your Business</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <span className="footer-link" style={{ cursor: 'default' }}>Cafes &amp; Bakeries</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Restaurants &amp; Bistros</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Boutiques &amp; Salons</span>
-              <span className="footer-link" style={{ cursor: 'default' }}>Studios &amp; Retail</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Cafés &amp; Bakeries</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Restaurants &amp; Food</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Salons &amp; Studios</span>
+              <span className="footer-link" style={{ cursor: 'default' }}>Retail &amp; Boutiques</span>
             </div>
           </div>
 
@@ -59,22 +65,22 @@ export const Footer: React.FC = () => {
           <div>
             <div className="footer-col-title">Workspace</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="footer-link" onClick={() => navigate('/app/today')}>Today's briefing</button>
-              <button className="footer-link" onClick={() => navigate('/app/create')}>Compose campaign</button>
-              <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaign vault</button>
-              <button className="footer-link" onClick={() => navigate('/app/business')}>Store preferences</button>
-              <button className="footer-link" onClick={() => navigate('/login')}>Sign in to store</button>
+              <button className="footer-link" onClick={() => navigate('/app/today')}>Today</button>
+              <button className="footer-link" onClick={() => navigate('/app/create')}>Create</button>
+              <button className="footer-link" onClick={() => navigate('/app/campaigns')}>Campaigns</button>
+              <button className="footer-link" onClick={() => navigate('/app/business')}>Business</button>
+              <button className="footer-link" onClick={() => navigate('/login')}>Sign in</button>
             </div>
           </div>
 
         </div>
 
         {/* Bottom Bar / Colophon */}
-        <div style={{ paddingTop: '24px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div>&copy; {new Date().getFullYear()} StreetCraft. Built for physical businesses.</div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/privacy')}>Privacy Policy</button>
-            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/terms')}>Terms of Service</button>
+        <div style={{ paddingTop: '24px', marginTop: '40px', borderTop: '1px solid var(--color-border)', fontSize: '12.5px', color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div>&copy; {new Date().getFullYear()} StreetCraft</div>
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/privacy')}>Privacy</button>
+            <button className="footer-link" style={{ width: 'auto', display: 'inline' }} onClick={() => navigate('/terms')}>Terms</button>
           </div>
         </div>
 
