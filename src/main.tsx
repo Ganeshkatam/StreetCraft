@@ -108,7 +108,7 @@ function AppLayout() {
 
   return (
     <div className="app-container">
-      {!isAuthView && (
+      {!isAuthView && !isSystemView && (
         <Navigation
           session={session}
           usage={usage}
