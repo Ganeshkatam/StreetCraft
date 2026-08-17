@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
@@ -15,9 +15,10 @@ function SetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const claimToken = searchParams.get('claim');
-  const { createBusiness, signOut } = useAuth();
+  const { session, createBusiness, signOut } = useAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(session.activeBusinessId || null);
   const [storeName, setStoreName] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('Bengaluru');
@@ -29,24 +30,89 @@ function SetupContent() {
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResuming, setIsResuming] = useState(true);
 
-  const handleStep1Submit = (e: React.FormEvent) => {
+  // Progressive Onboarding: Pre-fill and auto-resume if store already exists
+  useEffect(() => {
+    const activeId = session.activeBusinessId;
+    if (activeId) {
+      setCreatedBusinessId(activeId);
+      api.getBusinessProfile(activeId)
+        .then((prof) => {
+          if (prof) {
+            setStoreName(prof.name || '');
+            setCategory(prof.category || 'Artisanal Cafe & Bakery');
+            setNeighborhood(prof.neighborhood || '');
+            setCity(prof.city || 'Bengaluru');
+            if (prof.signatureItems) setSignatureItems(prof.signatureItems);
+            if (prof.slowHours) setSlowHours(prof.slowHours);
+            if (prof.defaultOffer) setDefaultOffer(prof.defaultOffer);
+            if (prof.targetCustomer) setTargetCustomer(prof.targetCustomer);
+            if (prof.phoneWhatsApp) setPhone(prof.phoneWhatsApp);
+            // If the core identity is already persisted, resume on Step 2
+            if (prof.name && prof.neighborhood) {
+              setStep(2);
+            }
+          }
+        })
+        .catch(() => {
+          // Fallback to Step 1 if profile fetch fails
+        })
+        .finally(() => {
+          setIsResuming(false);
+        });
+    } else {
+      setIsResuming(false);
+    }
+  }, [session.activeBusinessId]);
+
+  // Step 1: Immediately persist the business entity to PostgreSQL
+  const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!storeName || !neighborhood) return;
-    setStep(2);
+
+    setErrorMsg(null);
+    setIsSubmitting(true);
+
+    try {
+      if (!createdBusinessId) {
+        // Atomic creation in database
+        const activeSession = await createBusiness(storeName, category, neighborhood, city, phone);
+        if (activeSession.activeBusinessId) {
+          setCreatedBusinessId(activeSession.activeBusinessId);
+          if (claimToken) {
+            await api.claimAnonymousCampaign(claimToken, activeSession.activeBusinessId);
+          }
+        }
+      } else {
+        // Business already exists; update identity changes
+        await api.updateBusinessProfile(createdBusinessId, {
+          name: storeName,
+          category,
+          neighborhood,
+          city,
+          phoneWhatsApp: phone,
+        });
+      }
+      setStep(2);
+    } catch (err: unknown) {
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store identity. Please check your connection and try again.'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleCompleteSetup = async (e: React.FormEvent) => {
+  // Step 2: Persist operating rhythm & detailed store context
+  const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setIsSubmitting(true);
 
     try {
-      const activeSession = await createBusiness(storeName, category, neighborhood, city, phone);
-
-      if (activeSession.activeBusinessId) {
-        await api.updateBusinessProfile(activeSession.activeBusinessId, {
-          businessId: activeSession.activeBusinessId,
+      const bizId = createdBusinessId || session.activeBusinessId;
+      if (bizId) {
+        await api.updateBusinessProfile(bizId, {
+          businessId: bizId,
           name: storeName,
           category,
           neighborhood,
@@ -66,17 +132,29 @@ function SetupContent() {
         });
 
         if (claimToken) {
-          await api.claimAnonymousCampaign(claimToken, activeSession.activeBusinessId);
+          await api.claimAnonymousCampaign(claimToken, bizId);
         }
       }
-
       setStep(3);
     } catch (err: unknown) {
-      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store profile. Please review your details and try again.'));
+      setErrorMsg(getUserFacingErrorMessage(err, 'Failed to save store preferences. Please review your details and try again.'));
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isResuming) {
+    return (
+      <div className="auth-full-viewport" style={{ backgroundImage: "url('/setup_full.jpg')" }}>
+        <div className="auth-backdrop-overlay" />
+        <div className="auth-content-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ color: 'var(--color-surface)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+            Loading store setup...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -126,7 +204,9 @@ function SetupContent() {
                 </div>
                 <div>
                   <div className="auth-value-title">Store Identity & Location</div>
-                  <div className="auth-value-desc">Name, neighborhood, city, and category</div>
+                  <div className="auth-value-desc">
+                    {createdBusinessId ? 'Saved to database' : 'Name, neighborhood, city, and category'}
+                  </div>
                 </div>
               </div>
 
@@ -212,10 +292,10 @@ function SetupContent() {
 
                     <button
                       type="submit"
-                      disabled={!storeName || !neighborhood}
+                      disabled={!storeName || !neighborhood || isSubmitting}
                       className="auth-submit-btn"
                     >
-                      Continue &rarr;
+                      {isSubmitting ? 'Saving store...' : 'Save & Continue \u2192'}
                     </button>
                   </form>
                 </div>
@@ -226,7 +306,7 @@ function SetupContent() {
                   <span className="section-eyebrow">STEP 2 OF 2 &bull; OPERATING RHYTHM</span>
                   <h2 className="auth-card-title">What shapes your campaigns</h2>
 
-                  <form onSubmit={handleCompleteSetup}>
+                  <form onSubmit={handleStep2Submit}>
                     <div className="auth-form-field">
                       <label className="auth-form-label">What should customers remember you for?</label>
                       <input
@@ -275,7 +355,7 @@ function SetupContent() {
                         className="auth-submit-btn"
                         style={{ flex: 1 }}
                       >
-                        {isSubmitting ? 'Setting up...' : 'Launch Workspace \u2192'}
+                        {isSubmitting ? 'Saving preferences...' : 'Launch Workspace \u2192'}
                       </button>
                     </div>
                   </form>
@@ -289,7 +369,7 @@ function SetupContent() {
                   </div>
                   <h2 className="auth-card-title">Store Workspace Ready</h2>
                   <p className="auth-card-subtitle" style={{ margin: '0 0 18px' }}>
-                    {storeName || 'Your store'} has been initialized. Let&apos;s create your first campaign.
+                    {storeName || 'Your store'} has been configured and saved. Let&apos;s create your first campaign.
                   </p>
                   <button
                     onClick={() => router.push('/app/create')}
