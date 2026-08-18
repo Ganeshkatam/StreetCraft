@@ -9,6 +9,8 @@ const rootDir = path.resolve(__dirname, '..');
 // Folders and files to ignore
 const IGNORED = new Set([
   'node_modules',
+  '.next',
+  '.test-dist',
   '.git',
   'dist',
   'build',
