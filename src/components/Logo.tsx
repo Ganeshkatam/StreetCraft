@@ -12,15 +12,15 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
 }) => {
   const iconSizes = {
-    sm: 24,
-    md: 30,
-    lg: 40,
+    sm: 32,
+    md: 40,
+    lg: 52,
   };
 
   const textSizes = {
-    sm: { title: '18px', subtitle: '10px' },
-    md: { title: '22px', subtitle: '11px' },
-    lg: { title: '30px', subtitle: '13px' },
+    sm: { title: '22px', subtitle: '11px' },
+    md: { title: '27px', subtitle: '12px' },
+    lg: { title: '36px', subtitle: '14px' },
   };
 
   const dim = iconSizes[size];
@@ -31,7 +31,7 @@ export const Logo: React.FC<LogoProps> = ({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: size === 'sm' ? '8px' : size === 'lg' ? '14px' : '10px',
+        gap: size === 'sm' ? '10px' : size === 'lg' ? '16px' : '12px',
         userSelect: 'none',
       }}
     >

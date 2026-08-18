@@ -101,7 +101,7 @@ button {
 /* Where: Brand logo container in header | How: Aligns logo icon and wordmark text along baseline */
 .brand-wrapper {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-3);
   cursor: pointer;
   user-select: none;
@@ -183,50 +183,6 @@ button {
   font-size: 13px;
 }
 
-/* Where: Header account identity pill | How: Rounded pill container for user avatar and name */
-.header-account-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  color: var(--color-ink);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-/* Where: Hover state for header account pill | How: Darkens border and illuminates surface */
-.header-account-pill:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-border-dark);
-}
-
-/* Where: Circular avatar icon in header pill | How: Monospace initials with primary background */
-.header-account-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  font-weight: 700;
-}
-
-/* Where: Truncated user name in header account pill | How: Ellipsis for long names */
-.header-account-name {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 /* Where: Sign In button in top header | How: Compact typography and padding */
 .header-signin-btn {
@@ -4936,5 +4892,360 @@ span.footer-link {
   /* Where: Review domain summary grid on mobile | How: Single column layout */
   .setup-review-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* High-Visibility Coming Soon / Preview States */
+/* Where: Top notification banner on preview pages | How: High-contrast amber notice with border */
+/* Where: Large Prominent Banner for preview pages | How: Rich dark container with glowing amber border and actions */
+.big-coming-soon-banner {
+  background: linear-gradient(135deg, #1A231E 0%, #111814 100%);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 14px;
+  padding: 28px 36px;
+  margin-bottom: 48px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.big-coming-soon-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #F59E0B, #D97706, #10B981);
+}
+
+.big-coming-soon-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 660px;
+}
+
+.big-coming-soon-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #FBBF24;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.big-coming-soon-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: #FFFFFF;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.big-coming-soon-desc {
+  font-size: 14.5px;
+  color: #9CA3AF;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.big-coming-soon-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.big-coming-soon-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: #F59E0B;
+  color: #18181B;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.big-coming-soon-btn-primary:hover {
+  background: #D97706;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.big-coming-soon-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #F3F4F6;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.big-coming-soon-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+}
+
+/* Where: Primary pill badge for coming soon routes | How: Amber fill with active animated pulse dot */
+.coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 18px;
+  border-radius: var(--radius-full);
+  background: #FEF3C7;
+  border: 1.5px solid #F59E0B;
+  color: #78350F;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+}
+
+/* Where: Pulsing amber live beacon dot | How: Continuous pulse animation */
+.coming-soon-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D97706;
+  box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+  animation: comingSoonPulse 2s infinite;
+}
+
+@keyframes comingSoonPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(217, 119, 6, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+  }
+}
+
+/* Where: Capability card status badge | How: Small monospace yellow tag */
+.coming-soon-roadmap-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  margin-bottom: 10px;
+}
+
+/* Editorial Legal / Privacy Layout */
+.privacy-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg, #F9FAF7);
+}
+
+.privacy-page-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 40px clamp(24px, 4.5vw, 72px) 96px;
+  box-sizing: border-box;
+}
+
+.privacy-hero {
+  margin-bottom: 40px;
+}
+
+.privacy-hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.privacy-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.privacy-hero-title {
+  font-family: var(--font-display);
+  font-size: 42px;
+  color: var(--color-ink);
+  line-height: 1.2;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.privacy-hero-tagline {
+  font-size: 19px;
+  color: var(--color-primary);
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+.privacy-hero-meta {
+  font-size: 13.5px;
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+.privacy-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 48px;
+  align-items: flex-start;
+}
+
+.privacy-sidebar-nav {
+  position: sticky;
+  top: 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.privacy-sidebar-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.privacy-contents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.privacy-contents-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.privacy-contents-link:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+}
+
+.privacy-contents-link.active {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.privacy-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.privacy-section-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 36px;
+  scroll-margin-top: 32px;
+}
+
+.privacy-section-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--color-ink);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.privacy-section-text {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--color-ink);
+  margin: 0 0 14px;
+}
+
+.privacy-section-text:last-child {
+  margin-bottom: 0;
+}
+
+.privacy-section-list {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-ink);
+  margin: 14px 0 0;
+}
+
+@media (max-width: 860px) {
+  .privacy-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .privacy-sidebar-nav {
+    position: static;
   }
 }
