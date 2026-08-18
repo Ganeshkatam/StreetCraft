@@ -18,6 +18,7 @@
 @import './theme/themes/high-contrast.css';
 
 /* Base Reset & Document Setup */
+/* Where: Global all elements | How: Applies box-sizing border-box and resets default margin/padding */
 *,
 *::before,
 *::after {
@@ -26,6 +27,7 @@
   padding: 0;
 }
 
+/* Where: Global HTML body | How: Sets paper background, ink color, typography, and theme transitions */
 body {
   background-color: var(--color-page);
   color: var(--color-ink);
@@ -40,11 +42,13 @@ body {
   transition: background-color var(--motion-standard), color var(--motion-standard);
 }
 
+/* Where: Global anchor links | How: Removes default underline and inherits parent text color */
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* Where: Global form inputs and buttons | How: Strips default browser borders and backgrounds */
 button,
 input,
 select,
@@ -55,11 +59,13 @@ textarea {
   color: inherit;
 }
 
+/* Where: Global button elements | How: Sets pointer cursor for clickable interactions */
 button {
   cursor: pointer;
 }
 
 /* App Shell Layout */
+/* Where: Root application shell layout | How: Vertical flexbox ensuring full viewport height */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -67,6 +73,7 @@ button {
 }
 
 /* Modern Sticky Header */
+/* Where: Sticky top navigation bar | How: Pins header to top of viewport with border-bottom and surface background */
 .main-header {
   position: sticky;
   top: 0;
@@ -79,6 +86,7 @@ button {
   transition: background-color var(--motion-standard), border-color var(--motion-standard);
 }
 
+/* Where: Header inner content wrapper | How: Full-width container with horizontal gutters and flex alignment */
 .header-container {
   max-width: 100%;
   width: 100%;
@@ -90,6 +98,7 @@ button {
 }
 
 /* Wordmark & Brand */
+/* Where: Brand logo container in header | How: Aligns logo icon and wordmark text along baseline */
 .brand-wrapper {
   display: flex;
   align-items: baseline;
@@ -98,6 +107,7 @@ button {
   user-select: none;
 }
 
+/* Where: StreetCraft brand title text | How: Serif display typography with tight tracking */
 .brand-wordmark {
   font-family: var(--font-display);
   font-size: 22px;
@@ -109,6 +119,7 @@ button {
   gap: var(--space-2);
 }
 
+/* Where: Subtitle / AI Edition badge in brand | How: Monospace uppercase label with primary color */
 .brand-subtitle {
   font-family: var(--font-mono);
   font-size: var(--type-caption-size);
@@ -117,12 +128,14 @@ button {
   text-transform: uppercase;
 }
 
+/* Where: Header navigation link list | How: Horizontal flex container with spacing */
 .header-nav-links {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
+/* Where: Top navigation link item | How: Displays icon and title with rounded padding and muted ink color */
 .nav-item {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
@@ -135,11 +148,13 @@ button {
   gap: var(--space-2);
 }
 
+/* Where: Hover state for header nav link | How: Tints background with surface hover token */
 .nav-item:hover {
   color: var(--color-ink);
   background: var(--color-surface-hover);
 }
 
+/* Where: Currently active page navigation tab in header | How: Highlights current tab with emerald bottom border */
 .nav-item.active {
   color: var(--color-ink);
   font-weight: 600;
@@ -148,23 +163,27 @@ button {
   border-radius: var(--radius-none);
 }
 
+/* Where: Right-hand actions group in top header | How: Aligns store switcher, quota pill, and avatar */
 .header-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
+/* Where: Header auth button group for unauthenticated visitors | How: Spacing between sign in and CTA */
 .header-auth-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
+/* Where: Open Workspace button in public header | How: Compact primary action button styling */
 .header-open-workspace-btn {
   padding: 7px 16px;
   font-size: 13px;
 }
 
+/* Where: Header account identity pill | How: Rounded pill container for user avatar and name */
 .header-account-pill {
   display: inline-flex;
   align-items: center;
@@ -180,11 +199,13 @@ button {
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
+/* Where: Hover state for header account pill | How: Darkens border and illuminates surface */
 .header-account-pill:hover {
   background: var(--color-surface-hover);
   border-color: var(--color-border-dark);
 }
 
+/* Where: Circular avatar icon in header pill | How: Monospace initials with primary background */
 .header-account-avatar {
   width: 24px;
   height: 24px;
@@ -199,6 +220,7 @@ button {
   font-weight: 700;
 }
 
+/* Where: Truncated user name in header account pill | How: Ellipsis for long names */
 .header-account-name {
   max-width: 120px;
   overflow: hidden;
@@ -206,17 +228,20 @@ button {
   white-space: nowrap;
 }
 
+/* Where: Sign In button in top header | How: Compact typography and padding */
 .header-signin-btn {
   font-size: 13.5px;
   padding: 8px 14px;
 }
 
+/* Where: Try StreetCraft CTA in top header | How: Primary action button */
 .header-try-btn {
   padding: 8px 18px;
   font-size: 13.5px;
 }
 
 /* Quota Pill */
+/* Where: Monthly AI generation quota pill in header | How: Emerald badge with remaining counter */
 .usage-pill {
   display: inline-flex;
   align-items: center;
@@ -231,26 +256,31 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for usage quota pill | How: Highlights background */
 .usage-pill:hover {
   background: var(--color-surface-hover);
 }
 
+/* Where: Bold numerical value inside quota pill | How: Applies bold ink weight */
 .usage-pill strong {
   font-weight: 700;
   color: var(--color-ink);
 }
 
 /* User Profile Menu & Avatar */
+/* Where: Header user profile dropdown wrapper | How: Relative positioning anchor for menu flyout */
 .user-menu-container {
   position: relative;
 }
 
 /* Header Workspace Store Switcher */
+/* Where: Storefront switcher container in header | How: Inline relative positioning anchor */
 .workspace-switcher {
   position: relative;
   display: inline-flex;
 }
 
+/* Where: Store switcher trigger button | How: Displays active store name with chevron */
 .workspace-switcher-btn {
   display: inline-flex;
   align-items: center;
@@ -266,11 +296,13 @@ button {
   transition: all 0.15s ease;
 }
 
+/* Where: Hover state for store switcher trigger | How: Darkens border and highlights surface */
 .workspace-switcher-btn:hover {
   background: var(--color-surface-hover);
   border-color: var(--color-border-dark);
 }
 
+/* Where: Store name text in switcher button | How: Truncates long names with ellipsis */
 .workspace-switcher-name {
   max-width: 180px;
   overflow: hidden;
@@ -278,6 +310,7 @@ button {
   white-space: nowrap;
 }
 
+/* Where: Store switcher dropdown menu flyout | How: Floating card menu with shadow and z-index */
 .workspace-switcher-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -294,6 +327,7 @@ button {
   gap: 6px;
 }
 
+/* Where: Label header inside store switcher flyout | How: Monospace uppercase category label */
 .workspace-switcher-header-label {
   padding: 2px 6px;
   font-size: 10.5px;
@@ -304,12 +338,14 @@ button {
   font-weight: 700;
 }
 
+/* Where: List container of storefront items | How: Vertical column of clickable store rows */
 .workspace-switcher-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+/* Where: Individual storefront row in switcher flyout | How: Clickable item with active state */
 .workspace-switcher-item {
   display: flex;
   align-items: center;
@@ -325,16 +361,19 @@ button {
   transition: all 0.15s ease;
 }
 
+/* Where: Hover state for storefront item | How: Light surface hover tint */
 .workspace-switcher-item:hover {
   background: var(--color-surface-hover);
 }
 
+/* Where: Currently selected storefront in switcher | How: Emerald tint with border */
 .workspace-switcher-item.active {
   background: var(--color-primary-subtle);
   border-color: var(--color-primary-border);
   color: var(--color-primary);
 }
 
+/* Where: Storefront name inside switcher row | How: Bold typography with truncation */
 .workspace-switcher-item-name {
   font-size: 14px;
   font-weight: 600;
@@ -344,6 +383,7 @@ button {
   max-width: 180px;
 }
 
+/* Where: Active store indicator badge | How: Small monospace ACTIVE pill */
 .workspace-switcher-active-tag {
   font-size: 10.5px;
   font-family: var(--font-mono);
@@ -355,6 +395,7 @@ button {
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Store quota indicator inside switcher | How: Footnote indicating remaining allowed stores */
 .workspace-switcher-quota {
   padding: 6px 8px;
   font-size: 12px;
@@ -363,6 +404,7 @@ button {
   text-align: center;
 }
 
+/* Where: Connect New Storefront button in switcher flyout | How: Dashed border CTA */
 .workspace-switcher-add-btn {
   display: flex;
   align-items: center;
@@ -379,11 +421,13 @@ button {
   transition: all 0.15s ease;
 }
 
+/* Where: Hover state for connect storefront button | How: Illuminates primary border and background */
 .workspace-switcher-add-btn:hover {
   background: var(--color-primary-subtle);
   border-color: var(--color-primary);
 }
 
+/* Where: User profile badge trigger button in header | How: Pill container for avatar and name */
 .user-badge-btn {
   display: inline-flex;
   align-items: center;
@@ -399,11 +443,13 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for user badge trigger | How: Highlights border */
 .user-badge-btn:hover {
   background: var(--color-surface-hover);
   border-color: var(--color-border-dark);
 }
 
+/* Where: Circular avatar icon in user badge | How: Displays user initial with emerald fill */
 .user-avatar {
   width: 26px;
   height: 26px;
@@ -422,12 +468,14 @@ button {
   flex-shrink: 0;
 }
 
+/* Where: User avatar image element | How: Covers full circular container */
 .user-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* Where: Display name in header user badge | How: Truncates long names */
 .user-badge-name {
   max-width: 110px;
   overflow: hidden;
@@ -435,12 +483,14 @@ button {
   white-space: nowrap;
 }
 
+/* Where: Divider line in user profile dropdown | How: Razor-thin border separator */
 .user-dropdown-divider {
   height: 1px;
   background: var(--color-border);
   margin: 4px 0;
 }
 
+/* Where: User profile flyout menu | How: Floating menu with paper shadow */
 .user-dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -457,12 +507,14 @@ button {
   gap: 2px;
 }
 
+/* Where: Header area inside user profile flyout | How: Displays user name and email */
 .user-dropdown-header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 4px;
 }
 
+/* Where: Full name in user dropdown header | How: Semibold typography */
 .user-dropdown-name {
   font-size: 13.5px;
   font-weight: 600;
@@ -470,6 +522,7 @@ button {
   line-height: 1.3;
 }
 
+/* Where: Email address in user dropdown header | How: Muted text with ellipsis */
 .user-dropdown-email {
   font-size: 11.5px;
   color: var(--color-ink-muted);
@@ -478,6 +531,7 @@ button {
   white-space: nowrap;
 }
 
+/* Where: Action link item inside user dropdown | How: Interactive menu row */
 .user-dropdown-item {
   display: flex;
   align-items: center;
@@ -495,20 +549,188 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for user dropdown item | How: Surface highlight and primary text color */
 .user-dropdown-item:hover {
   background: var(--color-surface-hover);
   color: var(--color-primary);
 }
 
+/* Where: Danger action in dropdown (e.g. Sign Out) | How: Red accent text */
 .user-dropdown-item.danger {
   color: var(--color-accent);
 }
 
+/* Where: Hover state for danger dropdown action | How: Subtle red background tint */
 .user-dropdown-item.danger:hover {
   background: var(--color-accent-subtle);
 }
 
+/* Workspace Storefront Switcher Dropdown */
+/* Where: Workspace storefront switcher container | How: Relative container for floating dropdown */
+.workspace-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Where: Workspace switcher trigger button | How: Interactive rounded pill button with store icon and chevron */
+.switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full, 9999px);
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+/* Where: Hover state for workspace switcher trigger | How: Highlights surface and border */
+.switcher-trigger:hover {
+  background: var(--color-surface-hover, #F9FAFB);
+  border-color: var(--color-border-hover, #D1D5DB);
+}
+
+/* Where: Store name inside switcher trigger | How: Truncated text */
+.switcher-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Where: Chevron arrow in switcher trigger | How: Rotates when menu opens */
+.switcher-arrow {
+  color: var(--color-ink-muted);
+  transition: transform 0.2s ease;
+}
+
+/* Where: Open state for chevron arrow | How: 180-degree rotation */
+.switcher-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Where: Floating storefront switcher dropdown menu | How: Absolute positioned card with elevation shadow */
+.switcher-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 260px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  z-index: 150;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: accountContentFade 0.15s ease;
+}
+
+/* Where: Header label inside switcher dropdown | How: Monospace uppercase subtitle */
+.switcher-header {
+  padding: 8px 10px 6px;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 4px;
+}
+
+/* Where: List of storefront options in switcher dropdown | How: Vertical scrollable list */
+.switcher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* Where: Individual storefront item button in dropdown | How: Interactive list row with icon and badge */
+.switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs, 6px);
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+/* Where: Hover state for storefront item in dropdown | How: Subtle surface hover */
+.switcher-item:hover {
+  background: var(--color-surface-hover, #F9FAFB);
+  color: var(--color-ink);
+}
+
+/* Where: Active selected storefront in dropdown | How: Emerald background highlight */
+.switcher-item.active {
+  background: rgba(23, 107, 77, 0.08);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Where: Storefront name label in dropdown item | How: Truncated text */
+.switcher-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Where: Active pill badge in storefront dropdown item | How: Monospace green pill */
+.switcher-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  letter-spacing: 0.04em;
+}
+
+/* Where: Add new storefront action button at bottom of dropdown | How: Secondary button */
+.switcher-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-xs, 6px);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+/* Where: Hover state for add storefront action button | How: Soft primary tint */
+.switcher-action-btn:hover {
+  background: rgba(23, 107, 77, 0.06);
+}
+
 /* Semantic Buttons */
+/* Where: Primary action button | How: Emerald background with hover lift and shadow */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -525,20 +747,24 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for primary button | How: Darkens emerald and translates 1px up */
 .btn-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
   transform: translateY(-1px);
 }
 
+/* Where: Active click state for primary button | How: Returns transform to neutral */
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
+/* Where: Disabled primary button | How: Reduces opacity and disables click events */
 .btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
+/* Where: Secondary action button | How: Raised surface with border and subtle shadow */
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -554,11 +780,13 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for secondary button | How: Highlights background and darkens border */
 .btn-secondary:hover:not(:disabled) {
   background: var(--color-surface-hover);
   border-color: var(--color-border-dark);
 }
 
+/* Where: Ghost button for low-emphasis actions | How: Transparent background with ink hover */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -571,12 +799,14 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for ghost button | How: Illuminates text and adds subtle background */
 .btn-ghost:hover {
   color: var(--color-ink);
   background: var(--color-surface-hover);
 }
 
 /* Workspace Layout */
+/* Where: Main store workspace wrapper | How: Flexbox layout spanning full viewport below header */
 .workspace-layout {
   display: flex;
   flex: 1;
@@ -584,6 +814,7 @@ button {
   background: var(--color-page);
 }
 
+/* Where: Left-hand navigation sidebar in workspace | How: Fixed-width rail with border-right */
 .sidebar {
   width: var(--layout-sidebar-width);
   background: var(--color-surface);
@@ -595,12 +826,14 @@ button {
   transition: background-color var(--motion-standard), border-color var(--motion-standard);
 }
 
+/* Where: Navigation links stack inside store sidebar | How: Vertical list of links */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
+/* Where: Navigation link item in store sidebar | How: Clickable row with icon and title */
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -615,11 +848,13 @@ button {
   width: 100%;
 }
 
+/* Where: Hover state for sidebar link | How: Tints surface background */
 .sidebar-link:hover {
   color: var(--color-ink);
   background: var(--color-surface-hover);
 }
 
+/* Where: Active selected sidebar link | How: Raised surface with border and shadow */
 .sidebar-link.active {
   color: var(--color-ink);
   background: var(--color-surface-raised);
@@ -628,6 +863,7 @@ button {
   box-shadow: var(--shadow-subtle);
 }
 
+/* Where: Store Identity summary card at bottom of sidebar | How: Displays active store name */
 .sidebar-tenant-card {
   padding: var(--space-4);
   background: var(--color-surface-raised);
@@ -635,6 +871,7 @@ button {
   border-radius: var(--radius-sm);
 }
 
+/* Where: Store name in sidebar tenant card | How: Display font with ellipsis */
 .sidebar-tenant-name {
   font-family: var(--font-display);
   font-size: 16px;
@@ -644,6 +881,7 @@ button {
   text-overflow: ellipsis;
 }
 
+/* Where: Category subtitle in sidebar tenant card | How: Monospace primary text */
 .sidebar-tenant-sub {
   font-size: var(--type-caption-size);
   font-family: var(--font-mono);
@@ -651,6 +889,7 @@ button {
   margin-top: 2px;
 }
 
+/* Where: Main content scrollable canvas in workspace | How: Expands to fill viewport */
 .main-content {
   flex: 1;
   padding: var(--space-6) var(--space-7) var(--space-9);
@@ -659,6 +898,7 @@ button {
 }
 
 /* Semantic Paper Cards */
+/* Where: General content card | How: Paper surface with crisp border and subtle elevation */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -668,10 +908,12 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Page / section title wrapper | How: Spacing above content sections */
 .section-header {
   margin-bottom: var(--space-6);
 }
 
+/* Where: Eyebrow category tag above section title | How: Uppercase monospace accent */
 .section-eyebrow {
   display: inline-block;
   font-size: var(--type-caption-size);
@@ -683,6 +925,7 @@ button {
   margin-bottom: var(--space-1);
 }
 
+/* Where: Primary section heading | How: Large display serif typography */
 .section-title {
   font-family: var(--font-display);
   font-size: var(--type-display-lg-size);
@@ -691,6 +934,7 @@ button {
   color: var(--color-ink);
 }
 
+/* Where: Explanatory subtitle below section title | How: Muted body text with max reading width */
 .section-subtitle {
   font-size: var(--type-body-size);
   color: var(--color-ink-muted);
@@ -700,10 +944,12 @@ button {
 }
 
 /* Forms & Inputs */
+/* Where: Form field row container | How: Bottom margin between adjacent inputs */
 .form-group {
   margin-bottom: var(--space-5);
 }
 
+/* Where: Input field label | How: Bold caption typography above inputs */
 .form-label {
   display: block;
   font-size: var(--type-body-small-size);
@@ -712,6 +958,7 @@ button {
   margin-bottom: var(--space-1);
 }
 
+/* Where: Text inputs, selects, and textareas | How: Styled input borders, radius, and padding */
 .form-input,
 .form-select,
 .form-textarea {
@@ -725,6 +972,7 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Focus state for inputs and selects | How: Emerald focus outline ring */
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
@@ -733,17 +981,20 @@ button {
   box-shadow: 0 0 0 1px var(--color-primary);
 }
 
+/* Where: Placeholder text inside inputs | How: Subtle muted ink color */
 .form-input::placeholder,
 .form-textarea::placeholder {
   color: var(--color-ink-subtle);
 }
 
+/* Where: Multi-line textarea inputs | How: Vertical resizing with minimum height */
 .form-textarea {
   resize: vertical;
   min-height: 90px;
 }
 
 /* Campaign Artifact Boundary Cards */
+/* Where: Channel card container | How: Paper elevation card wrapping channel outputs */
 .channel-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -752,6 +1003,7 @@ button {
   box-shadow: var(--shadow-paper);
 }
 
+/* Where: Header row inside channel card | How: Displays channel name and copy action */
 .channel-card-header {
   display: flex;
   justify-content: space-between;
@@ -761,6 +1013,7 @@ button {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Where: Channel label (e.g. WhatsApp Broadcast) | How: Monospace uppercase label with icon */
 .channel-name {
   font-family: var(--font-mono);
   font-size: var(--type-caption-size);
@@ -773,6 +1026,7 @@ button {
   gap: var(--space-2);
 }
 
+/* Where: Pre-formatted content preview box | How: Monospace/body font with pre-wrap whitespace */
 .channel-content-preview {
   font-size: var(--type-body-small-size);
   color: var(--color-ink);
@@ -785,6 +1039,7 @@ button {
   margin-bottom: var(--space-4);
 }
 
+/* Where: Hashtags / target keywords list in channel card | How: Flex wrap container */
 .channel-tags {
   display: flex;
   flex-wrap: wrap;
@@ -792,6 +1047,7 @@ button {
   margin-bottom: var(--space-3);
 }
 
+/* Where: Individual hashtag or keyword badge | How: Small monospace tag with primary color */
 .channel-tag {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -802,6 +1058,7 @@ button {
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Metadata footer bar in channel card | How: Displays character count and export status */
 .channel-meta-bar {
   display: flex;
   justify-content: space-between;
@@ -812,6 +1069,7 @@ button {
 }
 
 /* Status Badges */
+/* Where: Base status badge element | How: Inline-flex monospace pill */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -823,12 +1081,14 @@ button {
   font-weight: 500;
 }
 
+/* Where: Generating in-progress status | How: Pulsing primary emerald badge */
 .status-generating {
   background: var(--color-primary-subtle);
   color: var(--color-primary);
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Ready & Published campaign statuses | How: Solid emerald success badge */
 .status-published,
 .status-ready {
   background: var(--color-primary-subtle);
@@ -836,18 +1096,21 @@ button {
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Completed campaign status | How: Neutral gray badge */
 .status-completed {
   background: var(--color-surface-hover);
   color: var(--color-ink-muted);
   border: 1px solid var(--color-border);
 }
 
+/* Where: Archived campaign status | How: Muted neutral badge */
 .status-archived {
   background: var(--color-surface-hover);
   color: var(--color-ink-subtle);
   border: 1px solid var(--color-border);
 }
 
+/* Where: Failed campaign generation status | How: Red alert badge */
 .status-failed {
   background: var(--color-danger-subtle);
   color: var(--color-danger);
@@ -855,11 +1118,13 @@ button {
 }
 
 /* Dropdown Menu System */
+/* Where: Dropdown wrapper | How: Relative anchor for popup position */
 .dropdown-container {
   position: relative;
   display: inline-block;
 }
 
+/* Where: Floating dropdown menu flyout | How: Popover with elevation shadow and animation */
 .dropdown-menu {
   position: absolute;
   right: 0;
@@ -877,6 +1142,7 @@ button {
   animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Where: Dropdown entrance animation | How: Smooth fade and slide down */
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;
@@ -889,6 +1155,7 @@ button {
   }
 }
 
+/* Where: Individual option item inside dropdown menu | How: Clickable menu row */
 .dropdown-item {
   display: flex;
   align-items: center;
@@ -907,11 +1174,13 @@ button {
   transition: var(--motion-fast);
 }
 
+/* Where: Hover state for dropdown item | How: Highlights row background */
 .dropdown-item:hover {
   background: var(--color-surface-raised);
   color: var(--color-ink);
 }
 
+/* Where: Keyboard shortcut or category badge in dropdown item | How: Small monospace pill */
 .dropdown-item-badge {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -924,6 +1193,7 @@ button {
 }
 
 /* Content Composition & Hero Section */
+/* Where: Hero banner container on landing page | How: Centered text with generous vertical padding */
 .hero-section {
   padding: var(--space-8) var(--space-6) var(--space-7);
   max-width: var(--layout-page-max);
@@ -931,6 +1201,7 @@ button {
   text-align: center;
 }
 
+/* Where: Hero category eyebrow | How: Monospace uppercase primary tag */
 .hero-eyebrow {
   display: inline-block;
   font-size: var(--type-caption-size);
@@ -942,6 +1213,7 @@ button {
   margin-bottom: var(--space-3);
 }
 
+/* Where: Main hero headline | How: Large display serif typography */
 .hero-headline {
   font-family: var(--font-display);
   font-size: var(--type-display-xl-size);
@@ -954,6 +1226,7 @@ button {
   margin-right: auto;
 }
 
+/* Where: Hero descriptive paragraph | How: Comfortable reading width and leading */
 .hero-description {
   font-size: 17px;
   color: var(--color-ink-muted);
@@ -962,6 +1235,7 @@ button {
   margin: 0 auto var(--space-6);
 }
 
+/* Where: Hero button group | How: Centers primary and secondary action buttons */
 .hero-cta-group {
   display: flex;
   justify-content: center;
@@ -970,6 +1244,7 @@ button {
 }
 
 /* Modal Overlay */
+/* Where: Modal backdrop scrim | How: Fixed overlay with blur and dark scrim */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -982,6 +1257,7 @@ button {
   padding: var(--space-4);
 }
 
+/* Where: Modal card dialog box | How: Paper surface with overlay elevation shadow */
 .modal-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -992,6 +1268,7 @@ button {
   box-shadow: var(--shadow-overlay);
 }
 
+/* Where: Modal header row | How: Displays title and close trigger */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1001,6 +1278,7 @@ button {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Where: Modal dialog title | How: Display serif font */
 .modal-title {
   font-family: var(--font-display);
   font-size: var(--type-heading-size);
@@ -1011,6 +1289,7 @@ button {
    Bespoke App Dialog System
    ========================================================================== */
 
+/* Where: Dialog backdrop overlay | How: High z-index frosted glass overlay */
 .app-dialog-overlay {
   position: fixed;
   inset: 0;
@@ -1025,6 +1304,7 @@ button {
   animation: dialogBackdropFadeIn 180ms ease-out forwards;
 }
 
+/* Where: Dialog card container | How: Compact card with pop-in scale animation */
 .app-dialog-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -1038,6 +1318,7 @@ button {
   flex-direction: column;
 }
 
+/* Where: Dialog backdrop fade-in animation | How: Transitions opacity from 0 to 1 */
 @keyframes dialogBackdropFadeIn {
   from {
     opacity: 0;
@@ -1048,6 +1329,7 @@ button {
   }
 }
 
+/* Where: Dialog card scale-in animation | How: Scales up from 0.96 with slight translateY */
 @keyframes dialogCardPopIn {
   from {
     opacity: 0;
@@ -1060,6 +1342,7 @@ button {
   }
 }
 
+/* Where: Dialog header layout | How: Aligns dialog icon, eyebrow, and title */
 .app-dialog-header {
   display: flex;
   align-items: flex-start;
@@ -1068,6 +1351,7 @@ button {
   position: relative;
 }
 
+/* Where: Icon wrapper in dialog header | How: Fixed 40x40 box centering icon */
 .app-dialog-icon-wrapper {
   width: 40px;
   height: 40px;
@@ -1079,10 +1363,12 @@ button {
   flex-shrink: 0;
 }
 
+/* Where: Header text container in dialog | How: Flex column for eyebrow and title */
 .app-dialog-header-text {
   flex: 1;
 }
 
+/* Where: Category eyebrow in dialog header | How: Small uppercase monospace tag */
 .app-dialog-eyebrow {
   display: block;
   font-family: var(--font-mono);
@@ -1094,6 +1380,7 @@ button {
   margin-bottom: 2px;
 }
 
+/* Where: Dialog headline title | How: Display font with ink color */
 .app-dialog-title {
   font-family: var(--font-display);
   font-size: 19px;
@@ -1102,6 +1389,7 @@ button {
   line-height: 1.3;
 }
 
+/* Where: Close button (X) in dialog corner | How: Ghost icon button */
 .app-dialog-close-btn {
   background: none;
   border: none;
@@ -1115,25 +1403,30 @@ button {
   transition: color 150ms ease, background-color 150ms ease;
 }
 
+/* Where: Hover state for dialog close button | How: Highlights background */
 .app-dialog-close-btn:hover {
   color: var(--color-ink);
   background-color: var(--color-surface-raised);
 }
 
+/* Where: Dialog body text container | How: Spacing above action buttons */
 .app-dialog-body {
   margin-bottom: var(--space-6);
 }
 
+/* Where: Main descriptive message inside dialog | How: Body text with comfortable line-height */
 .app-dialog-message {
   font-size: 14px;
   line-height: 1.55;
   color: var(--color-ink-secondary, #4a4d48);
 }
 
+/* Where: Input group inside prompt dialogs | How: Top spacing for prompt inputs */
 .app-dialog-input-group {
   margin-top: var(--space-4);
 }
 
+/* Where: Text input inside dialog prompt | How: Styled text input with focus ring */
 .app-dialog-input {
   width: 100%;
   padding: 10px 14px;
@@ -1147,11 +1440,13 @@ button {
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
+/* Where: Focus state for dialog prompt input | How: Emerald focus outline ring */
 .app-dialog-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-primary-subtle);
 }
 
+/* Where: Footer action buttons container in dialog | How: Aligns cancel and confirm buttons right */
 .app-dialog-actions {
   display: flex;
   align-items: center;
@@ -1161,12 +1456,14 @@ button {
   border-top: 1px solid var(--color-border);
 }
 
+/* Where: Cancel button in dialog footer | How: Secondary button padding */
 .app-dialog-cancel-btn {
   padding: 8px 16px;
   font-size: 13.5px;
   font-weight: 500;
 }
 
+/* Where: Confirm / action button in dialog footer | How: Primary action button */
 .app-dialog-confirm-btn {
   padding: 8px 20px;
   font-size: 13.5px;
@@ -1174,6 +1471,7 @@ button {
 }
 
 /* Editorial Footer */
+/* Where: Global marketing footer container | How: Top border with generous padding */
 .editorial-footer {
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1181,6 +1479,7 @@ button {
   margin-top: auto;
 }
 
+/* Where: Footer content wrapper | How: Max width container with flex layout */
 .footer-container {
   max-width: var(--layout-page-max);
   margin: 0 auto;
@@ -1191,10 +1490,12 @@ button {
   flex-wrap: wrap;
 }
 
+/* Where: Brand block in footer | How: Wordmark and summary paragraph */
 .footer-brand {
   max-width: 420px;
 }
 
+/* Where: Multi-column link grid in footer | How: Grid layout for product, resources, and company links */
 .footer-top-grid {
   display: grid;
   grid-template-columns: minmax(280px, 1.2fr) repeat(4, minmax(140px, 1fr));
@@ -1203,12 +1504,16 @@ button {
   align-items: start;
 }
 
+/* Where: Responsive footer layout for tablet screens | How: Collapses to 2-column grid */
 @media (max-width: 1024px) {
+
+  /* Where: Footer column grid on tablets | How: 2-column layout */
   .footer-top-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-6);
   }
 
+  /* Where: Brand block in tablet footer | How: Spans full width */
   .footer-top-grid> :first-child {
     grid-column: 1 / -1;
     max-width: 100%;
@@ -1216,23 +1521,29 @@ button {
   }
 }
 
+/* Where: Responsive footer layout for mobile screens | How: Collapses to single column */
 @media (max-width: 640px) {
+
+  /* Where: Footer column grid on mobile | How: Single column layout */
   .footer-top-grid {
     grid-template-columns: 1fr;
     gap: var(--space-5);
   }
 
+  /* Where: Brand block in mobile footer | How: Resets column span */
   .footer-top-grid> :first-child {
     grid-column: auto;
     margin-bottom: 0;
   }
 }
 
+/* Where: Group of footer links | How: Horizontal flex with spacing */
 .footer-links-group {
   display: flex;
   gap: var(--space-8);
 }
 
+/* Where: Column title in footer link section | How: Uppercase monospace primary text */
 .footer-col-title {
   font-size: var(--type-caption-size);
   font-family: var(--font-mono);
@@ -1243,6 +1554,7 @@ button {
   margin-bottom: var(--space-3);
 }
 
+/* Where: Individual link in footer column | How: Clean text link with hover color shift */
 .footer-link {
   display: block;
   width: 100%;
@@ -1259,15 +1571,18 @@ button {
   text-decoration: none;
 }
 
+/* Where: Hover state for footer link | How: Darkens to ink color */
 .footer-link:hover {
   color: var(--color-ink);
 }
 
+/* Where: Non-clickable footer label | How: Default cursor */
 span.footer-link {
   cursor: default;
 }
 
 /* Workspace Responsive Grids */
+/* Where: 2-column workspace layout in Today view | How: Main action column + 380px insights rail */
 .workspace-grid-2col {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -1275,12 +1590,14 @@ span.footer-link {
   align-items: start;
 }
 
+/* Where: 2x2 proofs grid for campaign exports | How: Auto-fit responsive grid for 4 channels */
 .proofs-grid-2x2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: var(--space-5);
 }
 
+/* Where: Loading spinner animation | How: 360 degree continuous rotation */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -1291,38 +1608,50 @@ span.footer-link {
   }
 }
 
+/* Where: Spinner utility class | How: Applies continuous rotation */
 .spin-animate {
   animation: spin 1s linear infinite;
 }
 
+/* Where: Tablet responsive adjustment for workspace grid | How: Stacks 2-column workspace vertically */
 @media (max-width: 1024px) {
+
+  /* Where: 2-column grid on tablets | How: Stacks to 1-column */
   .workspace-grid-2col {
     grid-template-columns: 1fr;
   }
 
+  /* Where: Hero headline on tablets | How: Scales down font size */
   .hero-headline {
     font-size: 36px;
   }
 }
 
+/* Where: Mobile responsive adjustments for header and sidebar | How: Hides sidebar and wraps grids */
 @media (max-width: 768px) {
+
+  /* Where: Sidebar on mobile viewports | How: Hides sidebar rail */
   .sidebar {
     display: none;
   }
 
+  /* Where: Main content container on mobile | How: Reduces horizontal padding */
   .main-content {
     padding: var(--space-4) var(--space-3);
   }
 
+  /* Where: Proofs 2x2 grid on mobile | How: Collapses to single column */
   .proofs-grid-2x2 {
     grid-template-columns: 1fr;
   }
 
+  /* Where: Header container on mobile | How: Compact padding and gap */
   .header-container {
     padding: 0 var(--space-3);
     gap: var(--space-2);
   }
 
+  /* Where: Header navigation links on mobile | How: Horizontal scrollable strip */
   .header-nav-links {
     gap: 2px;
     overflow-x: auto;
@@ -1330,12 +1659,14 @@ span.footer-link {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Where: Nav item on mobile | How: Compact button size */
   .nav-item {
     padding: 6px 8px;
     font-size: 12px;
     white-space: nowrap;
   }
 
+  /* Where: Workspace switcher button on mobile | How: Compact size */
   .workspace-switcher button {
     padding: 4px 8px !important;
     font-size: 12.5px !important;
@@ -1343,8 +1674,10 @@ span.footer-link {
 }
 
 /* Printable Poster Optimization */
+/* Where: In-Store Poster preview when triggered for physical printing | How: Strips header, sidebars, and backgrounds for clean print output */
 @media print {
 
+  /* Where: Screen-only chrome elements during print | How: Completely hides non-printable elements */
   .main-header,
   .sidebar,
   .editorial-footer,
@@ -1355,6 +1688,7 @@ span.footer-link {
     display: none !important;
   }
 
+  /* Where: Root print canvas | How: Pure white background with zero margin */
   body,
   .workspace-layout,
   .main-content {
@@ -1364,6 +1698,7 @@ span.footer-link {
     margin: 0 !important;
   }
 
+  /* Where: Poster channel card during print | How: Removes borders and shadows */
   .channel-card {
     border: none !important;
     box-shadow: none !important;
@@ -1377,6 +1712,7 @@ span.footer-link {
 /* ==========================================================================
    AUTHENTICATION & ONBOARDING SYSTEM (FULL-PAGE SCENE ARCHITECTURE)
    ========================================================================== */
+/* Where: Full viewport container for auth pages | How: Locks screen height with background wallpaper */
 .auth-full-viewport {
   height: 100vh;
   max-height: 100vh;
@@ -1391,6 +1727,7 @@ span.footer-link {
   flex-direction: column;
 }
 
+/* Where: Gradient backdrop overlay behind auth cards | How: Enhances text readability over photo */
 .auth-backdrop-overlay {
   position: absolute;
   inset: 0;
@@ -1403,6 +1740,7 @@ span.footer-link {
   z-index: 1;
 }
 
+/* Where: Content container in auth page | How: Centered flex layout holding header and form grid */
 .auth-content-container {
   position: relative;
   z-index: 10;
@@ -1417,6 +1755,7 @@ span.footer-link {
   justify-content: space-between;
 }
 
+/* Where: Header row on auth page | How: Displays brand badge and back button */
 .auth-header {
   display: flex;
   justify-content: space-between;
@@ -1426,6 +1765,7 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Brand badge in auth header | How: Frosted glass pill with logo */
 .auth-brand-badge {
   display: flex;
   align-items: center;
@@ -1441,6 +1781,7 @@ span.footer-link {
   box-shadow: 0 4px 16px rgba(15, 30, 22, 0.06);
 }
 
+/* Where: Logo icon badge in auth header | How: Emerald square containing logo */
 .auth-logo-badge {
   width: 40px;
   height: 40px;
@@ -1454,6 +1795,7 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Brand title in auth header | How: Display font with bold weight */
 .auth-logo-title {
   font-family: var(--font-display, 'Playfair Display', Georgia, serif);
   font-size: 19px;
@@ -1463,6 +1805,7 @@ span.footer-link {
   line-height: 1.1;
 }
 
+/* Where: Subtitle in auth brand badge | How: Monospace uppercase label */
 .auth-logo-subtitle {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1473,6 +1816,7 @@ span.footer-link {
   margin-top: 2px;
 }
 
+/* Where: Back button in auth header | How: Glassmorphic pill button */
 .auth-back-btn {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
@@ -1491,12 +1835,14 @@ span.footer-link {
   box-shadow: 0 4px 16px rgba(15, 30, 22, 0.06);
 }
 
+/* Where: Hover state for auth back button | How: Increases elevation and lightens background */
 .auth-back-btn:hover {
   background: #FFFFFF;
   color: #0E2419;
   box-shadow: 0 6px 20px rgba(15, 30, 22, 0.12);
 }
 
+/* Where: 2-column main grid on auth page | How: Left side value props + right side form card */
 .auth-main-grid {
   display: grid;
   grid-template-columns: 1.15fr 1fr;
@@ -1509,6 +1855,7 @@ span.footer-link {
 /* ==========================================================================
    UNIFIED ONBOARDING CONSOLE
    ========================================================================== */
+/* Where: Full viewport container for unified setup console | How: Centered layout with background image */
 .setup-unified-viewport {
   min-height: 100vh;
   width: 100vw;
@@ -1524,6 +1871,7 @@ span.footer-link {
   box-sizing: border-box;
 }
 
+/* Where: Unified onboarding console card | How: 2-column rounded console container with elevation shadow */
 .setup-unified-console {
   display: grid;
   grid-template-columns: 330px 1fr;
@@ -1539,6 +1887,7 @@ span.footer-link {
   z-index: 10;
 }
 
+/* Where: Left sidebar in unified setup console | How: Gradient sidebar with step list */
 .setup-console-sidebar {
   background: linear-gradient(180deg, #F6F9F7 0%, #EDF3EF 100%);
   border-right: 1px solid rgba(0, 0, 0, 0.07);
@@ -1549,6 +1898,7 @@ span.footer-link {
   box-sizing: border-box;
 }
 
+/* Where: Right canvas in unified setup console | How: White container holding form inputs */
 .setup-console-canvas {
   padding: 36px 40px;
   display: flex;
@@ -1558,6 +1908,7 @@ span.footer-link {
   box-sizing: border-box;
 }
 
+/* Where: Header row inside setup canvas | How: Aligns title and exit button */
 .setup-canvas-header {
   display: flex;
   justify-content: space-between;
@@ -1566,6 +1917,7 @@ span.footer-link {
   gap: 16px;
 }
 
+/* Where: Exit pill button in setup header | How: Gray rounded secondary pill */
 .setup-exit-pill {
   display: inline-flex;
   align-items: center;
@@ -1582,29 +1934,36 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Hover state for setup exit pill | How: Darkens background and text */
 .setup-exit-pill:hover {
   background: #E5E7EB;
   color: #111827;
 }
 
+/* Where: Mobile responsive setup console | How: Collapses to single column */
 @media (max-width: 900px) {
+
+  /* Where: Setup console container on mobile | How: Single column grid */
   .setup-unified-console {
     grid-template-columns: 1fr;
     max-width: 540px;
     min-height: auto;
   }
 
+  /* Where: Setup sidebar rail on mobile | How: Bottom border divider */
   .setup-console-sidebar {
     border-right: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.07);
     padding: 28px 24px;
   }
 
+  /* Where: Setup canvas stage on mobile | How: Compact padding */
   .setup-console-canvas {
     padding: 28px 24px;
   }
 }
 
+/* Where: Large hero headline on auth page | How: Serif typography with shadow */
 .auth-hero-title {
   font-family: 'Playfair Display', 'DM Serif Display', Georgia, serif;
   font-size: 40px;
@@ -1616,12 +1975,14 @@ span.footer-link {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
+/* Where: Italic accent in auth hero title | How: Elegant serif italic */
 .auth-hero-italic {
   font-style: italic;
   font-weight: 400;
   color: #0E2419;
 }
 
+/* Where: Explanatory subtitle in auth hero | How: Semibold text with high contrast */
 .auth-hero-subtitle {
   font-size: 14.5px;
   line-height: 1.5;
@@ -1632,6 +1993,7 @@ span.footer-link {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
+/* Where: Value proposition list on auth page | How: Vertical stack of feature benefit cards */
 .auth-value-props {
   display: flex;
   flex-direction: column;
@@ -1639,6 +2001,7 @@ span.footer-link {
   max-width: 480px;
 }
 
+/* Where: Individual feature benefit card | How: Glassmorphic tile with icon, title, and description */
 .auth-value-item,
 .auth-value-prop-item {
   display: flex;
@@ -1654,6 +2017,7 @@ span.footer-link {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
+/* Where: Hover state for value prop card | How: Lifts card up 1px with enhanced shadow */
 .auth-value-item:hover,
 .auth-value-prop-item:hover {
   background: rgba(255, 255, 255, 0.96);
@@ -1661,6 +2025,7 @@ span.footer-link {
   transform: translateY(-1px);
 }
 
+/* Where: Icon box inside value prop card | How: Emerald square centering benefit icon */
 .auth-value-icon {
   width: 36px;
   height: 36px;
@@ -1675,6 +2040,7 @@ span.footer-link {
   margin-top: 1px;
 }
 
+/* Where: Title inside value prop card | How: Bold ink typography */
 .auth-value-title {
   font-size: 13.5px;
   font-weight: 700;
@@ -1683,6 +2049,7 @@ span.footer-link {
   letter-spacing: -0.01em;
 }
 
+/* Where: Description text inside value prop card | How: Muted body text */
 .auth-value-desc {
   font-size: 12px;
   color: #31493C;
@@ -1690,6 +2057,7 @@ span.footer-link {
   font-weight: 450;
 }
 
+/* Where: Right column holding sign in/sign up form | How: Centers card container */
 .auth-card-col {
   display: flex;
   flex-direction: column;
@@ -1697,6 +2065,7 @@ span.footer-link {
   justify-content: center;
 }
 
+/* Where: Main white form card for login/registration | How: Structured card with shadow and border */
 .auth-card {
   background: #FFFFFF;
   border-radius: 12px;
@@ -1708,6 +2077,7 @@ span.footer-link {
   box-sizing: border-box;
 }
 
+/* Where: Headline title in auth form card | How: Display serif typography */
 .auth-card-title {
   font-family: 'Playfair Display', 'DM Serif Display', Georgia, serif;
   font-size: 26px;
@@ -1717,12 +2087,14 @@ span.footer-link {
   letter-spacing: -0.3px;
 }
 
+/* Where: Subtitle in auth form card | How: Muted gray body text */
 .auth-card-subtitle {
   font-size: 13.5px;
   color: #6B7280;
   margin: 0 0 24px;
 }
 
+/* Where: Form error notification box | How: Red alert banner */
 .auth-error-alert {
   padding: 9px 12px;
   background: #FDF2F2;
@@ -1734,10 +2106,12 @@ span.footer-link {
   margin-bottom: 14px;
 }
 
+/* Where: Field wrapper inside auth form | How: Bottom spacing between inputs */
 .auth-form-field {
   margin-bottom: 16px;
 }
 
+/* Where: Label for auth form field | How: Bold caption label */
 .auth-form-label {
   display: block;
   font-size: 12px;
@@ -1746,12 +2120,14 @@ span.footer-link {
   margin-bottom: 4px;
 }
 
+/* Where: Input container wrapper | How: Relative positioning for prepended/appended icons */
 .auth-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
+/* Where: Prepended icon inside input | How: Absolute positioned left icon */
 .auth-input-icon {
   position: absolute;
   left: 12px;
@@ -1759,6 +2135,7 @@ span.footer-link {
   color: #9CA3AF;
 }
 
+/* Where: Show/Hide password toggle button | How: Absolute positioned right icon button */
 .auth-input-password-toggle,
 .auth-password-toggle {
   position: absolute;
@@ -1779,11 +2156,13 @@ span.footer-link {
   z-index: 2;
 }
 
+/* Where: Hover state for password toggle | How: Darkens icon */
 .auth-input-password-toggle:hover,
 .auth-password-toggle:hover {
   color: #4B5563;
 }
 
+/* Where: Auth text inputs (Email, Password, Name) | How: Rounded input box with border and focus ring */
 .auth-input {
   width: 100%;
   padding: 9.5px 12px 9.5px 36px;
@@ -1797,15 +2176,18 @@ span.footer-link {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Where: Focus state for auth input | How: Emerald focus border and ring */
 .auth-input:focus {
   border-color: #234937;
   box-shadow: 0 0 0 2px rgba(35, 73, 55, 0.15);
 }
 
+/* Where: Password input padding adjustment | How: Leaves right space for eye toggle */
 .auth-input-password {
   padding-right: 38px;
 }
 
+/* Where: Remember me & forgot password row | How: Justified flex row */
 .auth-options-row {
   display: flex;
   justify-content: space-between;
@@ -1814,6 +2196,7 @@ span.footer-link {
   font-size: 12.5px;
 }
 
+/* Where: Checkbox label in auth options | How: Aligns custom checkbox with label */
 .auth-checkbox-label {
   display: flex;
   align-items: center;
@@ -1823,6 +2206,7 @@ span.footer-link {
   user-select: none;
 }
 
+/* Where: Checkbox input | How: Sets primary accent color */
 .auth-checkbox-input {
   accent-color: #234937;
   width: 14px;
@@ -1830,6 +2214,7 @@ span.footer-link {
   cursor: pointer;
 }
 
+/* Where: Forgot password link | How: Underlined link */
 .auth-forgot-link {
   background: none;
   border: none;
@@ -1841,6 +2226,7 @@ span.footer-link {
   font-size: 12.5px;
 }
 
+/* Where: Submit button in auth form | How: Full-width dark emerald action button */
 .auth-submit-btn {
   width: 100%;
   background: #1D3E2F;
@@ -1859,16 +2245,19 @@ span.footer-link {
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
+/* Where: Hover state for auth submit button | How: Darkens background */
 .auth-submit-btn:hover {
   background: #163024;
 }
 
+/* Where: "OR" separator between password and SSO options | How: Centered line divider */
 .auth-or-divider {
   position: relative;
   text-align: center;
   margin: 18px 0;
 }
 
+/* Where: Horizontal line in OR separator | How: Absolute hairline divider */
 .auth-or-line {
   position: absolute;
   top: 50%;
@@ -1878,6 +2267,7 @@ span.footer-link {
   background: #E5E7EB;
 }
 
+/* Where: Text badge in OR separator | How: White background pill covering line */
 .auth-or-pill {
   position: relative;
   background: #FFFFFF;
@@ -1886,6 +2276,7 @@ span.footer-link {
   color: #9CA3AF;
 }
 
+/* Where: Google sign in button | How: Dashed border OAuth button */
 .auth-google-btn {
   width: 100%;
   background: transparent;
@@ -1903,12 +2294,14 @@ span.footer-link {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* Where: Hover state for Google sign in button | How: Solid border and light surface */
 .auth-google-btn:hover {
   background: #F9FAFB;
   color: #6B7280;
   border-style: solid;
 }
 
+/* Where: Switch between sign in and sign up | How: Centered footer text */
 .auth-switch-text {
   margin-top: 20px;
   text-align: center;
@@ -1916,6 +2309,7 @@ span.footer-link {
   color: #6B7280;
 }
 
+/* Where: Link to switch auth mode | How: Underlined emerald link */
 .auth-switch-link {
   background: none;
   border: none;
@@ -1927,6 +2321,7 @@ span.footer-link {
   font-size: 12.5px;
 }
 
+/* Where: Security encryption footnote | How: Centered footnote with lock icon */
 .auth-security-badge {
   display: flex;
   align-items: center;
@@ -1937,8 +2332,7 @@ span.footer-link {
   color: #4A5B52;
 }
 
-
-
+/* Where: Step progress item in multi-step onboarding | How: Glassmorphic pill */
 .auth-step-pill {
   display: flex;
   gap: 14px;
@@ -1953,18 +2347,21 @@ span.footer-link {
   transition: all var(--motion-fast);
 }
 
+/* Where: Hover state for step progress item | How: Lifts up slightly */
 .auth-step-pill:hover {
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 6px 22px rgba(15, 30, 22, 0.12);
   transform: translateY(-1px);
 }
 
+/* Where: Active step progress item | How: Primary border highlight */
 .auth-step-pill.active {
   background: #FFFFFF;
   border: 1.5px solid var(--color-primary, #1A3E2D);
   box-shadow: 0 8px 26px rgba(15, 30, 22, 0.14);
 }
 
+/* Where: Step number circle inside step pill | How: Circular badge */
 .auth-step-num {
   width: 28px;
   height: 28px;
@@ -1979,17 +2376,20 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Active step number circle | How: Emerald fill with border */
 .auth-step-num.active {
   background: var(--color-primary-subtle, #E4ECE6);
   color: var(--color-primary, #1A3E2D);
   border: 1px solid var(--color-primary-border, #A7C4B0);
 }
 
+/* Where: Completed step number circle | How: Solid emerald fill with white text */
 .auth-step-num.done {
   background: var(--color-primary, #1A3E2D);
   color: #FFFFFF;
 }
 
+/* Where: Dot indicator inside step pill | How: Small circular emerald dot */
 .auth-step-dot {
   width: 8px;
   height: 8px;
@@ -2001,7 +2401,10 @@ span.footer-link {
 /* ==========================================================================
    RESPONSIVE AUTH SYSTEM (Hide matter on small viewports)
    ========================================================================== */
+/* Where: Responsive auth adjustments for tablets and phones | How: Collapses 2-column grid and scrolls vertically */
 @media (max-width: 960px) {
+
+  /* Where: Auth viewport on mobile | How: Auto height with vertical scroll */
   .auth-full-viewport {
     height: auto;
     min-height: 100vh;
@@ -2010,6 +2413,7 @@ span.footer-link {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Where: Auth container on mobile | How: Flex column with top alignment */
   .auth-content-container {
     height: auto;
     min-height: 100vh;
@@ -2018,6 +2422,7 @@ span.footer-link {
     gap: 24px;
   }
 
+  /* Where: Auth main grid on mobile | How: Centered flex column */
   .auth-main-grid {
     display: flex;
     flex-direction: column;
@@ -2032,12 +2437,14 @@ span.footer-link {
     display: none !important;
   }
 
+  /* Where: Card column in responsive auth view | How: Full width column */
   .auth-card-col {
     width: 100%;
     max-width: 440px;
     margin: 0 auto;
   }
 
+  /* Where: Form card in responsive auth view | How: Reduces padding on mobile */
   .auth-card {
     max-width: 100%;
     padding: 32px 28px 28px;
@@ -2045,50 +2452,62 @@ span.footer-link {
   }
 }
 
+/* Where: Extra-small mobile responsive adjustments | How: Reduces paddings and font sizes */
 @media (max-width: 480px) {
+
+  /* Where: Auth content container on phone screens | How: Compact padding */
   .auth-content-container {
     padding: 16px 16px 24px;
     gap: 18px;
   }
 
+  /* Where: Auth header bar on phone screens | How: 40px height */
   .auth-header {
     height: 40px;
   }
 
+  /* Where: Auth brand badge on phones | How: Compact badge */
   .auth-brand-badge {
     padding: 4px 10px 4px 6px;
     gap: 8px;
   }
 
+  /* Where: Auth logo icon on phones | How: 32x32 icon */
   .auth-logo-badge {
     width: 32px;
     height: 32px;
     border-radius: 7px;
   }
 
+  /* Where: Auth logo title on phones | How: 15px font size */
   .auth-logo-title {
     font-size: 15px;
   }
 
+  /* Where: Auth logo subtitle on phones | How: 8.5px font size */
   .auth-logo-subtitle {
     font-size: 8.5px;
   }
 
+  /* Where: Auth back button on phones | How: Compact button size */
   .auth-back-btn {
     font-size: 12px;
     padding: 5px 10px;
   }
 
+  /* Where: Auth card on phone screens | How: Compact padding */
   .auth-card {
     padding: 24px 18px 22px;
     border-radius: 8px;
   }
 
+  /* Where: Auth card title on phone screens | How: 22px headline */
   .auth-card-title {
     font-size: 22px;
   }
 }
 
+/* Where: Loading rotation animation | How: 360-degree keyframe rotation */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -2099,6 +2518,7 @@ span.footer-link {
   }
 }
 
+/* Where: General loading spinner class | How: Applies continuous rotation */
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -2107,20 +2527,22 @@ span.footer-link {
    STREETCRAFT AI — OPERATOR ACCOUNT WORKSPACE (A-CLASS EDITORIAL CONSOLE)
    ========================================================================== */
 
+/* Where: Settings workspace CSS variables | How: Defines rail widths, paddings, and border radiuses */
 :root {
-  --account-rail-width: 220px;
-  --account-pane-radius: 20px;
+  --account-rail-width: 320px;
+  --account-pane-radius: 25px;
   --account-pane-padding: clamp(24px, 3vw, 44px);
   --account-section-gap: clamp(20px, 3vw, 36px);
   --account-field-gap: 20px;
   --account-border-radius: 12px;
 }
 
+/* Where: Outer viewport-fitted container for settings | How: Connects flush with top header and device left border */
 .account-workspace-container {
   max-width: 100%;
   width: 100%;
   margin: 0;
-  padding: 16px var(--space-gutter) 20px;
+  padding: 0;
   height: calc(100vh - 72px);
   max-height: calc(100vh - 72px);
   overflow: hidden;
@@ -2129,26 +2551,42 @@ span.footer-link {
   flex-direction: column;
 }
 
+/* Where: 2-column layout grid for settings console | How: 320px sidebar flush on left + stage card on right */
 .account-workspace-grid {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: clamp(20px, 2.5vw, 36px);
+  grid-template-columns: var(--account-rail-width, 320px) 1fr;
+  gap: 20px;
   align-items: stretch;
   width: 100%;
   height: 100%;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Compact Sleek Sidebar */
+/* Where: Left-hand navigation sidebar rail | How: Connects flush with header top and device left, with rounded right corners */
 .account-rail {
   display: flex;
   flex-direction: column;
-  padding: 4px 0;
+  padding: 28px 22px;
   width: 100%;
+  height: 99%;
+  max-height: 99%;
+  background: #FFFFFF;
+  border-right: 1px solid var(--color-border);
+  border-left: none;
+  border-top-right-radius: 36px;
+  border-bottom-right-radius: 36px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  box-shadow: 2px 0 16px rgba(15, 30, 22, 0.03);
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
+/* Where: Category label in left sidebar rail | How: Monospace uppercase subtitle */
 .account-rail-section-label {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -2156,15 +2594,17 @@ span.footer-link {
   color: var(--color-ink-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 4px 10px 10px;
+  padding: 4px 8px 10px;
 }
 
+/* Where: Navigation link stack in sidebar | How: Vertical flex list */
 .account-rail-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+/* Where: Navigation item link in settings sidebar | How: Interactive tab with icon and title */
 .account-rail-item {
   display: flex;
   align-items: center;
@@ -2181,17 +2621,20 @@ span.footer-link {
   width: 100%;
 }
 
+/* Where: Hover state for sidebar item | How: Light surface hover tint */
 .account-rail-item:hover {
   color: var(--color-ink);
   background: var(--color-surface-hover);
 }
 
+/* Where: Active selected tab in sidebar | How: Emerald tint with bold weight */
 .account-rail-item.active {
   color: var(--color-primary);
   background: rgba(23, 107, 77, 0.08);
   font-weight: 600;
 }
 
+/* Where: Icon wrapper inside sidebar item | How: Centers icon and prevents shrinking */
 .account-rail-item-icon-wrapper {
   color: inherit;
   display: flex;
@@ -2200,12 +2643,14 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Title label in sidebar item | How: Inherits active color */
 .account-rail-item-title {
   color: inherit;
   line-height: 1.3;
 }
 
 /* Storefront Configuration Progress */
+/* Where: Storefront progress card in sidebar | How: Displays onboarding track and percent */
 .account-progress-card {
   width: 100%;
   margin-top: 14px;
@@ -2219,12 +2664,14 @@ span.footer-link {
   box-sizing: border-box;
 }
 
+/* Where: Header inside progress card | How: Justified row with label and percent */
 .account-progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* Where: Label in progress header | How: Monospace uppercase caption */
 .account-progress-label {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -2234,6 +2681,7 @@ span.footer-link {
   text-transform: uppercase;
 }
 
+/* Where: Percentage text in progress header | How: Bold emerald monospace text */
 .account-progress-pct {
   font-size: 12px;
   font-family: var(--font-mono);
@@ -2241,6 +2689,7 @@ span.footer-link {
   color: var(--color-primary);
 }
 
+/* Where: Progress track background | How: Gray rounded track */
 .account-progress-track {
   width: 100%;
   height: 6px;
@@ -2249,6 +2698,7 @@ span.footer-link {
   overflow: hidden;
 }
 
+/* Where: Progress fill bar | How: Emerald animated progress fill */
 .account-progress-fill {
   height: 100%;
   background: var(--color-primary);
@@ -2256,12 +2706,14 @@ span.footer-link {
   transition: width 0.3s ease;
 }
 
+/* Where: Progress status message | How: Muted footnote */
 .account-progress-status-text {
   font-size: 11.5px;
   color: var(--color-ink-muted);
   line-height: 1.35;
 }
 
+/* Where: Complete badge in progress card | How: Emerald pill badge */
 .account-progress-complete-badge {
   display: inline-flex;
   align-items: center;
@@ -2278,6 +2730,7 @@ span.footer-link {
   text-transform: uppercase;
 }
 
+/* Where: Header storefront progress pill | How: Compact status pill */
 .header-store-progress-pill {
   display: inline-flex;
   align-items: center;
@@ -2294,22 +2747,25 @@ span.footer-link {
 
 /* Right Workspace (Fixed Clean Fit Control Surface) */
 /* Right Workspace (Anchored Sticky White Card) */
+/* Where: Main right settings stage container | How: White control surface card with border and subtle shadow */
 .account-stage-workspace {
   min-width: 0;
-  height: 100%;
-  max-height: 100%;
+  height: calc(100% - 32px);
+  max-height: calc(100% - 32px);
   overflow: hidden;
   background: #FFFFFF;
   border: 1px solid var(--color-border);
-  border-radius: var(--account-pane-radius, 20px);
+  border-radius: var(--account-pane-radius, 25px);
   box-shadow: 0 4px 24px rgba(15, 30, 22, 0.04);
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  margin: 16px 20px 16px 0;
 }
 
 /* ONLY the content inside the right pane moves / scrolls */
+/* Where: Scrollable stage content | How: Internal-only scroll container with smooth fade-in */
 .account-stage-content {
   flex: 1;
   min-height: 0;
@@ -2321,22 +2777,26 @@ span.footer-link {
   animation: accountContentFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Where: Slim scrollbar track and thumb for settings content | How: Custom 5px scrollbar */
 .account-stage-content::-webkit-scrollbar,
 .account-pane-fields::-webkit-scrollbar {
   width: 5px;
 }
 
+/* Where: Scrollbar track background for account content and pane fields | How: Transparent track */
 .account-stage-content::-webkit-scrollbar-track,
 .account-pane-fields::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* Where: Scrollbar thumb handle for account content and pane fields | How: Muted gray pill */
 .account-stage-content::-webkit-scrollbar-thumb,
 .account-pane-fields::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
 }
 
+/* Where: Hover state for scrollbar thumb | How: Darkens gray pill */
 .account-stage-content::-webkit-scrollbar-thumb:hover,
 .account-pane-fields::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.24);
@@ -2354,10 +2814,12 @@ span.footer-link {
   }
 }
 
+/* Where: Header container for account settings view | How: Spacing below header */
 .account-workspace-header {
   margin-bottom: 20px;
 }
 
+/* Where: Eyebrow label in settings header | How: Small uppercase monospace tag */
 .account-workspace-eyebrow {
   font-size: 10.5px;
   font-family: var(--font-mono);
@@ -2368,6 +2830,7 @@ span.footer-link {
   margin-bottom: 6px;
 }
 
+/* Where: Title row container in settings header | How: Flex row aligning title with verified badge */
 .account-workspace-title-row {
   display: flex;
   justify-content: space-between;
@@ -2376,6 +2839,7 @@ span.footer-link {
   gap: 16px;
 }
 
+/* Where: Large title heading in settings header | How: Serif display typography */
 .account-workspace-title {
   font-family: var(--font-display);
   font-size: clamp(32px, 3.5vw, 44px);
@@ -2386,6 +2850,7 @@ span.footer-link {
   letter-spacing: -0.03em;
 }
 
+/* Where: Verified account pill chip in settings header | How: Emerald status chip with checkmark */
 .account-workspace-verified-chip {
   display: inline-flex;
   align-items: center;
@@ -2401,11 +2866,13 @@ span.footer-link {
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Subtitle in settings header | How: Muted gray body text */
 .account-workspace-subtitle {
   font-size: 13.5px;
   color: var(--color-ink-muted);
 }
 
+/* Where: Divider line below settings header | How: Hairline border separator */
 .account-workspace-divider {
   height: 1px;
   background: var(--color-border);
@@ -2413,6 +2880,7 @@ span.footer-link {
   margin-top: 18px;
 }
 
+/* Where: Main settings pane container | How: Full-height flexbox container */
 .account-pane {
   display: flex;
   flex-direction: column;
@@ -2422,11 +2890,13 @@ span.footer-link {
   flex: 1;
 }
 
+/* Where: Fixed header area of settings pane | How: Header section above scrollable field rows */
 .account-pane-header {
   flex-shrink: 0;
   margin-bottom: 16px;
 }
 
+/* Where: Scrollable list of settings fields | How: Vertical scroll container with custom scrollbar */
 .account-pane-fields {
   display: flex;
   flex-direction: column;
@@ -2438,6 +2908,7 @@ span.footer-link {
   padding-right: 6px;
 }
 
+/* Where: Meta section header label in field lists | How: Monospace uppercase label */
 .account-field-meta-label {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -2449,6 +2920,7 @@ span.footer-link {
 }
 
 /* Avatar & Store Photo Manager (Canva Style) */
+/* Where: Avatar manager row container | How: Justified row aligning avatar preview and actions */
 .account-avatar-manager-row {
   display: flex;
   justify-content: space-between;
@@ -2457,12 +2929,14 @@ span.footer-link {
   width: 100%;
 }
 
+/* Where: Left group in avatar manager | How: Aligns circular avatar with label */
 .account-avatar-left-group {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
+/* Where: Interactive circular avatar button | How: 64x64 circle with hover zoom and overlay */
 .account-avatar-interactive-trigger {
   position: relative;
   width: 64px;
@@ -2482,22 +2956,26 @@ span.footer-link {
   transition: transform 0.15s ease;
 }
 
+/* Where: Hover state for avatar trigger | How: Scales up 1.02 */
 .account-avatar-interactive-trigger:hover {
   transform: scale(1.02);
 }
 
+/* Where: Image preview inside avatar button | How: Fills circular container with object-fit cover */
 .account-avatar-preview-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* Where: Text initials fallback inside avatar button | How: Large serif display initial */
 .account-avatar-preview-fallback {
   font-size: 26px;
   font-weight: 600;
   font-family: var(--font-display);
 }
 
+/* Where: Hover overlay on avatar button | How: Dark frosted glass overlay showing edit icon */
 .account-avatar-hover-overlay {
   position: absolute;
   inset: 0;
@@ -2513,10 +2991,12 @@ span.footer-link {
   transition: opacity 0.18s ease;
 }
 
+/* Where: Hover state showing overlay on avatar button | How: Opacity 1 transition */
 .account-avatar-interactive-trigger:hover .account-avatar-hover-overlay {
   opacity: 1;
 }
 
+/* Where: Title label next to avatar | How: Semibold ink text */
 .account-avatar-meta-title {
   font-size: 16px;
   font-weight: 700;
@@ -2524,12 +3004,14 @@ span.footer-link {
   letter-spacing: -0.01em;
 }
 
+/* Where: Action buttons on right of avatar row | How: Horizontal flex list */
 .account-avatar-right-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
+/* Where: Text action button for avatar (Change / Remove) | How: Clean borderless text button */
 .account-avatar-text-action {
   background: transparent;
   border: none;
@@ -2541,40 +3023,277 @@ span.footer-link {
   transition: color 0.15s ease;
 }
 
+/* Where: Hover state for avatar remove action | How: Turns danger red */
 .account-avatar-text-action:hover:not(:disabled) {
   color: var(--color-danger, #ef4444);
 }
 
+/* Where: Hidden file input for avatar upload | How: Display none */
 .account-avatar-hidden-input {
   display: none;
 }
 
+/* Where: Base settings field row | How: Clean divided row with bottom border separator */
 .account-field-row {
   position: relative;
-  padding: 13px 12px;
-  margin: 0 -12px;
-  border-radius: 8px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  transition: background 0.15s ease;
+  box-sizing: border-box;
+}
+
+/* Where: Clickable interactive field row | How: Pointer cursor for clickable row */
+.account-field-row.interactive {
   cursor: pointer;
 }
 
-.account-field-row:hover:not(.locked) {
-  background: var(--color-surface-hover, rgba(23, 107, 77, 0.03));
+/* Where: Hover state for interactive field row | How: Preserves clean white background */
+.account-field-row.interactive:hover {
+  background: transparent;
 }
 
-.account-field-row.locked {
-  cursor: default;
-}
-
+/* Where: Last field row in list | How: Removes bottom border */
 .account-field-row:last-child {
   border-bottom: none;
 }
 
+/* Where: Inline direct custom select container | How: Relative positioning for absolute floating menu */
+.account-custom-select-container {
+  position: relative;
+  display: inline-flex;
+  margin-top: 4px;
+}
+
+/* Where: Trigger button for custom select dropdown | How: Pill button with subtle border and shadow */
+.account-custom-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+  min-width: 260px;
+  max-width: 100%;
+  text-align: left;
+}
+
+/* Where: Hover state for custom select trigger | How: Subtle surface hover and border darkening */
+.account-custom-select-trigger:hover:not(:disabled) {
+  background: var(--color-surface-hover, #F9FAFB);
+  border-color: #D1D5DB;
+}
+
+/* Where: Focus state for custom select trigger | How: Emerald focus ring */
+.account-custom-select-trigger:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(23, 107, 77, 0.12);
+  outline: none;
+}
+
+/* Where: Chevron indicator in custom select trigger | How: Smooth rotation on open */
+.custom-select-chevron {
+  color: var(--color-ink-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* Where: Open state for custom select chevron | How: 180-degree rotation */
+.custom-select-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Where: Floating menu for custom select | How: Elevated card with smooth fade-in and smart positioning */
+.account-custom-select-menu {
+  position: absolute;
+  min-width: 280px;
+  max-width: 420px;
+  width: max-content;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.05);
+  z-index: 200;
+  padding: 6px;
+  box-sizing: border-box;
+  animation: accountContentFade 0.15s ease;
+}
+
+/* Where: Bottom-placed floating menu | How: Positions dropdown downwards below trigger */
+.account-custom-select-menu.placement-bottom {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+/* Where: Top-placed floating menu | How: Positions dropdown upwards above trigger */
+.account-custom-select-menu.placement-top {
+  bottom: calc(100% + 6px);
+  top: auto;
+}
+
+/* Where: Left-aligned floating menu | How: Aligns left edge to trigger */
+.account-custom-select-menu.align-left {
+  left: 0;
+  right: auto;
+}
+
+/* Where: Right-aligned floating menu | How: Aligns right edge to trigger */
+.account-custom-select-menu.align-right {
+  right: 0;
+  left: auto;
+}
+
+/* Where: Scrollable list of options in custom select | How: Vertical scroll with slim modern scrollbar */
+.account-custom-select-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+
+/* Where: Scrollbar width for WebKit browsers | How: 5px slim track */
+.account-custom-select-options::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Where: Scrollbar track for WebKit browsers | How: Transparent track */
+.account-custom-select-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Where: Scrollbar thumb for WebKit browsers | How: Soft gray rounded pill */
+.account-custom-select-options::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+/* Where: Hover state for scrollbar thumb | How: Darker gray on hover */
+.account-custom-select-options::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Where: Individual selectable item in custom select menu | How: Clean row with label and checkmark */
+.account-custom-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+/* Where: Hover state for option item | How: Branded emerald surface highlight on hover */
+.account-custom-select-item:hover {
+  background: var(--color-primary-subtle, #E8F5EE);
+  color: var(--color-primary, #176B4D);
+}
+
+/* Where: Selected option item in custom select menu | How: Emerald tint with bold font */
+.account-custom-select-item.selected {
+  background: rgba(23, 107, 77, 0.12);
+  color: var(--color-primary, #176B4D);
+  font-weight: 600;
+}
+
+/* Where: Label text inside custom select item | How: Handles long category text */
+.account-custom-select-item-label {
+  flex: 1;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+/* Where: Search input container inside custom select dropdown | How: Padded header with search icon */
+.account-custom-select-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--color-surface-raised, #F9FAFB);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+/* Where: Search text field inside custom select dropdown | How: Borderless clean text input */
+.account-custom-select-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--color-ink);
+  outline: none;
+  font-family: inherit;
+}
+
+/* Where: Placeholder for search text field | How: Muted gray typography */
+.account-custom-select-search-input::placeholder {
+  color: var(--color-ink-muted);
+}
+
+/* Where: Keyboard-highlighted option item in custom select | How: Branded emerald highlight for arrow key navigation */
+.account-custom-select-item.highlighted {
+  background: var(--color-primary-subtle, #E8F5EE);
+  color: var(--color-primary, #176B4D);
+  outline: none;
+}
+
+/* Where: Description subtitle for option item | How: Muted small helper text below label */
+.account-custom-select-item-desc {
+  font-size: 11.5px;
+  color: var(--color-ink-muted);
+  margin-top: 2px;
+  line-height: 1.25;
+}
+
+/* Where: Subtitle color on hover or keyboard highlight | How: Inherits branded tone */
+.account-custom-select-item:hover .account-custom-select-item-desc,
+.account-custom-select-item.highlighted .account-custom-select-item-desc {
+  color: var(--color-primary, #176B4D);
+  opacity: 0.85;
+}
+
+/* Where: Empty search results state in custom select | How: Centered muted helper notice */
+.account-custom-select-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--color-ink-muted);
+}
+
+/* Where: Success checkmark badge when value is saved | How: Transient green check animation */
+.account-field-saved-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-primary);
+  animation: accountContentFade 0.2s ease;
+}
+
+/* Where: Left metadata container inside field row | How: Stacks label, display value, and helper text */
 .account-field-info {
   display: flex;
   flex-direction: column;
@@ -2582,6 +3301,7 @@ span.footer-link {
   min-width: 0;
 }
 
+/* Where: Property label inside field row | How: Uppercase monospace subtitle */
 .account-field-label {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -2591,26 +3311,64 @@ span.footer-link {
   text-transform: uppercase;
 }
 
+/* Where: Current value display in field row | How: Semibold text showing saved setting */
 .account-field-display-value {
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--color-ink);
   font-weight: 600;
   line-height: 1.35;
 }
 
+/* Where: Placeholder text when property is empty | How: Italicized muted text */
 .account-field-display-value.placeholder {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--color-ink-muted);
   font-style: italic;
   font-weight: 400;
 }
 
+/* Where: Helper explanation text in field row | How: Small muted footnote */
 .account-field-helper {
   font-size: 12px;
   color: var(--color-ink-muted);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
+/* Where: Section block divider inside settings panels | How: Separates major subsections */
+.account-section-block {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Where: Last section block in list | How: Removes bottom border */
+.account-section-block:last-child {
+  border-bottom: none;
+}
+
+/* Where: 3-column structured form input grid (e.g. Password update) | How: Responsive 3-column layout */
+.account-form-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 12px 0 16px;
+}
+
+/* Where: Green verified badge for authenticated credentials | How: Pill badge with checkmark */
+.account-badge-verified {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Where: Masked password representation dots | How: Monospace dots with letter-spacing */
 .account-security-masked-value {
   font-size: 18px;
   font-weight: 400;
@@ -2619,6 +3377,7 @@ span.footer-link {
   line-height: 1.2;
 }
 
+/* Where: Primary auth provider label | How: Clean typography */
 .account-auth-name {
   font-size: 17px;
   font-weight: 400;
@@ -2627,6 +3386,7 @@ span.footer-link {
   letter-spacing: -0.01em;
 }
 
+/* Where: Helper footnote text under account credentials | How: Muted gray caption */
 .account-field-help-muted {
   font-size: 13.5px;
   color: #6B7280;
@@ -2635,16 +3395,19 @@ span.footer-link {
 }
 
 /* Option Fields: Custom Dropdown Popover (No OS select) */
+/* Where: Wrapper container for custom select dropdown | How: Relative positioning anchor */
 .account-field-select-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
+/* Where: Dropdown positioning container | How: Relative anchor for menu popup */
 .account-custom-dropdown-container {
   position: relative;
 }
 
+/* Where: Trigger button for custom options dropdown | How: White rounded button showing current choice */
 .account-custom-dropdown-trigger {
   display: inline-flex;
   align-items: center;
@@ -2666,12 +3429,14 @@ span.footer-link {
   max-width: 360px;
 }
 
+/* Where: Hover and active state for dropdown trigger | How: Darkens border and lights surface */
 .account-custom-dropdown-trigger:hover,
 .account-custom-dropdown-trigger.active {
   background: #F9FAFB;
   border-color: #D1D5DB;
 }
 
+/* Where: Label text inside dropdown trigger | How: Truncates long option names */
 .account-dropdown-trigger-text {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2679,16 +3444,19 @@ span.footer-link {
   text-align: left;
 }
 
+/* Where: Chevron icon inside dropdown trigger | How: Animated rotation on open */
 .account-dropdown-chevron {
   color: #6B7280;
   flex-shrink: 0;
   transition: transform 0.15s ease;
 }
 
+/* Where: Open state for chevron icon | How: Rotates 180 degrees */
 .account-dropdown-chevron.open {
   transform: rotate(180deg);
 }
 
+/* Where: Custom dropdown popup menu | How: Absolute popover card with shadow */
 .account-custom-dropdown-popover {
   position: absolute;
   top: calc(100% + 6px);
@@ -2704,6 +3472,7 @@ span.footer-link {
   animation: editModalScaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Where: Upwards opening dropdown menu | How: Positions above trigger when near bottom of screen */
 .account-custom-dropdown-popover.open-upwards {
   top: auto;
   bottom: calc(100% + 6px);
@@ -2711,6 +3480,7 @@ span.footer-link {
   animation: editModalScaleInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Where: Scale-in upwards animation | How: Translates from -8px with 0.96 scale */
 @keyframes editModalScaleInUp {
   from {
     opacity: 0;
@@ -2723,6 +3493,7 @@ span.footer-link {
   }
 }
 
+/* Where: Scrollable list of custom dropdown items | How: Vertical flex list with max height */
 .account-custom-dropdown-list {
   display: flex;
   flex-direction: column;
@@ -2732,6 +3503,7 @@ span.footer-link {
   gap: 2px;
 }
 
+/* Where: Individual item inside custom dropdown | How: Clickable row with hover effect */
 .account-custom-dropdown-item {
   display: flex;
   align-items: center;
@@ -2747,14 +3519,17 @@ span.footer-link {
   width: 100%;
 }
 
+/* Where: Hover state for dropdown item | How: Light gray background tint */
 .account-custom-dropdown-item:hover {
   background: #F3F4F6;
 }
 
+/* Where: Selected state for dropdown item | How: Light emerald background tint */
 .account-custom-dropdown-item.selected {
   background: var(--color-surface-raised, #F0FDF4);
 }
 
+/* Where: Info container inside dropdown item | How: Stacks title and description */
 .account-dropdown-item-info {
   display: flex;
   flex-direction: column;
@@ -2763,12 +3538,14 @@ span.footer-link {
   min-width: 0;
 }
 
+/* Where: Label text inside dropdown item | How: Semibold text */
 .account-dropdown-item-label {
   font-size: 13.5px;
   font-weight: 600;
   color: #111827;
 }
 
+/* Where: Custom choice label inside dropdown item | How: Primary colored text with icon */
 .account-dropdown-item-label.custom-label {
   display: inline-flex;
   align-items: center;
@@ -2776,23 +3553,27 @@ span.footer-link {
   color: var(--color-primary);
 }
 
+/* Where: Description text inside dropdown item | How: Muted footnote */
 .account-dropdown-item-desc {
   font-size: 12px;
   color: #6B7280;
   line-height: 1.35;
 }
 
+/* Where: Checkmark icon in selected dropdown item | How: Primary emerald checkmark */
 .account-dropdown-item-check {
   color: var(--color-primary);
   flex-shrink: 0;
 }
 
+/* Where: Divider between dropdown sections | How: Hairline separator */
 .account-dropdown-divider {
   height: 1px;
   background: #F3F4F6;
   margin: 4px 6px;
 }
 
+/* Where: Loading placeholder for select inputs | How: Centered flex container */
 .account-field-select-loading {
   display: inline-flex;
   align-items: center;
@@ -2802,6 +3583,7 @@ span.footer-link {
 }
 
 /* Reusable Edit Field Modal - Canva Style */
+/* Where: Modal backdrop scrim for focused field editor | How: Fixed overlay with frosted glass blur */
 .modal-backdrop-overlay {
   position: fixed;
   inset: 0;
@@ -2816,6 +3598,7 @@ span.footer-link {
   animation: modalBackdropFade 0.2s ease;
 }
 
+/* Where: Fade animation for modal backdrop | How: Opacity transition from 0 to 1 */
 @keyframes modalBackdropFade {
   from {
     opacity: 0;
@@ -2826,6 +3609,7 @@ span.footer-link {
   }
 }
 
+/* Where: Edit field modal card | How: Floating card popup for editing single property */
 .edit-field-modal-card {
   background: #FFFFFF;
   width: 100%;
@@ -2839,6 +3623,7 @@ span.footer-link {
   animation: editModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Where: Scale-in animation for edit modal | How: Pops in from 0.96 scale */
 @keyframes editModalScaleIn {
   from {
     opacity: 0;
@@ -2851,6 +3636,7 @@ span.footer-link {
   }
 }
 
+/* Where: Header inside edit field modal | How: Aligns modal title */
 .edit-modal-header {
   display: flex;
   justify-content: flex-start;
@@ -2859,6 +3645,7 @@ span.footer-link {
   padding: 0;
 }
 
+/* Where: Title in edit field modal | How: Bold headline */
 .edit-modal-title {
   font-size: 22px;
   font-weight: 700;
@@ -2867,6 +3654,7 @@ span.footer-link {
   margin: 0;
 }
 
+/* Where: Body container in edit field modal | How: Holds input field and description */
 .edit-modal-body {
   padding: 0;
   display: flex;
@@ -2874,12 +3662,14 @@ span.footer-link {
   gap: 24px;
 }
 
+/* Where: Input group in edit field modal | How: Vertical stack of label and input */
 .edit-modal-field-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Where: Label in edit field modal | How: Bold sans-serif label */
 .edit-modal-label {
   font-size: 14px;
   font-weight: 600;
@@ -2887,6 +3677,7 @@ span.footer-link {
   font-family: var(--font-sans);
 }
 
+/* Where: Single-line input in edit modal | How: Styled text box with border and focus state */
 .edit-modal-input {
   width: 100%;
   padding: 12px 14px;
@@ -2901,6 +3692,7 @@ span.footer-link {
   transition: border-color 0.15s ease;
 }
 
+/* Where: Focus state for edit modal input | How: Highlights border */
 .edit-modal-input:focus,
 .edit-modal-input:focus-visible,
 .edit-modal-input:active {
@@ -2909,6 +3701,7 @@ span.footer-link {
   box-shadow: none;
 }
 
+/* Where: Multi-line textarea in edit modal | How: Resizable text area */
 .edit-modal-textarea {
   width: 100%;
   padding: 12px 14px;
@@ -2925,6 +3718,7 @@ span.footer-link {
   transition: border-color 0.15s ease;
 }
 
+/* Where: Focus state for edit modal textarea | How: Highlights border */
 .edit-modal-textarea:focus,
 .edit-modal-textarea:focus-visible,
 .edit-modal-textarea:active {
@@ -2934,10 +3728,12 @@ span.footer-link {
 }
 
 /* Category & Options Selector */
+/* Where: Options selector card modal (e.g. Category/Voice choices) | How: Wider max-width */
 .edit-field-modal-card.has-options {
   max-width: 520px;
 }
 
+/* Where: Scrollable list of options in edit modal | How: Vertical stack with custom scroll */
 .edit-modal-options-list {
   display: flex;
   flex-direction: column;
@@ -2947,6 +3743,7 @@ span.footer-link {
   padding-right: 4px;
 }
 
+/* Where: Individual selectable option card | How: Clickable option tile */
 .edit-modal-option-card {
   display: flex;
   align-items: center;
@@ -2962,22 +3759,26 @@ span.footer-link {
   width: 100%;
 }
 
+/* Where: Hover state for option card | How: Light surface tint */
 .edit-modal-option-card:hover {
   background: #F9FAFB;
   border-color: #D1D5DB;
 }
 
+/* Where: Currently selected option card | How: Emerald border with light green fill */
 .edit-modal-option-card.selected {
   background: var(--color-surface-raised, #F0FDF4);
   border-color: var(--color-primary, #047857);
 }
 
+/* Where: Option card info block | How: Stacks name and description */
 .edit-modal-option-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+/* Where: Option name title | How: Bold typography */
 .edit-modal-option-name {
   font-size: 14px;
   font-weight: 600;
@@ -2987,27 +3788,32 @@ span.footer-link {
   gap: 6px;
 }
 
+/* Where: Custom option card styling | How: Dashed border card */
 .edit-modal-option-card.custom-option {
   border-style: dashed;
   background: #FAFAFA;
 }
 
+/* Where: Hover state for custom option card | How: Lights background */
 .edit-modal-option-card.custom-option:hover {
   background: #F3F4F6;
 }
 
+/* Where: Selected state for custom option card | How: Solid emerald border */
 .edit-modal-option-card.custom-option.selected {
   background: var(--color-surface-raised, #F0FDF4);
   border-style: solid;
   border-color: var(--color-primary, #047857);
 }
 
+/* Where: Option description text | How: Muted gray explanation */
 .edit-modal-option-desc {
   font-size: 12px;
   color: #6B7280;
   line-height: 1.35;
 }
 
+/* Where: Selected checkmark icon in option card | How: Emerald checkmark */
 .edit-modal-option-check {
   width: 20px;
   height: 20px;
@@ -3018,12 +3824,14 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Wrapper container for option choices | How: Vertical stack with gap */
 .edit-modal-options-wrapper {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
+/* Where: Custom input box inside options modal | How: Light gray container */
 .edit-modal-custom-input-box {
   display: flex;
   flex-direction: column;
@@ -3035,6 +3843,7 @@ span.footer-link {
   animation: editModalScaleIn 0.18s ease;
 }
 
+/* Where: Sublabel for custom input | How: Uppercase monospace emerald tag */
 .edit-modal-sublabel {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -3044,18 +3853,21 @@ span.footer-link {
   text-transform: uppercase;
 }
 
+/* Where: Helper explanation inside edit modal | How: Muted footnote */
 .edit-modal-help-text {
   font-size: 12px;
   color: #6B7280;
   line-height: 1.4;
 }
 
+/* Where: Validation error message in edit modal | How: Red alert text */
 .edit-modal-error-message {
   font-size: 12px;
   font-family: var(--font-mono);
   color: var(--color-danger, #ef4444);
 }
 
+/* Where: Footer action buttons in edit modal | How: Aligns Cancel and Save buttons */
 .edit-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -3064,6 +3876,7 @@ span.footer-link {
   margin-top: 4px;
 }
 
+/* Where: Cancel button in edit modal | How: Secondary button styling */
 .edit-modal-cancel-btn {
   padding: 9px 18px;
   font-size: 14px;
@@ -3076,11 +3889,13 @@ span.footer-link {
   transition: all 0.15s ease;
 }
 
+/* Where: Hover state for cancel button | How: Highlights background */
 .edit-modal-cancel-btn:hover:not(:disabled) {
   background: #F9FAFB;
   border-color: #D1D5DB;
 }
 
+/* Where: Save / Done button in edit modal | How: Primary emerald action button */
 .edit-modal-done-btn {
   display: inline-flex;
   align-items: center;
@@ -3097,21 +3912,24 @@ span.footer-link {
   transition: all 0.15s ease;
 }
 
+/* Where: Hover state for done button | How: Darkens emerald and lifts 0.5px */
 .edit-modal-done-btn:hover:not(:disabled) {
   background: var(--color-primary-hover);
   transform: translateY(-0.5px);
 }
 
+/* Where: Action box wrapping row buttons | How: Horizontal flex alignment */
 .account-field-action-box {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+/* Where: Edit button in field row | How: Secondary button trigger */
 .account-field-edit-action {
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: #374151;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
@@ -3119,19 +3937,23 @@ span.footer-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 72px;
-  height: 38px;
-  padding: 0 16px;
+  gap: 6px;
+  padding: 6px 14px;
   transition: all 0.15s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+/* Where: Hover state for edit button | How: Highlights border */
 .account-field-edit-action:hover {
   background: #F9FAFB;
   border-color: #D1D5DB;
   color: #111827;
   transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
+/* Where: Provider identity pill in security panel | How: Monospace credential badge */
 .account-auth-identity-pill {
   font-size: 12.5px;
   font-family: var(--font-mono);
@@ -3145,12 +3967,14 @@ span.footer-link {
   gap: 6px;
 }
 
+/* Where: Data export title in account panel | How: Semibold headline */
 .account-export-title {
   font-size: 16px;
   font-weight: 500;
   color: var(--color-ink);
 }
 
+/* Where: Data export subtitle | How: Muted footnote */
 .account-export-sub {
   font-size: 12.5px;
   color: var(--color-ink-muted);
@@ -3158,11 +3982,13 @@ span.footer-link {
 }
 
 /* Notification Preferences Item */
+/* Where: Notification row info container | How: Flex column layout */
 .account-notif-info {
   display: flex;
   flex-direction: column;
 }
 
+/* Where: Title of notification preference row | How: Large headline font */
 .account-notif-title {
   font-size: 20px;
   color: var(--color-ink);
@@ -3170,12 +3996,14 @@ span.footer-link {
   letter-spacing: -0.01em;
 }
 
+/* Where: Description under notification row | How: Muted gray body text */
 .account-notif-desc {
   font-size: 13.5px;
   color: var(--color-ink-muted);
   margin-top: 3px;
 }
 
+/* Where: Action container holding toggle button | How: Flex row with gap */
 .account-notif-action-box {
   display: flex;
   align-items: center;
@@ -3183,6 +4011,7 @@ span.footer-link {
 }
 
 /* Premium Apple/Editorial Toggle Switch */
+/* Where: Apple-style toggle switch track (Notifications panel) | How: Rounded pill toggle track */
 .account-switch-toggle {
   position: relative;
   width: 48px;
@@ -3199,14 +4028,17 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Focus visible outline ring for toggle switch | How: Subtle primary focus ring */
 .account-switch-toggle:focus-visible {
   box-shadow: 0 0 0 2px var(--color-primary-subtle);
 }
 
+/* Where: Checked active state for toggle switch | How: Turns emerald green */
 .account-switch-toggle.checked {
   background: var(--color-primary, #176B4D);
 }
 
+/* Where: Circular thumb inside toggle switch | How: White circle sliding left to right */
 .account-switch-thumb {
   width: 22px;
   height: 22px;
@@ -3217,10 +4049,12 @@ span.footer-link {
   transform: translateX(0);
 }
 
+/* Where: Checked state for toggle switch thumb | How: Translates 20px to right */
 .account-switch-toggle.checked .account-switch-thumb {
   transform: translateX(20px);
 }
 
+/* Where: Field row divider line | How: Hairline border separator */
 .account-field-row-divider {
   height: 1px;
   background: var(--color-border);
@@ -3228,23 +4062,27 @@ span.footer-link {
   margin-top: 22px;
 }
 
+/* Where: Hide divider on last field row in pane | How: Display none on last child */
 .account-pane-fields>*:last-child .account-field-row-divider,
 .account-field-row:last-child .account-field-row-divider,
 .account-storefront-item:last-child .account-field-row-divider {
   display: none;
 }
 
+/* Where: Editing input container | How: Flex column with 8px gap */
 .account-field-editing-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Where: Wrapper container around setting input | How: Max width 480px relative box */
 .account-field-input-wrapper {
   position: relative;
   max-width: 480px;
 }
 
+/* Where: Text input in settings editing mode | How: Styled text box with border and focus state */
 .account-field-input {
   width: 100%;
   padding: 10px 14px;
@@ -3258,11 +4096,13 @@ span.footer-link {
   transition: all 0.15s ease;
 }
 
+/* Where: Focus state for settings text input | How: Highlights primary border and ring */
 .account-field-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-primary-subtle);
 }
 
+/* Where: Right-aligned addon inside settings input | How: Positioned absolute right */
 .account-field-input-addon {
   position: absolute;
   right: 12px;
@@ -3270,6 +4110,7 @@ span.footer-link {
   transform: translateY(-50%);
 }
 
+/* Where: Error message below settings input | How: Monospace red warning text */
 .account-field-error-message {
   font-size: 11.5px;
   font-family: var(--font-mono);
@@ -3277,6 +4118,7 @@ span.footer-link {
 }
 
 /* Save Indicator */
+/* Where: Inline save status indicator | How: Monospace status badge */
 .account-save-indicator {
   font-size: 12px;
   font-family: var(--font-mono);
@@ -3286,19 +4128,23 @@ span.footer-link {
   gap: 6px;
 }
 
+/* Where: Saving in-progress indicator | How: Muted gray text */
 .account-save-indicator.saving {
   color: var(--color-ink-muted);
 }
 
+/* Where: Saved success indicator | How: Emerald green text */
 .account-save-indicator.saved {
   color: var(--color-primary);
 }
 
+/* Where: Save error indicator | How: Red danger text */
 .account-save-indicator.error {
   color: var(--color-danger, #ef4444);
 }
 
 /* Security OTP Password Flow */
+/* Where: OTP password update step container | How: Stacked layout */
 .account-otp-step-container {
   display: flex;
   flex-direction: column;
@@ -3306,6 +4152,7 @@ span.footer-link {
   max-width: 600px;
 }
 
+/* Where: Notice box in OTP security flow | How: Raised card with icon and description */
 .account-otp-notice {
   display: flex;
   align-items: flex-start;
@@ -3316,40 +4163,47 @@ span.footer-link {
   border-radius: var(--radius-sm, 8px);
 }
 
+/* Where: Icon inside OTP notice box | How: Emerald primary icon */
 .account-otp-icon {
   color: var(--color-primary);
   margin-top: 2px;
   flex-shrink: 0;
 }
 
+/* Where: Title of OTP notice box | How: Bold typography */
 .account-otp-notice-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
+/* Where: Subtitle in OTP notice box | How: Muted description */
 .account-otp-notice-sub {
   font-size: 12.5px;
   color: var(--color-ink-muted);
   margin-top: 2px;
 }
 
+/* Where: Header area for OTP form | How: Bottom spacing */
 .account-otp-form-header {
   margin-bottom: 14px;
 }
 
+/* Where: Title of OTP form | How: Semibold headline */
 .account-otp-form-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
+/* Where: Subtitle of OTP form | How: Muted footnote */
 .account-otp-form-sub {
   font-size: 12.5px;
   color: var(--color-ink-muted);
   margin-top: 2px;
 }
 
+/* Where: Inputs grid for OTP form | How: Auto-fit responsive grid */
 .account-otp-inputs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3357,6 +4211,7 @@ span.footer-link {
   margin-bottom: 14px;
 }
 
+/* Where: Input label in OTP form | How: Uppercase monospace label */
 .account-input-label {
   display: block;
   font-size: 10px;
@@ -3368,6 +4223,7 @@ span.footer-link {
   margin-bottom: 6px;
 }
 
+/* Where: Code input field in OTP flow | How: Monospace large centered digits */
 .account-otp-code-input {
   font-family: var(--font-mono);
   letter-spacing: 0.2em;
@@ -3376,6 +4232,7 @@ span.footer-link {
   text-align: center;
 }
 
+/* Where: Feedback banner in security panel | How: Rounded alert box */
 .account-security-feedback {
   font-size: 12.5px;
   padding: 8px 12px;
@@ -3386,24 +4243,28 @@ span.footer-link {
   margin-bottom: 12px;
 }
 
+/* Where: Info status feedback | How: Emerald subtle background */
 .account-security-feedback.info {
   background: var(--color-primary-subtle);
   color: var(--color-primary);
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Success status feedback | How: Emerald success background */
 .account-security-feedback.success {
   background: rgba(23, 107, 77, 0.08);
   color: var(--color-primary);
   border: 1px solid var(--color-primary-border);
 }
 
+/* Where: Error status feedback | How: Red error background */
 .account-security-feedback.error {
   background: rgba(239, 68, 68, 0.08);
   color: var(--color-danger, #ef4444);
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
+/* Where: Resend OTP button | How: Underlined primary text button */
 .account-resend-btn {
   font-size: 13px;
   font-weight: 500;
@@ -3415,12 +4276,14 @@ span.footer-link {
   text-decoration: underline;
 }
 
+/* Where: Help text under password and credentials | How: Muted gray footnote */
 .account-field-help-muted {
   font-size: 12px;
   color: var(--color-ink-muted);
   margin-top: 3px;
 }
 
+/* Where: Primary authentication provider text in security overview | How: Semibold ink text */
 .account-auth-name {
   font-size: 16px;
   font-weight: 500;
@@ -3428,6 +4291,7 @@ span.footer-link {
 }
 
 /* Storefronts Pane */
+/* Where: Storefronts pane header row | How: Aligns title and action */
 .account-stores-header {
   display: flex;
   justify-content: space-between;
@@ -3435,11 +4299,13 @@ span.footer-link {
   padding: 16px 0 12px;
 }
 
+/* Where: List container of user storefronts | How: Vertical flex list */
 .account-stores-list {
   display: flex;
   flex-direction: column;
 }
 
+/* Where: Storefront item row in store settings | How: Justified row with bottom border */
 .account-store-row {
   display: flex;
   justify-content: space-between;
@@ -3448,12 +4314,14 @@ span.footer-link {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Where: Left group in storefront row | How: Aligns index and name */
 .account-store-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
+/* Where: Storefront numerical index | How: Monospace bold number */
 .account-store-index {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -3461,18 +4329,21 @@ span.footer-link {
   font-weight: 600;
 }
 
+/* Where: Storefront name and role row | How: Horizontal flex alignment */
 .account-store-name-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+/* Where: Storefront title name | How: Semibold ink text */
 .account-store-name {
   font-size: 17px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
+/* Where: Storefront role badge (e.g. OWNER) | How: Small monospace badge */
 .account-store-role-badge {
   font-size: 10px;
   font-family: var(--font-mono);
@@ -3484,6 +4355,7 @@ span.footer-link {
   font-weight: 700;
 }
 
+/* Where: Storefront metadata subtitle | How: Muted gray text */
 .account-store-meta {
   font-size: 13px;
   color: var(--color-ink-muted);
@@ -3491,29 +4363,34 @@ span.footer-link {
 }
 
 /* Notifications Pane */
+/* Where: Notification row info container in notifications panel | How: Flex column layout */
 .account-notif-info {
   display: flex;
   flex-direction: column;
 }
 
+/* Where: Title of notification preference row in notifications panel | How: Semibold headline text */
 .account-notif-title {
   font-size: 17px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
+/* Where: Description under notification row in notifications panel | How: Muted gray footnote */
 .account-notif-desc {
   font-size: 13px;
   color: var(--color-ink-muted);
   margin-top: 2px;
 }
 
+/* Where: Action container holding toggle button in notifications panel | How: Flex row with 10px gap */
 .account-notif-action-box {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+/* Where: Notification toggle button | How: Toggle switch button */
 .account-notif-toggle-btn {
   padding: 5px 14px;
   border-radius: var(--radius-xs);
@@ -3525,12 +4402,14 @@ span.footer-link {
   transition: all 0.15s ease;
 }
 
+/* Where: Active on state for notification button | How: Primary green fill */
 .account-notif-toggle-btn.on {
   background: var(--color-primary);
   color: #FFFFFF;
   border-color: var(--color-primary);
 }
 
+/* Where: Inactive off state for notification button | How: Raised neutral background */
 .account-notif-toggle-btn.off {
   background: var(--color-surface-raised);
   color: var(--color-ink-muted);
@@ -3538,24 +4417,28 @@ span.footer-link {
 }
 
 /* Security Pane */
+/* Where: Masked password characters in security panel | How: Monospace spaced characters */
 .account-security-masked-value {
   font-size: 18px;
   color: var(--color-ink-muted);
   letter-spacing: 0.15em;
 }
 
+/* Where: Auth provider label in security panel | How: Semibold text */
 .account-security-auth-label {
   font-size: 16px;
   font-weight: 500;
   color: var(--color-ink);
 }
 
+/* Where: Auth provider subtitle | How: Muted caption */
 .account-security-auth-sub {
   font-size: 12.5px;
   color: var(--color-ink-muted);
   margin-top: 2px;
 }
 
+/* Where: Sign out action link button | How: Red text button */
 .account-security-signout-link {
   font-size: 13px;
   font-weight: 500;
@@ -3566,10 +4449,12 @@ span.footer-link {
   transition: opacity 0.15s ease;
 }
 
+/* Where: Hover state for sign out link | How: Reduces opacity */
 .account-security-signout-link:hover {
   opacity: 0.75;
 }
 
+/* Where: Inline password change form | How: Flex column with 12px gap */
 .account-password-inline-form {
   display: flex;
   flex-direction: column;
@@ -3578,12 +4463,14 @@ span.footer-link {
   padding: 8px 0;
 }
 
+/* Where: Password input group | How: Vertical input stack */
 .account-password-input-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Where: Password form actions row | How: Aligns cancel and update buttons */
 .account-password-actions-row {
   display: flex;
   align-items: center;
@@ -3591,18 +4478,21 @@ span.footer-link {
 }
 
 /* Plan Pane */
+/* Where: Subscription plan title | How: Large semibold text */
 .account-plan-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
+/* Where: Subscription plan subtitle | How: Muted footnote */
 .account-plan-sub {
   font-size: 13px;
   color: var(--color-ink-muted);
   margin-top: 2px;
 }
 
+/* Where: Plan status pill badge | How: Primary green pill badge */
 .account-plan-status-pill {
   font-size: 10.5px;
   font-family: var(--font-mono);
@@ -3617,6 +4507,7 @@ span.footer-link {
   gap: 5px;
 }
 
+/* Where: Plan quota ratio badge | How: Monospace numerical badge */
 .account-plan-ratio-badge {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -3629,6 +4520,7 @@ span.footer-link {
 }
 
 /* Quiet Workspace Footer */
+/* Where: Settings workspace footer bar | How: Top border separator with justified layout */
 .account-workspace-footer {
   margin-top: 48px;
   padding-top: 24px;
@@ -3640,6 +4532,7 @@ span.footer-link {
   gap: 16px;
 }
 
+/* Where: Security note in settings footer | How: Muted lock note */
 .account-footer-security-note {
   font-size: 12.5px;
   color: var(--color-ink-muted);
@@ -3648,6 +4541,7 @@ span.footer-link {
   gap: 8px;
 }
 
+/* Where: Metadata links in settings footer | How: Monospace muted links */
 .account-footer-meta {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -3658,6 +4552,7 @@ span.footer-link {
 }
 
 /* Uninitialized Profile Notice */
+/* Where: Uninitialized profile notice wrapper | How: Centered container */
 .account-uninitialized-box {
   max-width: 640px;
   margin: 80px auto;
@@ -3665,6 +4560,7 @@ span.footer-link {
   text-align: center;
 }
 
+/* Where: Uninitialized profile card | How: White card with shadow */
 .account-uninitialized-card {
   padding: 40px 24px;
   border: 1px solid var(--color-border);
@@ -3673,6 +4569,7 @@ span.footer-link {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
+/* Where: Empty state placeholder in settings | How: Centered flex layout */
 .account-empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -3684,19 +4581,31 @@ span.footer-link {
 }
 
 /* Responsive Breakpoints */
+/* Where: Responsive tablet adjustments for settings | How: Collapses 2-column grid to single column */
 @media (max-width: 960px) {
+
+  /* Where: Settings grid on tablets | How: Single column layout */
   .account-workspace-grid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
   }
 
+  /* Where: Left sidebar rail on tablets | How: Resets position and border */
   .account-rail {
     position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    height: auto;
+    max-height: none;
   }
 
+  /* Where: Right stage workspace on tablets | How: Compact padding */
   .account-stage-workspace {
-    padding: 32px 24px;
-    border-radius: 20px;
+    padding: 24px 20px;
+    height: auto;
+    max-height: none;
   }
 }
 
@@ -3704,210 +4613,123 @@ span.footer-link {
    SETUP 9-DOMAIN NORMALIZED WORKSPACE
    ========================================================================== */
 
+/* Where: Outer wrapper for 9-domain setup wizard | How: Centered column layout */
 .setup-workspace-wrapper {
   min-height: 100vh;
   background: var(--color-page);
   padding: 40px var(--space-gutter) 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
+/* Where: Setup wizard container | How: Constrains max width to 760px */
 .setup-workspace-container {
+  max-width: 760px;
+  margin: 0 auto;
   width: 100%;
-  max-width: 1060px;
 }
 
+/* Where: Setup workspace layout | How: Clean single-column layout */
 .setup-workspace-grid {
-  display: grid;
-  grid-template-columns: 270px 1fr;
-  gap: 28px;
-  align-items: start;
-}
-
-/* Setup Rail (Left Map) */
-.setup-rail-container {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 20px 16px;
-  position: sticky;
-  top: 32px;
-  box-shadow: var(--shadow-subtle);
-}
-
-.setup-rail-header {
-  padding-bottom: 14px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.setup-rail-eyebrow {
   display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-primary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.setup-rail-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-ink);
-  margin: 0;
-}
-
-.setup-rail-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.setup-rail-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-xs);
-  text-decoration: none;
-  color: var(--color-ink-soft);
-  transition: var(--motion-fast);
-  border: 1px solid transparent;
-}
-
-.setup-rail-item:hover:not(.disabled) {
-  background: var(--color-surface-hover);
-  color: var(--color-ink);
-}
-
-.setup-rail-item.active {
-  background: var(--color-primary-subtle);
-  border-color: rgba(var(--color-primary-rgb, 14, 165, 233), 0.25);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.setup-rail-item.disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.setup-rail-item-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-ink-muted);
-  width: 18px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.setup-rail-item.active .setup-rail-item-num {
-  color: var(--color-primary);
-  font-weight: 700;
-}
-
-.setup-rail-item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.setup-rail-item-label {
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.setup-rail-item-class {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--color-ink-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.setup-rail-item-status {
-  flex-shrink: 0;
-}
-
-.setup-status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  font-size: 9px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-
-.setup-status-badge.complete {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.setup-status-badge.partial {
-  background: #f59e0b;
-  color: #ffffff;
-}
-
-.setup-status-badge.optional {
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  color: var(--color-ink-muted);
-}
-
-.setup-status-badge.empty {
-  background: var(--color-surface-subtle);
-  color: var(--color-ink-muted);
-}
-
-.setup-status-badge.locked {
-  color: var(--color-ink-muted);
-  opacity: 0.4;
+  width: 100%;
 }
 
 /* Setup Canvas Header & Editor */
+/* Where: Main domain editor card in setup wizard | How: Paper card holding form fields */
 .setup-editor-card {
-  background: var(--color-surface);
+  background: #FFFFFF;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 32px 28px;
-  box-shadow: var(--shadow-subtle);
+  border-radius: var(--radius-sm, 16px);
+  padding: 36px 40px;
+  box-shadow: 0 4px 24px rgba(15, 30, 22, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.setup-canvas-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+/* Setup Header with Progress Bar */
+/* Where: Header container with progress bar | How: Stacks progress bar and domain title */
+.setup-header-container {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--color-border);
 }
 
-.setup-eyebrow {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-primary);
-  margin-bottom: 4px;
+/* Where: Progress bar wrapper | How: Positions step tag, percentage, exit button, and fill track */
+.setup-progress-wrapper {
+  margin-bottom: 20px;
 }
 
+/* Where: Metadata row above progress bar | How: Flex row with space between */
+.setup-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Where: Step tag in setup progress bar | How: Emerald monospace badge */
+.setup-progress-step-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Where: Bullet separator in step tag | How: Muted subtle dot */
+.setup-progress-bullet {
+  color: var(--color-ink-muted);
+  opacity: 0.5;
+}
+
+/* Where: Domain name in step tag | How: Dark ink label */
+.setup-progress-domain {
+  color: var(--color-ink);
+}
+
+/* Where: Percentage text in setup progress bar | How: Monospace muted caption */
+.setup-progress-percent {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Where: Progress track background | How: Gray rounded track */
+.setup-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* Where: Animated progress fill bar | How: Emerald transition fill */
+.setup-progress-fill {
+  height: 100%;
+  background: var(--color-primary, #176B4D);
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+/* Where: Title and subtitle group in setup header | How: Vertical stack */
+.setup-canvas-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Where: Domain title in setup header | How: Display serif typography */
 .setup-title {
   font-size: 24px;
   font-family: var(--font-display);
   font-weight: 700;
   color: var(--color-ink);
-  margin: 0 0 6px;
+  margin: 0;
 }
 
+/* Where: Subtitle in setup header | How: Muted gray body text */
 .setup-subtitle {
   font-size: 13.5px;
   color: var(--color-ink-muted);
@@ -3915,11 +4737,12 @@ span.footer-link {
   line-height: 1.5;
 }
 
+/* Where: Exit to Store Workspace pill button in setup header | How: Rounded secondary pill */
 .setup-exit-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
@@ -3931,6 +4754,7 @@ span.footer-link {
   flex-shrink: 0;
 }
 
+/* Where: Hover state for exit pill | How: Darkens border */
 .setup-exit-pill:hover {
   background: var(--color-surface-hover);
   color: var(--color-ink);
@@ -3938,6 +4762,7 @@ span.footer-link {
 }
 
 /* Setup Footer Nav */
+/* Where: Footer navigation in setup wizard | How: Aligns Back and Next/Save buttons */
 .setup-footer-nav {
   display: flex;
   justify-content: space-between;
@@ -3948,6 +4773,7 @@ span.footer-link {
   gap: 12px;
 }
 
+/* Where: Back / Next buttons in setup wizard footer | How: Standard button sizing */
 .setup-footer-back,
 .setup-footer-next {
   display: inline-flex;
@@ -3958,6 +4784,7 @@ span.footer-link {
 }
 
 /* Setup Review Grid */
+/* Where: 2-column domain review grid before launch | How: 2-column summary of all 9 domains */
 .setup-review-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -3965,13 +4792,15 @@ span.footer-link {
   margin-bottom: 28px;
 }
 
+/* Where: Individual domain summary card in review grid | How: Raised surface with border */
 .setup-review-domain-card {
-  background: var(--color-surface-raised);
+  background: var(--color-surface-raised, #F9FAFB);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-xs, 8px);
   padding: 16px;
 }
 
+/* Where: Header in domain review card | How: Displays domain title and edit action */
 .setup-review-domain-header {
   display: flex;
   justify-content: space-between;
@@ -3979,12 +4808,14 @@ span.footer-link {
   margin-bottom: 8px;
 }
 
+/* Where: Domain title in review card | How: Bold typography */
 .setup-review-domain-title {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-ink);
 }
 
+/* Where: Saved domain value in review card | How: Formatted summary of inputs */
 .setup-review-domain-value {
   font-size: 13px;
   color: var(--color-ink-soft);
@@ -3992,15 +4823,117 @@ span.footer-link {
   margin: 0;
 }
 
+/* Where: Setup Review Edit Link | How: Pill button linking to domain editor */
+.setup-review-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--color-primary-subtle);
+  transition: all 0.15s ease;
+}
+
+.setup-review-edit-btn:hover {
+  background: rgba(23, 107, 77, 0.18);
+  color: var(--color-primary-hover, #12553D);
+}
+
+/* Where: Step number badge in review grid card | How: Monospace small badge */
+.setup-review-step-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  background: #E5E7EB;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Ambient Route-Level Setup Backgrounds */
+.setup-workspace-wrapper {
+  position: relative;
+  min-height: calc(100vh - 72px);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  padding: 40px var(--space-gutter) 80px;
+  overflow: hidden;
+}
+
+.setup-backdrop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(17, 24, 20, 0.60) 0%, rgba(17, 24, 20, 0.72) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Route-specific ambient themes */
+.setup-bg-new-store {
+  background-image: url('/images/setup/bg_new_store.jpg');
+}
+
+.setup-bg-identity {
+  background-image: url('/images/setup/bg_identity.jpg');
+}
+
+.setup-bg-location {
+  background-image: url('/images/setup/bg_location.jpg');
+}
+
+.setup-bg-products {
+  background-image: url('/images/setup/bg_products.jpg');
+}
+
+.setup-bg-customers {
+  background-image: url('/images/setup/bg_customers.jpg');
+}
+
+.setup-bg-offer {
+  background-image: url('/images/setup/bg_offer.jpg');
+}
+
+.setup-bg-brand {
+  background-image: url('/images/setup/bg_brand.jpg');
+}
+
+.setup-bg-operations {
+  background-image: url('/images/setup/bg_operations.jpg');
+}
+
+.setup-bg-contact {
+  background-image: url('/images/setup/bg_contact.jpg');
+}
+
+.setup-bg-review {
+  background-image: url('/images/setup/bg_review.jpg');
+}
+
+/* Where: Responsive setup wizard layout for tablets and phones | How: Collapses 2-column setup to 1 column */
 @media (max-width: 860px) {
+
+  /* Where: Setup wizard grid on mobile | How: Single column layout */
   .setup-workspace-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Where: Setup progress rail container on mobile | How: Resets position from sticky */
   .setup-rail-container {
     position: static;
   }
 
+  /* Where: Review domain summary grid on mobile | How: Single column layout */
   .setup-review-grid {
     grid-template-columns: 1fr;
   }

@@ -39,7 +39,7 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
             <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
               Complete the onboarding setup to connect your first physical storefront.
             </p>
-            <Link href="/setup" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', padding: '6px 14px' }}>
+            <Link href="/new/store" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', padding: '6px 14px' }}>
               <Plus size={14} />
               <span>Connect Storefront</span>
             </Link>
@@ -140,7 +140,7 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
         )}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
-          <Link href="/setup" className="btn-secondary" style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+          <Link href="/new/store" className="btn-secondary" style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
             <Plus size={13} />
             <span>Connect Another Storefront</span>
           </Link>

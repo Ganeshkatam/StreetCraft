@@ -4,7 +4,6 @@ import React, { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SetupContext } from '../../../lib/server/setup/getSetupContext';
 import { saveSetupDomainAction, SetupDomainActionState } from '../../../lib/server/setup/saveSetupDomainAction';
-import { SetupRail } from '../components/SetupRail';
 import { SetupDomainHeader } from '../components/SetupDomainHeader';
 import { SetupFooterNav } from '../components/SetupFooterNav';
 import { toast } from 'sonner';
@@ -17,7 +16,7 @@ interface OperationsDomainViewProps {
 
 export function OperationsDomainView({ context }: OperationsDomainViewProps) {
   const router = useRouter();
-  const { business, profile, progress } = context;
+  const { business, profile } = context;
 
   const saveActionBound = business
     ? saveSetupDomainAction.bind(null, business.id, 'operations')
@@ -41,16 +40,11 @@ export function OperationsDomainView({ context }: OperationsDomainViewProps) {
 
   return (
     <div className="setup-workspace-grid">
-      <SetupRail
-        businessId={business?.id}
-        domainList={progress.domainList}
-      />
-
       <div className="setup-editor-card">
         <SetupDomainHeader
           stepNumber="07"
           domainName="Operations"
-          title="Operating Hours &amp; Rhythm"
+          title="Operating Hours & Rhythm"
           subtitle="Tell StreetCraft when your business is busy and when there's room for more customers."
           businessId={business?.id}
         />

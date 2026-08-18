@@ -1,23 +1,16 @@
-import type { Metadata } from 'next';
-import { getSetupContext } from '../../../lib/server/setup/getSetupContext';
-import { ContactDomainView } from './ContactDomainView';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: '08 Contact — Setup Storefront',
-  description: 'Phone and WhatsApp ordering channels.',
-};
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function SetupContactPage({ searchParams }: PageProps) {
+export default async function LegacyContactPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
-  const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
-
-  const context = await getSetupContext(candidateBizId);
-
-  return <ContactDomainView context={context} />;
+  const biz = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
+  if (biz) {
+    redirect(`/setup/${encodeURIComponent(biz)}/contact`);
+  }
+  redirect('/setup');
 }

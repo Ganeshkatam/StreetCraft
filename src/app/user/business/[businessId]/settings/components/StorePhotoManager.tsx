@@ -145,98 +145,104 @@ export const StorePhotoManager: React.FC<StorePhotoManagerProps> = ({ businessId
   };
 
   return (
-    <div className="account-field-row" style={{ paddingBottom: '24px' }}>
-      <div className="account-field-meta-label">
-        STOREFRONT PHOTO / LOGO
-      </div>
+    <div className="account-field-row" style={{ padding: '18px 16px', alignItems: 'flex-start' }}>
+      <div className="account-field-info" style={{ width: '100%' }}>
+        <div className="account-field-label">STOREFRONT PHOTO / LOGO</div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div style={{ position: 'relative' }}>
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Storefront photo"
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: 'var(--radius-sm)',
-                objectFit: 'cover',
-                border: '1px solid var(--color-border)',
-              }}
-            />
-          ) : (
-            <div
-              className="avatar-placeholder"
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '28px',
-              }}
-            >
-              {storeInitial}
-            </div>
-          )}
-
-          {isUploading && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(0,0,0,0.5)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Loader2 size={24} color="#fff" className="animate-spin" />
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept="image/png,image/jpeg,image/webp"
-              onChange={handleFileChange}
-              disabled={isUploading}
-            />
-
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
-              <Camera size={14} />
-              <span>{logoUrl ? 'Change Photo' : 'Upload Store Photo'}</span>
-            </button>
-
-            {logoUrl && (
-              <button
-                type="button"
-                className="btn-ghost"
-                style={{ fontSize: '12.5px', color: 'var(--color-danger)' }}
-                onClick={handleRemovePhoto}
-                disabled={isUploading}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '8px' }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Storefront photo"
+                style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '10px',
+                  objectFit: 'cover',
+                  border: '1px solid var(--color-border)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                }}
+              />
+            ) : (
+              <div
+                className="avatar-placeholder"
+                style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '10px',
+                  fontSize: '26px',
+                  background: 'var(--color-surface-raised)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-ink-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 600,
+                }}
               >
-                Remove
-              </button>
+                {storeInitial}
+              </div>
+            )}
+
+            {isUploading && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.5)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Loader2 size={22} color="#fff" className="animate-spin" />
+              </div>
             )}
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>
-            Recommended: Square JPG, PNG, or WebP. Max 2MB. Appears in posters and marketing proofs.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleFileChange}
+                disabled={isUploading}
+              />
+
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                <Camera size={14} />
+                <span>{logoUrl ? 'Change Photo' : 'Upload Store Photo'}</span>
+              </button>
+
+              {logoUrl && (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '12.5px', color: 'var(--color-danger)' }}
+                  onClick={handleRemovePhoto}
+                  disabled={isUploading}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+
+            <div className="account-field-helper" style={{ marginTop: '2px' }}>
+              Recommended: Square JPG, PNG, or WebP. Max 2MB. Appears in posters and marketing proofs.
+            </div>
           </div>
         </div>
       </div>
-
-      <div className="account-field-row-divider" style={{ marginTop: '20px' }} />
     </div>
   );
 };

@@ -77,13 +77,15 @@ export function MomentStep({ selectedType, onSelectType, onNext }: MomentStepPro
                 padding: '20px',
                 borderRadius: 'var(--radius-sm)',
                 background: isSelected ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
-                border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                border: '1.5px solid',
+                borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)',
                 cursor: 'pointer',
                 boxShadow: isSelected ? 'var(--shadow-paper)' : 'none',
-                transition: 'var(--motion-fast)',
+                transition: 'border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease',
                 display: 'flex',
                 gap: '14px',
                 alignItems: 'flex-start',
+                boxSizing: 'border-box',
               }}
             >
               <div

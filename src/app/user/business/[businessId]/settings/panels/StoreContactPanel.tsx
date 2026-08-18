@@ -57,23 +57,21 @@ export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ profile })
           onSave={async (val) => { await saveField('phone_whatsapp', String(val)); }}
         />
 
-        <div className="account-field-row">
-          <div className="account-field-meta-label">
-            COMMUNICATION DISPATCH
-          </div>
-
-          <div className="account-field-content-row">
-            <div>
-              <div className="account-notif-title">WhatsApp Dispatch Channel</div>
-              <div className="account-notif-desc">Campaign notifications and draft confirmations route to this verified business line.</div>
+        <div className="account-field-row" style={{ alignItems: 'flex-start' }}>
+          <div className="account-field-info" style={{ width: '100%' }}>
+            <div className="account-field-label">COMMUNICATION DISPATCH</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', width: '100%' }}>
+              <div>
+                <div style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--color-ink)' }}>WhatsApp Dispatch Channel</div>
+                <div className="account-field-helper" style={{ marginTop: '2px' }}>
+                  Campaign notifications and draft confirmations route to this verified business line.
+                </div>
+              </div>
+              <span className="account-badge-verified">
+                Direct Routing
+              </span>
             </div>
-
-            <div className="account-auth-identity-pill">
-              <span>Direct Routing</span>
-            </div>
           </div>
-
-          <div className="account-field-row-divider" />
         </div>
       </div>
     </div>

@@ -4,7 +4,6 @@ import React, { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SetupContext } from '../../../lib/server/setup/getSetupContext';
 import { saveSetupDomainAction, SetupDomainActionState } from '../../../lib/server/setup/saveSetupDomainAction';
-import { SetupRail } from '../components/SetupRail';
 import { SetupDomainHeader } from '../components/SetupDomainHeader';
 import { SetupFooterNav } from '../components/SetupFooterNav';
 import { toast } from 'sonner';
@@ -17,7 +16,7 @@ interface ContactDomainViewProps {
 
 export function ContactDomainView({ context }: ContactDomainViewProps) {
   const router = useRouter();
-  const { business, profile, progress } = context;
+  const { business, profile } = context;
 
   const saveActionBound = business
     ? saveSetupDomainAction.bind(null, business.id, 'contact')
@@ -41,16 +40,11 @@ export function ContactDomainView({ context }: ContactDomainViewProps) {
 
   return (
     <div className="setup-workspace-grid">
-      <SetupRail
-        businessId={business?.id}
-        domainList={progress.domainList}
-      />
-
       <div className="setup-editor-card">
         <SetupDomainHeader
           stepNumber="08"
           domainName="Contact"
-          title="Contact &amp; Customer Channels"
+          title="Contact & Customer Channels"
           subtitle="Add your official customer care number or WhatsApp order line for campaign call-to-actions."
           businessId={business?.id}
         />

@@ -4,7 +4,6 @@ import React, { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SetupContext } from '../../../lib/server/setup/getSetupContext';
 import { saveSetupDomainAction, SetupDomainActionState } from '../../../lib/server/setup/saveSetupDomainAction';
-import { SetupRail } from '../components/SetupRail';
 import { SetupDomainHeader } from '../components/SetupDomainHeader';
 import { SetupFooterNav } from '../components/SetupFooterNav';
 import { toast } from 'sonner';
@@ -17,7 +16,7 @@ interface BrandDomainViewProps {
 
 export function BrandDomainView({ context }: BrandDomainViewProps) {
   const router = useRouter();
-  const { business, profile, progress } = context;
+  const { business, profile } = context;
 
   const saveActionBound = business
     ? saveSetupDomainAction.bind(null, business.id, 'brand')
@@ -41,16 +40,11 @@ export function BrandDomainView({ context }: BrandDomainViewProps) {
 
   return (
     <div className="setup-workspace-grid">
-      <SetupRail
-        businessId={business?.id}
-        domainList={progress.domainList}
-      />
-
       <div className="setup-editor-card">
         <SetupDomainHeader
           stepNumber="06"
           domainName="Brand"
-          title="Brand Personality &amp; Tone"
+          title="Brand Personality & Tone"
           subtitle="How should your promotional messages sound? Choose a voice that reflects your shop's vibe."
           businessId={business?.id}
         />

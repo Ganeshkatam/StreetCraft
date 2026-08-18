@@ -4,7 +4,7 @@ import React, { useActionState, useEffect, useState } from 'react';
 import { SecurityViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountPasswordAction, UpdatePasswordActionState } from '../../../../lib/server/account/updateAccountPasswordAction';
 import { toast } from 'sonner';
-import { Key, LogOut, Check, Shield } from 'lucide-react';
+import { Key, LogOut, Check, Shield, CheckCircle2 } from 'lucide-react';
 
 interface SecurityPanelViewProps {
   security: SecurityViewModel;
@@ -34,13 +34,13 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
 
   const lastSignInDate = security.lastSignInAt
     ? new Date(security.lastSignInAt).toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
     : 'Active Session';
 
   return (
@@ -54,48 +54,46 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
       </div>
 
       <div className="account-pane-fields">
-        {/* Session Metadata Grid */}
-        <div className="account-fields-grid" style={{ marginBottom: '14px', marginTop: 0 }}>
-          <div className="account-field-card locked">
-            <div className="account-field-card-header">
-              <span className="account-field-card-label">PRIMARY IDENTITY</span>
-              <Shield size={13} color="var(--color-primary)" />
+        {/* Primary Identity Row */}
+        <div className="account-field-row">
+          <div className="account-field-info">
+            <div className="account-field-label">PRIMARY IDENTITY</div>
+            <div className="account-field-display-value" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+              <Shield size={14} color="var(--color-primary)" />
+              <span>{security.email}</span>
             </div>
-            <div className="account-field-card-value">
-              {security.email}
-            </div>
-            <div className="account-field-card-helper">
+            <div className="account-field-helper">
               Provider: {security.provider.toUpperCase()} (Supabase Auth)
-            </div>
-          </div>
-
-          <div className="account-field-card locked">
-            <div className="account-field-card-header">
-              <span className="account-field-card-label">LAST SIGN-IN TIMESTAMP</span>
-              <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontWeight: 700 }}>
-                VERIFIED
-              </span>
-            </div>
-            <div className="account-field-card-value">
-              {lastSignInDate}
-            </div>
-            <div className="account-field-card-helper">
-              Active browser session
             </div>
           </div>
         </div>
 
-        {/* Change Password Card */}
-        <div className="account-field-card locked" style={{ padding: '16px 20px', marginBottom: '14px' }}>
-          <div className="account-field-card-header" style={{ marginBottom: '12px' }}>
-            <span className="account-field-card-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Key size={13} color="var(--color-primary)" />
-              <span>UPDATE PASSWORD</span>
-            </span>
+        {/* Last Sign-In Row */}
+        <div className="account-field-row">
+          <div className="account-field-info">
+            <div className="account-field-label">LAST SIGN-IN TIMESTAMP</div>
+            <div className="account-field-display-value" style={{ marginTop: '2px' }}>
+              {lastSignInDate}
+            </div>
+            <div className="account-field-helper">
+              Active authenticated browser session
+            </div>
+          </div>
+
+          <span className="account-badge-verified">
+            <CheckCircle2 size={10} strokeWidth={3} /> VERIFIED
+          </span>
+        </div>
+
+        {/* Change Password Section */}
+        <div className="account-section-block">
+          <div className="account-field-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px' }}>
+            <Key size={13} color="var(--color-primary)" />
+            <span>CHANGE PASSWORD</span>
           </div>
 
           <form action={formAction}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
+            <div className="account-form-grid-3col">
               <div className="form-group">
                 <label className="form-label" htmlFor="currentPassword" style={{ fontSize: '11.5px' }}>
                   Current Password <span style={{ color: 'var(--color-danger)' }}>*</span>
@@ -161,7 +159,7 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
               <button
                 type="submit"
                 className="btn-primary"
-                style={{ fontSize: '12px', padding: '6px 16px' }}
+                style={{ fontSize: '12px', padding: '6px 16px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                 disabled={isSaving}
               >
                 <Check size={13} />
@@ -171,29 +169,28 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
           </form>
         </div>
 
-        {/* Sign Out Action Card */}
-        <div className="account-field-card locked" style={{ padding: '12px 18px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                Sign Out of Account
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>
-                End your active session on this device.
-              </div>
+        {/* Sign Out Row */}
+        <div className="account-field-row" style={{ padding: '16px 0' }}>
+          <div className="account-field-info">
+            <div className="account-field-label">ACCOUNT SESSION</div>
+            <div className="account-field-display-value">
+              Sign Out of Account
             </div>
-
-            <form action="/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="btn-secondary"
-                style={{ fontSize: '12px', padding: '5px 14px', color: 'var(--color-danger)' }}
-              >
-                <LogOut size={13} />
-                <span>Sign Out</span>
-              </button>
-            </form>
+            <div className="account-field-helper">
+              End your active session on this device.
+            </div>
           </div>
+
+          <form action="/auth/signout" method="POST">
+            <button
+              type="submit"
+              className="btn-secondary"
+              style={{ fontSize: '12px', padding: '6px 14px', color: 'var(--color-danger)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              <LogOut size={13} />
+              <span>Sign Out</span>
+            </button>
+          </form>
         </div>
       </div>
     </div>

@@ -4,7 +4,6 @@ import React, { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SetupContext } from '../../../lib/server/setup/getSetupContext';
 import { saveSetupDomainAction, SetupDomainActionState } from '../../../lib/server/setup/saveSetupDomainAction';
-import { SetupRail } from '../components/SetupRail';
 import { SetupDomainHeader } from '../components/SetupDomainHeader';
 import { SetupFooterNav } from '../components/SetupFooterNav';
 import { toast } from 'sonner';
@@ -17,7 +16,7 @@ interface CustomersDomainViewProps {
 
 export function CustomersDomainView({ context }: CustomersDomainViewProps) {
   const router = useRouter();
-  const { business, profile, progress } = context;
+  const { business, profile } = context;
 
   const saveActionBound = business
     ? saveSetupDomainAction.bind(null, business.id, 'customers')
@@ -41,11 +40,6 @@ export function CustomersDomainView({ context }: CustomersDomainViewProps) {
 
   return (
     <div className="setup-workspace-grid">
-      <SetupRail
-        businessId={business?.id}
-        domainList={progress.domainList}
-      />
-
       <div className="setup-editor-card">
         <SetupDomainHeader
           stepNumber="04"

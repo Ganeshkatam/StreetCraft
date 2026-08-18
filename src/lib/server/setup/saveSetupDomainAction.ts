@@ -1,50 +1,19 @@
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { createClient } from '../../supabase/server';
-
-// 1. Closed Domain Schemas
-const IdentityDomainSchema = z.object({
-  name: z.string().trim().min(2, 'Store name must be at least 2 characters'),
-  category: z.string().trim().min(2, 'Store category is required'),
-});
-
-const LocationDomainSchema = z.object({
-  neighborhood: z.string().trim().min(2, 'Neighborhood / Area is required'),
-  city: z.string().trim().min(2, 'City is required'),
-  landmarks: z.string().trim().optional(),
-});
-
-const ProductsDomainSchema = z.object({
-  signature_items: z.string().trim().min(2, 'Please specify your key products or specialty items'),
-});
-
-const CustomersDomainSchema = z.object({
-  target_customer: z.string().trim().min(2, 'Target customer demographic is required'),
-  target_monthly_customers: z.coerce.number().int().positive().optional().nullable(),
-});
-
-const OfferDomainSchema = z.object({
-  default_offer: z.string().trim().min(2, 'Default promotional offer is required'),
-  primary_goal: z.string().trim().optional().nullable(),
-  avg_ticket_inr: z.coerce.number().int().positive().optional().nullable(),
-});
-
-const BrandDomainSchema = z.object({
-  style_voice: z.string().trim().optional().nullable(),
-});
-
-const OperationsDomainSchema = z.object({
-  peak_hours: z.string().trim().optional().nullable(),
-  slow_hours: z.string().trim().optional().nullable(),
-});
-
-const ContactDomainSchema = z.object({
-  phone_whatsapp: z.string().trim().optional().nullable(),
-});
+import {
+  IdentityDomainSchema,
+  LocationDomainSchema,
+  ProductsDomainSchema,
+  CustomersDomainSchema,
+  OfferDomainSchema,
+  BrandDomainSchema,
+  OperationsDomainSchema,
+  ContactDomainSchema,
+} from '../../domain/setup/setupSchemas';
 
 export type SetupDomainActionState = {
   success: boolean;
@@ -196,12 +165,28 @@ export async function saveSetupDomainAction(
       };
     }
 
-    // 5. Revalidate affected surfaces
+    // 5. Synchronize businesses table if identity domain was updated
+    if (domain === 'identity') {
+      await supabase
+        .from('businesses')
+        .update({
+          name: updatePayload.name,
+          category: updatePayload.category,
+          updated_at: updatePayload.updated_at,
+        })
+        .eq('id', business.id);
+    }
+
+    // 6. Revalidate affected surfaces
     revalidatePath('/setup');
-    revalidatePath(`/setup/${domain}`);
-    revalidatePath('/setup/review');
+    revalidatePath(`/setup/${business.id}`);
+    revalidatePath(`/setup/${business.id}/${domain}`);
+    revalidatePath(`/setup/${business.id}/review`);
+    revalidatePath(`/user/business/${business.id}`);
+    revalidatePath(`/user/business/${business.id}/today`);
     revalidatePath('/user/business');
     revalidatePath('/user/today');
+    revalidatePath('/user/account');
 
     return {
       success: true,

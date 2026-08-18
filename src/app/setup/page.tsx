@@ -3,7 +3,7 @@ import { requireAuthenticatedClaims } from '../../lib/server/auth/requireAuthent
 import { resolveAuthorizedBusiness } from '../../lib/server/business/resolveAuthorizedBusiness';
 import { getAccessibleBusinesses } from '../../lib/server/business/getAccessibleBusinesses';
 import { getBusinessProfile } from '../../lib/server/business/getBusinessProfile';
-import { deriveSetupProgress } from '../../lib/server/setup/deriveSetupProgress';
+import { deriveSetupProgress } from '../../lib/domain/setup/deriveSetupProgress';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +16,17 @@ export default async function SetupResolverPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
   const claimToken = typeof resolvedParams.claim === 'string' ? resolvedParams.claim : undefined;
+  const isNew = resolvedParams.new === 'true';
+
+  // If user explicitly requested to add/create a new storefront, send to /new/store
+  if (isNew) {
+    const targetUrl = claimToken ? `/new/store?claim=${encodeURIComponent(claimToken)}` : '/new/store';
+    redirect(targetUrl);
+  }
 
   let business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
 
-  // If no business resolved yet, check if the user has any existing accessible storefronts
+  // If no business resolved yet, check accessible businesses
   if (!business) {
     const accessible = await getAccessibleBusinesses(claims.userId);
     if (accessible.length > 0) {
@@ -27,26 +34,21 @@ export default async function SetupResolverPage({ searchParams }: PageProps) {
     }
   }
 
-  // If user still has 0 businesses, send to step 01 Identity creation
+  // If user still has 0 businesses, send to /new/store creation
   if (!business) {
-    const targetUrl = claimToken ? `/setup/identity?claim=${encodeURIComponent(claimToken)}` : '/setup/identity';
+    const targetUrl = claimToken ? `/new/store?claim=${encodeURIComponent(claimToken)}` : '/new/store';
     redirect(targetUrl);
   }
 
   // Resolve business profile & compute derived progress
   const profile = await getBusinessProfile(business.id);
-  const progress = deriveSetupProgress(profile);
+  const progress = deriveSetupProgress(profile, business.id);
 
-  // If all required domains (Identity, Location) are complete -> redirect to Step 09 Review & Launch
   if (progress.requiredComplete) {
-    const reviewUrl = claimToken
-      ? `/setup/review?biz=${encodeURIComponent(business.id)}&claim=${encodeURIComponent(claimToken)}`
-      : `/setup/review?biz=${encodeURIComponent(business.id)}`;
+    const reviewUrl = `/setup/${encodeURIComponent(business.id)}/review`;
     redirect(reviewUrl);
   }
 
-  // Otherwise redirect to the first incomplete required or recommended domain
-  const nextRoute = `/setup/${progress.nextIncompleteDomain}?biz=${encodeURIComponent(business.id)}`;
-  const destinationUrl = claimToken ? `${nextRoute}&claim=${encodeURIComponent(claimToken)}` : nextRoute;
-  redirect(destinationUrl);
+  const nextRoute = `/setup/${encodeURIComponent(business.id)}/${progress.nextIncompleteDomain}`;
+  redirect(nextRoute);
 }

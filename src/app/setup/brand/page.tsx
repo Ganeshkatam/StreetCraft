@@ -1,23 +1,16 @@
-import type { Metadata } from 'next';
-import { getSetupContext } from '../../../lib/server/setup/getSetupContext';
-import { BrandDomainView } from './BrandDomainView';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: '06 Brand — Setup Storefront',
-  description: 'Brand tone and messaging personality.',
-};
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function SetupBrandPage({ searchParams }: PageProps) {
+export default async function LegacyBrandPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
-  const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
-
-  const context = await getSetupContext(candidateBizId);
-
-  return <BrandDomainView context={context} />;
+  const biz = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
+  if (biz) {
+    redirect(`/setup/${encodeURIComponent(biz)}/brand`);
+  }
+  redirect('/setup');
 }

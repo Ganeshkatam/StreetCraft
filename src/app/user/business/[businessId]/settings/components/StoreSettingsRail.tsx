@@ -39,17 +39,19 @@ export function StoreSettingsRail({ business, profile: _profile }: StoreSettings
 
   return (
     <aside className="account-rail">
-      <div style={{ marginBottom: '14px' }}>
+      <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
         <Link
           href={`/user/business/${encodeURIComponent(business.id)}/today`}
           className="btn-ghost"
           style={{
             fontSize: '12px',
-            padding: '4px 8px',
+            padding: '6px 8px',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
             color: 'var(--color-ink-muted)',
+            width: '100%',
+            borderRadius: '18px',
           }}
         >
           <ArrowLeft size={13} />

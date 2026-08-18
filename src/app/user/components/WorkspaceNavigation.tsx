@@ -145,7 +145,7 @@ export const WorkspaceNavigation: React.FC = () => {
 
                     {safeBusinesses.length < accountLimit ? (
                       <Link
-                        href="/setup"
+                        href="/new/store"
                         className="switcher-action-btn"
                         onClick={() => setShowSwitcher(false)}
                       >

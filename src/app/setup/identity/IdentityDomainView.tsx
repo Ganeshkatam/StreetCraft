@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { SetupContext } from '../../../lib/server/setup/getSetupContext';
 import { createBusinessSetupAction, SetupActionState } from '../../../lib/server/setup/createBusinessSetupAction';
 import { saveSetupDomainAction, SetupDomainActionState } from '../../../lib/server/setup/saveSetupDomainAction';
-import { SetupRail } from '../components/SetupRail';
 import { SetupDomainHeader } from '../components/SetupDomainHeader';
 import { SetupFooterNav } from '../components/SetupFooterNav';
 import { toast } from 'sonner';
@@ -33,7 +32,7 @@ interface IdentityDomainViewProps {
 
 export function IdentityDomainView({ context, claimToken }: IdentityDomainViewProps) {
   const router = useRouter();
-  const { business, profile, progress } = context;
+  const { business, profile } = context;
   const isNewStore = !business;
 
   // If new store -> createBusinessSetupAction, else saveSetupDomainAction
@@ -67,13 +66,7 @@ export function IdentityDomainView({ context, claimToken }: IdentityDomainViewPr
 
   return (
     <div className="setup-workspace-grid">
-      {/* Left Navigation Rail */}
-      <SetupRail
-        businessId={business?.id}
-        domainList={progress.domainList}
-      />
-
-      {/* Right Canvas Editor */}
+      {/* Canvas Editor */}
       <div className="setup-editor-card">
         <SetupDomainHeader
           stepNumber="01"
