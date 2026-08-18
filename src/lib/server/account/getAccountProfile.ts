@@ -40,7 +40,7 @@ export interface AccountViewModel {
 }
 
 export async function getAccountProfile(): Promise<AccountViewModel> {
-  const claims = await requireAuthenticatedClaims('/app/account');
+  const claims = await requireAuthenticatedClaims('/user/account');
   const supabase = await createClient();
 
   // Parallelize independent domain reads
@@ -96,11 +96,11 @@ export async function getAccountProfile(): Promise<AccountViewModel> {
   const notificationPreferences: AccountNotificationPreferences = {
     email: typeof rawNotifs.email === 'boolean' ? rawNotifs.email : true,
     whatsapp: typeof rawNotifs.whatsapp === 'boolean' ? rawNotifs.whatsapp : false,
-    weeklyDigest: typeof rawNotifs.weekly_digest === 'boolean' 
-      ? rawNotifs.weekly_digest 
-      : typeof rawNotifs.weeklyDigest === 'boolean' 
-      ? rawNotifs.weeklyDigest 
-      : true,
+    weeklyDigest: typeof rawNotifs.weekly_digest === 'boolean'
+      ? rawNotifs.weekly_digest
+      : typeof rawNotifs.weeklyDigest === 'boolean'
+        ? rawNotifs.weeklyDigest
+        : true,
   };
 
   const profile: AccountUserProfile = {

@@ -27,7 +27,7 @@ StreetCraft is a specialized growth platform built for physical retail, food, sa
 - **Date-Aware Marketing Calendar**: Dynamic proximity engine that evaluates upcoming national and regional festivals relative to current time rather than static array order.
 - **Modern Notification System**: Uses Sonner toasts for consistent, accessible notifications across the application.
 - **Clean Button Typography**: Modern, distraction-free button styling without directional arrows or glyphs.
-- **Unobstructed Workspace Layout**: Dedicated workspace navigation with multi-store switcher and operator profile menu, with footers removed from all `/app/*` routes.
+- **Unobstructed Workspace Layout**: Dedicated workspace navigation with multi-store switcher and operator profile menu, with footers removed from all `/user/*` routes.
 
 ---
 
@@ -53,13 +53,13 @@ StreetCraft is a specialized growth platform built for physical retail, food, sa
 - `/setup` — Storefront onboarding wizard
 
 ### Workspace (Protected — Requires Authenticated Session & Active Business)
-- `/app/today` — Daily briefing, live opportunity radar, and quota status
-- `/app/create` — 4-touchpoint campaign generator and composer wizard
-- `/app/campaigns` — Persistent campaign vault and historical exports
-- `/app/campaigns/:id` — Individual campaign details, print export, and walk-in notes
-- `/app/business` — Storefront profile, operating hours, and neighborhood context
-- `/app/billing` — Subscription tier, monthly quotas, and payment verification
-- `/app/account` — Operator profile, multi-store ownership, credentials, and session controls
+- `/user/today` — Daily briefing, live opportunity radar, and quota status
+- `/user/create` — 4-touchpoint campaign generator and composer wizard
+- `/user/campaigns` — Persistent campaign vault and historical exports
+- `/user/campaigns/:id` — Individual campaign details, print export, and walk-in notes
+- `/user/business` — Storefront profile, operating hours, and neighborhood context
+- `/user/billing` — Subscription tier, monthly quotas, and payment verification
+- `/user/account` — Operator profile, multi-store ownership, credentials, and session controls
 
 ### System & Recovery
 - `/unauthorized` — Permission denied recovery

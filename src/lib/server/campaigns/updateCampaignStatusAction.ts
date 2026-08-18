@@ -68,17 +68,17 @@ export async function updateCampaignStatusAction(
 
     if (rpcError) {
       console.error('RPC transition error:', rpcError);
-      
+
       if (rpcError.message.includes('ILLEGAL_STATE_TRANSITION')) {
         return { success: false, error: 'Invalid status transition requested.' };
       }
-      
+
       return { success: false, error: 'Failed to update campaign status: ' + rpcError.message };
     }
 
     // 4. Revalidate cache
-    revalidatePath('/app/campaigns');
-    revalidatePath('/app/campaigns/[id]', 'page');
+    revalidatePath('/user/campaigns');
+    revalidatePath('/user/campaigns/[id]', 'page');
 
     return {
       success: true,

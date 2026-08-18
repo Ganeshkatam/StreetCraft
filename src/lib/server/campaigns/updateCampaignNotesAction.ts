@@ -95,8 +95,8 @@ export async function updateCampaignNotesAction(
     }
 
     // 4. Revalidate cache
-    revalidatePath('/app/campaigns');
-    revalidatePath('/app/campaigns/[id]', 'page');
+    revalidatePath('/user/campaigns');
+    revalidatePath('/user/campaigns/[id]', 'page');
 
     return {
       success: true,

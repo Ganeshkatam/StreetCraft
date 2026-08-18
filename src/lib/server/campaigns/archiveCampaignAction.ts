@@ -36,7 +36,7 @@ export async function archiveCampaignAction(
     const { campaignId } = parsed.data;
 
     // 1. Authenticate caller
-    await requireAuthenticatedClaims('/app/campaigns');
+    await requireAuthenticatedClaims('/user/campaigns');
     const supabase = await createClient();
 
     // 2. Call the Transactional RPC to transition status to 'archived'
@@ -60,9 +60,9 @@ export async function archiveCampaignAction(
     }
 
     // 3. Revalidate affected surfaces
-    revalidatePath('/app/campaigns');
-    revalidatePath(`/app/campaigns/${campaignId}`);
-    revalidatePath('/app/today');
+    revalidatePath('/user/campaigns');
+    revalidatePath(`/user/campaigns/${campaignId}`);
+    revalidatePath('/user/today');
 
     return {
       success: true,

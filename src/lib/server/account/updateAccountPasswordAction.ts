@@ -44,7 +44,7 @@ export async function updateAccountPasswordAction(
     const { newPassword } = parsed.data;
 
     // 1. Authenticate caller
-    await requireAuthenticatedClaims('/app/account');
+    await requireAuthenticatedClaims('/user/account');
     const supabase = await createClient();
 
     // 2. Delegate password update strictly to Supabase Auth (passwords never touch public database)

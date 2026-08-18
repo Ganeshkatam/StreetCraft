@@ -35,8 +35,8 @@ export interface CampaignDetailViewModel {
 }
 
 export async function getCampaignDetail(campaignId: string): Promise<CampaignDetailViewModel | null> {
-  const claims = await requireAuthenticatedClaims('/app/campaigns');
-  
+  const claims = await requireAuthenticatedClaims('/user/campaigns');
+
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaignId)) {
     return null; // Malformed ID -> 404
   }
@@ -74,7 +74,7 @@ export async function getCampaignDetail(campaignId: string): Promise<CampaignDet
   // 2. Strict authorization via business_members (no fallback!)
   const accessibleBusinesses = await getAccessibleBusinesses(claims.userId);
   const isAuthorized = accessibleBusinesses.some(b => b.id === data.business_id);
-  
+
   if (!isAuthorized) {
     return null; // Exists but unauthorized -> 404 (do not leak existence with 403)
   }
@@ -95,7 +95,7 @@ export async function getCampaignDetail(campaignId: string): Promise<CampaignDet
   };
 
   const rawOutputs = Array.isArray(data.campaign_outputs) ? data.campaign_outputs : [];
-  
+
   const googleBusiness = rawOutputs.find(o => o.channel === 'GOOGLE_BUSINESS') as CampaignDetailOutput | undefined;
   const instagram = rawOutputs.find(o => o.channel === 'INSTAGRAM') as CampaignDetailOutput | undefined;
   const whatsapp = rawOutputs.find(o => o.channel === 'WHATSAPP') as CampaignDetailOutput | undefined;

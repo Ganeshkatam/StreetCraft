@@ -70,7 +70,7 @@ export default function NotFound() {
           <Link href="/" className="btn-secondary">
             Home
           </Link>
-          <Link href="/app/today" className="btn-primary">
+          <Link href="/user/today" className="btn-primary">
             <LayoutDashboard size={14} /> Workspace
           </Link>
         </div>

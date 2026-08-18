@@ -13,8 +13,8 @@ export interface CreateContext {
 }
 
 export async function getCreateContext(candidateBizId?: string): Promise<CreateContext | null> {
-  const claims = await requireAuthenticatedClaims('/app/create');
-  
+  const claims = await requireAuthenticatedClaims('/user/create');
+
   const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
   if (!business) {
     return null;

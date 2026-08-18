@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       let target = next;
       if (!target) {
         target = members && members.length > 0
-          ? '/app/today'
+          ? '/user/today'
           : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
       }
 
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       let target = next;
       if (!target) {
         target = members && members.length > 0
-          ? '/app/today'
+          ? '/user/today'
           : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
       }
 

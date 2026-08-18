@@ -609,7 +609,7 @@ streetcraft/
 
 ## Directory Overview
 
-- `src/app/` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
+- `src/user/` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
 - `src/components/` - Shared UI components (CustomSelect, CalendarPicker, UpgradeModal, UsageMeter)
 - `src/lib/` - Supabase client, API abstractions, error handling, telemetry, and entitlements
 - `src/config/` - Immutable plan configurations, channel definitions, and category schemas

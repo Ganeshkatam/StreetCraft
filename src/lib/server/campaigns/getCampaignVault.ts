@@ -28,8 +28,8 @@ export async function getCampaignVault(
   cursor?: { createdAt: string; id: string },
   viewMode: 'active' | 'archived' = 'active'
 ): Promise<CampaignVaultViewModel | null> {
-  const claims = await requireAuthenticatedClaims('/app/campaigns');
-  
+  const claims = await requireAuthenticatedClaims('/user/campaigns');
+
   const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
   if (!business) {
     return null;
@@ -84,10 +84,10 @@ export async function getCampaignVault(
   }
 
   const campaigns: CampaignVaultItem[] = data.map((row: any) => {
-    const presentChannels = Array.isArray(row.campaign_outputs) 
-      ? row.campaign_outputs.map((co: any) => co.channel) 
+    const presentChannels = Array.isArray(row.campaign_outputs)
+      ? row.campaign_outputs.map((co: any) => co.channel)
       : [];
-    
+
     return {
       id: row.id,
       type: row.type as CampaignType,

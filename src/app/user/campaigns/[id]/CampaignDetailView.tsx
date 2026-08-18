@@ -40,7 +40,7 @@ export function CampaignDetailView({ detailData }: CampaignDetailViewProps) {
     <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
       <div style={{ marginBottom: '20px' }}>
         <button
-          onClick={() => router.push('/app/campaigns')}
+          onClick={() => router.push('/user/campaigns')}
           className="btn-ghost"
           style={{ padding: 0, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
         >

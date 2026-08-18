@@ -54,7 +54,7 @@ export interface BillingViewModel {
 }
 
 export async function getBillingData(candidateBizId?: string): Promise<BillingViewModel> {
-  const claims = await requireAuthenticatedClaims('/app/billing');
+  const claims = await requireAuthenticatedClaims('/user/billing');
   const supabase = await createClient();
 
   const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);

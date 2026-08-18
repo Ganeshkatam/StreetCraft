@@ -40,27 +40,27 @@ async function main() {
 
   // 1. ROUTE INVENTORY AND SERVER COMPONENT CONVENTIONS
   const routes = [
-    { path: 'src/app/page.tsx', isDynamic: false, hasMeta: true, desc: 'Landing Home' },
-    { path: 'src/app/how-it-works/page.tsx', isDynamic: false, hasMeta: true, desc: 'How It Works' },
-    { path: 'src/app/pricing/page.tsx', isDynamic: false, hasMeta: true, desc: 'Pricing Rates' },
-    { path: 'src/app/free-tool/page.tsx', isDynamic: false, hasMeta: true, desc: 'Free Campaign Tool' },
-    { path: 'src/app/contact/page.tsx', isDynamic: false, hasMeta: true, desc: 'Founder Contact' },
-    { path: 'src/app/privacy/page.tsx', isDynamic: false, hasMeta: true, desc: 'Privacy Policy' },
-    { path: 'src/app/terms/page.tsx', isDynamic: false, hasMeta: true, desc: 'Terms of Service' },
-    { path: 'src/app/not-found.tsx', isDynamic: false, hasMeta: false, desc: '404 Recovery State' },
-    { path: 'src/app/login/page.tsx', isDynamic: false, hasMeta: true, desc: 'Store Operator Sign-In' },
-    { path: 'src/app/signup/page.tsx', isDynamic: false, hasMeta: true, desc: 'Account Registration' },
-    { path: 'src/app/forgot-password/page.tsx', isDynamic: false, hasMeta: true, desc: 'Password Reset Request' },
-    { path: 'src/app/reset-password/page.tsx', isDynamic: false, hasMeta: true, desc: 'Password Reset Confirm' },
-    { path: 'src/app/setup/page.tsx', isDynamic: false, hasMeta: true, desc: 'Store Setup & Onboarding' },
-    { path: 'src/app/app/today/page.tsx', isDynamic: true, hasMeta: true, desc: 'Workspace Today Dashboard' },
-    { path: 'src/app/app/create/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Composer' },
-    { path: 'src/app/app/campaigns/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Vault' },
-    { path: 'src/app/app/campaigns/[id]/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Detail' },
-    { path: 'src/app/app/business/page.tsx', isDynamic: true, hasMeta: true, desc: 'Business Profile Settings' },
-    { path: 'src/app/app/billing/page.tsx', isDynamic: true, hasMeta: true, desc: 'Billing & Usage' },
-    { path: 'src/app/app/account/page.tsx', isDynamic: true, hasMeta: true, desc: 'Account Profile' },
-    { path: 'src/app/app/auth-proof/page.tsx', isDynamic: true, hasMeta: false, desc: 'SSR Auth Proof' },
+    { path: 'src/user/page.tsx', isDynamic: false, hasMeta: true, desc: 'Landing Home' },
+    { path: 'src/user/how-it-works/page.tsx', isDynamic: false, hasMeta: true, desc: 'How It Works' },
+    { path: 'src/user/pricing/page.tsx', isDynamic: false, hasMeta: true, desc: 'Pricing Rates' },
+    { path: 'src/user/free-tool/page.tsx', isDynamic: false, hasMeta: true, desc: 'Free Campaign Tool' },
+    { path: 'src/user/contact/page.tsx', isDynamic: false, hasMeta: true, desc: 'Founder Contact' },
+    { path: 'src/user/privacy/page.tsx', isDynamic: false, hasMeta: true, desc: 'Privacy Policy' },
+    { path: 'src/user/terms/page.tsx', isDynamic: false, hasMeta: true, desc: 'Terms of Service' },
+    { path: 'src/user/not-found.tsx', isDynamic: false, hasMeta: false, desc: '404 Recovery State' },
+    { path: 'src/user/login/page.tsx', isDynamic: false, hasMeta: true, desc: 'Store Operator Sign-In' },
+    { path: 'src/user/signup/page.tsx', isDynamic: false, hasMeta: true, desc: 'Account Registration' },
+    { path: 'src/user/forgot-password/page.tsx', isDynamic: false, hasMeta: true, desc: 'Password Reset Request' },
+    { path: 'src/user/reset-password/page.tsx', isDynamic: false, hasMeta: true, desc: 'Password Reset Confirm' },
+    { path: 'src/user/setup/page.tsx', isDynamic: false, hasMeta: true, desc: 'Store Setup & Onboarding' },
+    { path: 'src/user/user/today/page.tsx', isDynamic: true, hasMeta: true, desc: 'Workspace Today Dashboard' },
+    { path: 'src/user/user/create/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Composer' },
+    { path: 'src/user/user/campaigns/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Vault' },
+    { path: 'src/user/user/campaigns/[id]/page.tsx', isDynamic: true, hasMeta: true, desc: 'Campaign Detail' },
+    { path: 'src/user/user/business/page.tsx', isDynamic: true, hasMeta: true, desc: 'Business Profile Settings' },
+    { path: 'src/user/user/billing/page.tsx', isDynamic: true, hasMeta: true, desc: 'Billing & Usage' },
+    { path: 'src/user/user/account/page.tsx', isDynamic: true, hasMeta: true, desc: 'Account Profile' },
+    { path: 'src/user/user/auth-proof/page.tsx', isDynamic: true, hasMeta: false, desc: 'SSR Auth Proof' },
   ];
 
   for (const r of routes) {
@@ -81,8 +81,8 @@ async function main() {
 
   // 2. SUSPENSE BOUNDARIES FOR SEARCH PARAMS
   const suspenseRoutes = [
-    { file: 'src/app/login/LoginView.tsx', name: 'LoginView' },
-    { file: 'src/app/setup/SetupView.tsx', name: 'SetupView' },
+    { file: 'src/user/login/LoginView.tsx', name: 'LoginView' },
+    { file: 'src/user/setup/SetupView.tsx', name: 'SetupView' },
   ];
 
   for (const sr of suspenseRoutes) {
@@ -95,7 +95,7 @@ async function main() {
   }
 
   // 3. ZERO LEGACY REACT-ROUTER IN APP ROUTER DIRECTORY
-  runTest('Isolation Boundary', 'Verify zero react-router-dom imports in src/app directory', () => {
+  runTest('Isolation Boundary', 'Verify zero react-router-dom imports in src/user directory', () => {
     const checkDir = (dir: string) => {
       const files = readdirSync(dir, { withFileTypes: true });
       for (const f of files) {
@@ -110,18 +110,18 @@ async function main() {
         }
       }
     };
-    checkDir(resolve(root, 'src/app'));
+    checkDir(resolve(root, 'src/user'));
   });
 
   // 4. PUBLIC HEADER INTEGRATION
   const publicViews = [
-    'src/app/page.tsx',
-    'src/app/how-it-works/HowItWorksView.tsx',
-    'src/app/pricing/PricingView.tsx',
-    'src/app/free-tool/FreeToolView.tsx',
-    'src/app/contact/ContactView.tsx',
-    'src/app/privacy/page.tsx',
-    'src/app/terms/page.tsx',
+    'src/user/page.tsx',
+    'src/user/how-it-works/HowItWorksView.tsx',
+    'src/user/pricing/PricingView.tsx',
+    'src/user/free-tool/FreeToolView.tsx',
+    'src/user/contact/ContactView.tsx',
+    'src/user/privacy/page.tsx',
+    'src/user/terms/page.tsx',
   ];
 
   for (const pv of publicViews) {

@@ -474,7 +474,7 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
                   <Printer size={13} /> Print
                 </button>
               )}
-              <button className="btn-primary" style={{ fontSize: '12.5px', padding: '6px 14px' }} onClick={() => router.push('/app/campaigns')}>
+              <button className="btn-primary" style={{ fontSize: '12.5px', padding: '6px 14px' }} onClick={() => router.push('/user/campaigns')}>
                 Open Vault
               </button>
             </div>
@@ -509,7 +509,7 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-            <button className="btn-primary" onClick={() => router.push('/app/campaigns')}>
+            <button className="btn-primary" onClick={() => router.push('/user/campaigns')}>
               Open Campaign Vault
             </button>
           </div>

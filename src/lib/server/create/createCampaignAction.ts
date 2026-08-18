@@ -64,7 +64,7 @@ export async function createCampaignAction(
   formData: FormData
 ): Promise<CreateCampaignActionState> {
   try {
-    const claims = await requireAuthenticatedClaims('/app/create');
+    const claims = await requireAuthenticatedClaims('/user/create');
 
     const rawData = {
       businessId: formData.get('businessId'),
@@ -154,8 +154,8 @@ export async function createCampaignAction(
       return { success: false, message: 'An unexpected error occurred while saving the campaign.' };
     }
 
-    revalidatePath('/app/campaigns');
-    revalidatePath('/app/today');
+    revalidatePath('/user/campaigns');
+    revalidatePath('/user/today');
 
     return {
       success: true,

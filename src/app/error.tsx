@@ -82,7 +82,7 @@ export default function GlobalError({
           <button className="btn-secondary" onClick={() => reset()}>
             <RefreshCw size={14} /> Try Again
           </button>
-          <Link href="/app/today" className="btn-primary">
+          <Link href="/user/today" className="btn-primary">
             <LayoutDashboard size={14} /> Workspace
           </Link>
         </div>

@@ -28,12 +28,12 @@ async function main() {
   runTest('1-4. resolveAuthorizedBusiness does not leak tenant existence and handles fallbacks', () => {
     const file = resolve(root, 'src/lib/server/business/resolveAuthorizedBusiness.ts');
     const content = readFileSync(file, 'utf8');
-    
+
     // It should check UUID format
     if (!content.includes('isCandidateValidUuid') && !content.includes('/^[0-9a-f]{8}')) {
       throw new Error('UUID format validation missing');
     }
-    
+
     // It should fallback to the first accessible business if candidate is invalid/unauthorized
     if (!content.includes('return accessibleBusinesses[0]')) {
       throw new Error('Fallback mechanism to primary owned business is missing');
@@ -43,7 +43,7 @@ async function main() {
   runTest('5. User with zero businesses intentional empty state', () => {
     const file = resolve(root, 'src/lib/server/workspace/getWorkspaceTodayData.ts');
     const content = readFileSync(file, 'utf8');
-    
+
     // getWorkspaceTodayData should return null if no business
     if (!content.includes('if (!business)') && !content.includes('return null')) {
       throw new Error('Intentional empty setup state (return null) missing');
@@ -53,7 +53,7 @@ async function main() {
   runTest('6. Business with missing usage period -> no fabricated entitlement state', () => {
     const file = resolve(root, 'src/lib/server/usage/getCurrentUsagePeriod.ts');
     const content = readFileSync(file, 'utf8');
-    
+
     // It should return null on error or no data, not a fabricated state
     if (!content.includes('return null')) {
       throw new Error('Must return null when usage period is missing');
@@ -66,7 +66,7 @@ async function main() {
   runTest('7-8. Unauthenticated request handled', () => {
     const file = resolve(root, 'src/lib/server/auth/requireAuthenticatedClaims.ts');
     const content = readFileSync(file, 'utf8');
-    
+
     if (!content.includes('supabase.auth.getUser()')) {
       throw new Error('Must validate session via Supabase Auth Server (getUser)');
     }
@@ -75,10 +75,10 @@ async function main() {
     }
   });
 
-  runTest('9-10. Direct GET /app/today is force-dynamic server component', () => {
-    const file = resolve(root, 'src/app/app/today/page.tsx');
+  runTest('9-10. Direct GET /user/today is force-dynamic server component', () => {
+    const file = resolve(root, 'src/user/user/today/page.tsx');
     const content = readFileSync(file, 'utf8');
-    
+
     if (!content.includes("export const dynamic = 'force-dynamic'")) {
       throw new Error('page.tsx must be force-dynamic');
     }
@@ -88,13 +88,13 @@ async function main() {
   });
 
   runTest('12. Zero client-side Supabase data fetching waterfall on initial render', () => {
-    const file = resolve(root, 'src/app/app/today/TodayView.tsx');
+    const file = resolve(root, 'src/user/user/today/TodayView.tsx');
     const content = readFileSync(file, 'utf8');
-    
+
     if (content.includes('useBusiness') || content.includes('useCampaign') || content.includes('useUsage') || content.includes('useAuth')) {
       throw new Error('TodayView must not use client-side data hooks for initialization');
     }
-    
+
     if (content.includes('const supabase =') || content.includes('createClientComponentClient')) {
       throw new Error('TodayView must not instantiate Supabase client directly');
     }

@@ -55,8 +55,8 @@ function LoginContent() {
 
       toast.success('Signed in successfully.');
 
-      if (session.activeBusinessId || redirectParam === '/app/account') {
-        const dest = redirectParam && redirectParam.startsWith('/app') ? redirectParam : '/app/today';
+      if (session.activeBusinessId || redirectParam === '/user/account') {
+        const dest = redirectParam && redirectParam.startsWith('/user') ? redirectParam : '/user/today';
         router.push(dest);
         router.refresh();
       } else {

@@ -54,7 +54,7 @@ export function PublicHeader() {
           {session.isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Link
-                href="/app/today"
+                href="/user/today"
                 className="btn-primary"
                 style={{ padding: '8px 18px', fontSize: '13.5px' }}
               >
@@ -62,7 +62,7 @@ export function PublicHeader() {
               </Link>
 
               <Link
-                href="/app/account"
+                href="/user/account"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',

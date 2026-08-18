@@ -208,10 +208,10 @@ export const ServerFooter: React.FC<ServerFooterProps> = ({ variant = 'full' }) 
           <div>
             <div className="footer-col-title">Customer Touchpoints</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <span className="footer-link">Google Business</span>
-              <span className="footer-link">Instagram</span>
-              <span className="footer-link">WhatsApp</span>
-              <span className="footer-link">In-store print</span>
+              <Link href="/touchpoints/google-business" className="footer-link">Google Business</Link>
+              <Link href="/touchpoints/instagram" className="footer-link">Instagram</Link>
+              <Link href="/touchpoints/whatsapp" className="footer-link">WhatsApp</Link>
+              <Link href="/touchpoints/in-store-print" className="footer-link">In-store print</Link>
             </div>
           </div>
 
@@ -219,10 +219,10 @@ export const ServerFooter: React.FC<ServerFooterProps> = ({ variant = 'full' }) 
           <div>
             <div className="footer-col-title">For Your Business</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <span className="footer-link">Caf&eacute;s &amp; Bakeries</span>
-              <span className="footer-link">Restaurants &amp; Food</span>
-              <span className="footer-link">Salons &amp; Studios</span>
-              <span className="footer-link">Retail &amp; Boutiques</span>
+              <Link href="/solutions/cafes-and-bakeries" className="footer-link">Caf&eacute;s &amp; Bakeries</Link>
+              <Link href="/solutions/restaurants-and-food" className="footer-link">Restaurants &amp; Food</Link>
+              <Link href="/solutions/salons-and-studios" className="footer-link">Salons &amp; Studios</Link>
+              <Link href="/solutions/retail-and-boutiques" className="footer-link">Retail &amp; Boutiques</Link>
             </div>
           </div>
 
@@ -230,10 +230,10 @@ export const ServerFooter: React.FC<ServerFooterProps> = ({ variant = 'full' }) 
           <div>
             <div className="footer-col-title">Workspace</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <Link href="/app/today" className="footer-link">Today</Link>
-              <Link href="/app/create" className="footer-link">Create</Link>
-              <Link href="/app/campaigns" className="footer-link">Campaigns</Link>
-              <Link href="/app/business" className="footer-link">Business</Link>
+              <Link href="/user/today" className="footer-link">Today</Link>
+              <Link href="/user/create" className="footer-link">Create</Link>
+              <Link href="/user/campaigns" className="footer-link">Campaigns</Link>
+              <Link href="/user/business" className="footer-link">Business</Link>
               <Link href="/login" className="footer-link">Sign in</Link>
             </div>
           </div>

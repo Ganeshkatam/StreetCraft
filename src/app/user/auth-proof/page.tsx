@@ -8,7 +8,7 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function AuthProofPage() {
-  const user = await requireAuth('/app/auth-proof');
+  const user = await requireAuth('/userr/auth-proof');
   const claims = await getUserClaims();
 
   return (

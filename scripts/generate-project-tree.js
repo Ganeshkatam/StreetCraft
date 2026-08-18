@@ -25,7 +25,7 @@ let totalDirs = 0;
 
 function buildTree(dirPath, prefix = '') {
   let output = '';
-  
+
   try {
     const items = fs.readdirSync(dirPath, { withFileTypes: true })
       .filter(item => !IGNORED.has(item.name))
@@ -40,7 +40,7 @@ function buildTree(dirPath, prefix = '') {
       const isLast = index === items.length - 1;
       const pointer = isLast ? '└── ' : '├── ';
       const nextPrefix = prefix + (isLast ? '    ' : '│   ');
-      
+
       const fullPath = path.join(dirPath, item.name);
 
       if (item.isDirectory()) {
@@ -82,7 +82,7 @@ ${treeContent}\`\`\`
 
 ## Directory Overview
 
-- \`src/app/\` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
+- \`src/user/\` - Next.js App Router (Public routes, marketing, authenticated workspace, auth handlers)
 - \`src/components/\` - Shared UI components (CustomSelect, CalendarPicker, UpgradeModal, UsageMeter)
 - \`src/lib/\` - Supabase client, API abstractions, error handling, telemetry, and entitlements
 - \`src/config/\` - Immutable plan configurations, channel definitions, and category schemas

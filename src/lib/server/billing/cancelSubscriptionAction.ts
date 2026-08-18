@@ -16,7 +16,7 @@ export async function cancelSubscriptionAction(
 ): Promise<CancelSubscriptionActionState> {
   try {
     // 1. Authenticate caller
-    await requireAuthenticatedClaims('/app/billing');
+    await requireAuthenticatedClaims('/user/billing');
     const supabase = await createClient();
 
     // 2. Execute transactional RPC to schedule cancellation at period end
@@ -38,11 +38,11 @@ export async function cancelSubscriptionAction(
     }
 
     // 3. Revalidate affected surfaces
-    revalidatePath('/app/billing');
-    revalidatePath('/app/account');
-    revalidatePath('/app/today');
+    revalidatePath('/user/billing');
+    revalidatePath('/user/account');
+    revalidatePath('/user/today');
 
-    const periodEndStr = (rpcResult as any)?.current_period_end 
+    const periodEndStr = (rpcResult as any)?.current_period_end
       ? new Date((rpcResult as any).current_period_end).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })
       : 'the end of the cycle';
 

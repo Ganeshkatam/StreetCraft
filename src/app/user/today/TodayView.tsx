@@ -77,7 +77,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
 
   const handleLaunchPreset = (opportunity: DynamicOpportunity) => {
     sessionStorage.setItem('sc_launched_preset', JSON.stringify(opportunity.preset));
-    router.push('/app/create');
+    router.push('/user/create');
   };
 
   return (
@@ -97,10 +97,10 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
         </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button className="btn-secondary" onClick={() => router.push('/app/campaigns')}>
+          <button className="btn-secondary" onClick={() => router.push('/user/campaigns')}>
             Vault ({campaigns.length})
           </button>
-          <button className="btn-primary" onClick={() => router.push('/app/create')}>
+          <button className="btn-primary" onClick={() => router.push('/user/create')}>
             <Plus size={14} /> Create promotion
           </button>
         </div>
@@ -178,7 +178,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>
                 Campaign Vault
               </h3>
-              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => router.push('/app/campaigns')}>
+              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => router.push('/user/campaigns')}>
                 View all in vault ({campaigns.length})
               </button>
             </div>
@@ -220,7 +220,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
                         <span>{cpn.schedule?.timingLabel || 'Active'}</span>
-                        <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/app/campaigns/${c.id}`)}>
+                        <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/user/campaigns/${c.id}`)}>
                           Proofs
                         </button>
                       </div>
@@ -239,7 +239,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase' }}>
                 STORE CONTEXT
               </span>
-              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => router.push('/app/business')}>
+              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => router.push('/user/business')}>
                 Edit
               </button>
             </div>
@@ -352,7 +352,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
                           },
                           customNotes: `Focus on ${f.marketing_relevance}.`,
                         }));
-                        router.push('/app/create');
+                        router.push('/user/create');
                       }}
                     >
                       Draft Promotion

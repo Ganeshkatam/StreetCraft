@@ -54,7 +54,7 @@ export async function updateBusinessProfile(
 ): Promise<ActionState> {
   try {
     // 1. Authentication
-    const claims = await requireAuthenticatedClaims('/app/business');
+    const claims = await requireAuthenticatedClaims('/user/business');
 
     // 2. Candidate resolution and membership authorization
     const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
@@ -116,8 +116,8 @@ export async function updateBusinessProfile(
     }
 
     // 6. Revalidation
-    revalidatePath('/app/business');
-    revalidatePath('/app/today');
+    revalidatePath('/user/business');
+    revalidatePath('/user/today');
 
     return { success: true, message: 'Business profile updated successfully.' };
 

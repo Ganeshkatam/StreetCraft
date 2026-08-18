@@ -15,8 +15,8 @@ export interface WorkspaceTodayViewModel {
 }
 
 export async function getWorkspaceTodayData(candidateBizId?: string): Promise<WorkspaceTodayViewModel | null> {
-  const claims = await requireAuthenticatedClaims('/app/today');
-  
+  const claims = await requireAuthenticatedClaims('/user/today');
+
   const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
   if (!business) {
     // Zero accessible businesses -> Intentional onboarding empty state

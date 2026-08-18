@@ -183,7 +183,7 @@ function SetupContent() {
           <button
             type="button"
             className="auth-back-btn"
-            onClick={() => router.push('/app/today')}
+            onClick={() => router.push('/user/today')}
           >
             Set up later
           </button>
@@ -364,7 +364,7 @@ function SetupContent() {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button
                         type="button"
-                        onClick={() => router.push('/app/today')}
+                        onClick={() => router.push('/user/today')}
                         className="btn-secondary"
                         style={{ padding: '10px 16px', fontSize: '13px' }}
                       >
@@ -455,7 +455,7 @@ function SetupContent() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => router.push('/app/today')}
+                        onClick={() => router.push('/user/today')}
                         className="btn-secondary"
                         style={{ padding: '10px 16px', fontSize: '13px' }}
                       >
@@ -484,7 +484,7 @@ function SetupContent() {
                     {storeName || 'Your store'} has been configured and saved. Let&apos;s create your first campaign.
                   </p>
                   <button
-                    onClick={() => router.push('/app/create')}
+                    onClick={() => router.push('/user/create')}
                     className="auth-submit-btn"
                   >
                     Open Campaign Composer

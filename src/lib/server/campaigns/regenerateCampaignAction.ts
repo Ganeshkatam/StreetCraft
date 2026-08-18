@@ -43,7 +43,7 @@ export async function regenerateCampaignAction(
     const { campaignId, expectedGenerationRevision } = parsed.data;
 
     // 1. Authenticate caller
-    const claims = await requireAuthenticatedClaims('/app/campaigns');
+    const claims = await requireAuthenticatedClaims('/user/campaigns');
     const supabase = await createClient();
 
     // 2. Pre-fetch campaign details for authorization and LLM context
@@ -142,9 +142,9 @@ export async function regenerateCampaignAction(
     }
 
     // 9. Revalidate affected routes
-    revalidatePath('/app/campaigns');
-    revalidatePath(`/app/campaigns/${campaignId}`);
-    revalidatePath('/app/today');
+    revalidatePath('/user/campaigns');
+    revalidatePath(`/user/campaigns/${campaignId}`);
+    revalidatePath('/user/today');
 
     return {
       success: true,

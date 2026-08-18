@@ -56,15 +56,23 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAppRoute = pathname.startsWith('/app');
+  const isUserRoute = pathname.startsWith('/user');
+  const isLegacyAppRoute = pathname.startsWith('/user');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password';
 
+  // Legacy redirect: /user/* -> /user/*
+  if (isLegacyAppRoute) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = pathname.replace(/^\/user/, '/user');
+    return NextResponse.redirect(redirectUrl);
+  }
+
   // 1. Protected Route Boundary: Redirect unauthenticated users to /login
-  if (isAppRoute && !user) {
+  if (isUserRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     // Store requested destination with open-redirect protection (relative paths only)
@@ -75,16 +83,16 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Anonymous Route Boundary: Redirect authenticated users away from auth forms to /app/today
+  // 2. Anonymous Route Boundary: Redirect authenticated users away from auth forms to /user/today
   if (isAuthRoute && user) {
     const destinationUrl = request.nextUrl.clone();
-    destinationUrl.pathname = '/app/today';
+    destinationUrl.pathname = '/user/today';
     destinationUrl.search = '';
     return NextResponse.redirect(destinationUrl);
   }
 
   // 3. Security Header: Ensure authenticated routes prevent caching of sensitive sessions
-  if (isAppRoute) {
+  if (isUserRoute) {
     supabaseResponse.headers.set(
       'Cache-Control',
       'private, no-cache, no-store, max-age=0, must-revalidate'

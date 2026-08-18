@@ -54,7 +54,7 @@ export const WorkspaceNavigation: React.FC = () => {
       <header className="main-header">
         <div className="header-container">
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Link href="/app/today" className="brand-wrapper">
+            <Link href="/user/today" className="brand-wrapper">
               <Logo size="sm" />
             </Link>
 
@@ -143,40 +143,34 @@ export const WorkspaceNavigation: React.FC = () => {
 
           <nav className="header-nav-links">
             <Link
-              href="/app/today"
-              className={`nav-item ${pathname === '/app/today' ? 'active' : ''}`}
+              href="/user/today"
+              className={`nav-item ${pathname === '/user/today' ? 'active' : ''}`}
             >
               Today
             </Link>
             <Link
-              href="/app/create"
-              className={`nav-item ${pathname === '/app/create' ? 'active' : ''}`}
+              href="/user/create"
+              className={`nav-item ${pathname === '/user/create' ? 'active' : ''}`}
             >
               Create
             </Link>
             <Link
-              href="/app/campaigns"
-              className={`nav-item ${pathname.startsWith('/app/campaigns') ? 'active' : ''}`}
+              href="/user/campaigns"
+              className={`nav-item ${pathname.startsWith('/user/campaigns') ? 'active' : ''}`}
             >
               Campaigns
             </Link>
             <Link
-              href="/app/business"
-              className={`nav-item ${pathname === '/app/business' ? 'active' : ''}`}
+              href="/user/business"
+              className={`nav-item ${pathname === '/user/business' ? 'active' : ''}`}
             >
               Business
             </Link>
             <Link
-              href="/app/billing"
-              className={`nav-item ${pathname === '/app/billing' ? 'active' : ''}`}
+              href="/user/billing"
+              className={`nav-item ${pathname === '/user/billing' ? 'active' : ''}`}
             >
               Billing
-            </Link>
-            <Link
-              href="/app/account"
-              className={`nav-item ${pathname === '/app/account' ? 'active' : ''}`}
-            >
-              Account
             </Link>
           </nav>
 
@@ -216,7 +210,7 @@ export const WorkspaceNavigation: React.FC = () => {
                   </div>
 
                   <Link
-                    href="/app/account"
+                    href="/user/account"
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
@@ -225,7 +219,7 @@ export const WorkspaceNavigation: React.FC = () => {
                   </Link>
 
                   <Link
-                    href="/app/business"
+                    href="/user/business"
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
@@ -234,7 +228,7 @@ export const WorkspaceNavigation: React.FC = () => {
                   </Link>
 
                   <Link
-                    href="/app/billing"
+                    href="/user/billing"
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >

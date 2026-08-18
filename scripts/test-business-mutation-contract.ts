@@ -77,7 +77,7 @@ async function main() {
   runTest('Server Action: No client Supabase writes or direct `businesses` mutation', () => {
     const file = resolve(root, 'src/lib/server/business/updateBusinessProfile.ts');
     const content = readFileSync(file, 'utf8');
-    
+
     if (content.includes("from('businesses')")) {
       throw new Error('Server action mutates businesses directly!');
     }
@@ -97,9 +97,9 @@ async function main() {
 
   // 3. UI Component Static Analysis
   runTest('UI: Form uses action state correctly with no client data fetching', () => {
-    const file = resolve(root, 'src/app/app/business/BusinessView.tsx');
+    const file = resolve(root, 'src/user/user/business/BusinessView.tsx');
     const content = readFileSync(file, 'utf8');
-    
+
     if (content.includes('useBusiness(') || content.includes('useAuth(') || content.includes('supabase.')) {
       throw new Error('UI component uses client-side Supabase or data hooks');
     }

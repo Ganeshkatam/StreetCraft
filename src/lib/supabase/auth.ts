@@ -66,9 +66,9 @@ export async function requireAuth(returnPath?: string): Promise<User> {
 
 /**
  * Server Component / Action Guard: Requires an anonymous visitor.
- * If already authenticated, redirects to /app/today.
+ * If already authenticated, redirects to /user/today.
  */
-export async function requireAnonymous(targetPath: string = '/app/today'): Promise<void> {
+export async function requireAnonymous(targetPath: string = '/user/today'): Promise<void> {
   const user = await getAuthenticatedUser();
 
   if (user) {

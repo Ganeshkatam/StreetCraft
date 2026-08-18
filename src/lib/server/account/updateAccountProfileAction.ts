@@ -72,7 +72,7 @@ export async function updateAccountProfileAction(
     const { fullName, phone, emailNotifs, whatsappNotifs, weeklyDigest } = parsed.data;
 
     // 1. Authenticate caller (identity invariant: profiles.id = claims.userId)
-    const claims = await requireAuthenticatedClaims('/app/account');
+    const claims = await requireAuthenticatedClaims('/user/account');
     const supabase = await createClient();
 
     const trimmedPhone = phone.trim();
@@ -102,8 +102,8 @@ export async function updateAccountProfileAction(
     }
 
     // 3. Dependency-driven revalidation
-    revalidatePath('/app/account');
-    revalidatePath('/app/today');
+    revalidatePath('/user/account');
+    revalidatePath('/user/today');
 
     return {
       success: true,

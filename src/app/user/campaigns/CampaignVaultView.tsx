@@ -51,7 +51,7 @@ export function CampaignVaultView({ vaultData }: CampaignVaultViewProps) {
             All generated proofs, platform outputs, and recorded walk-in results for {business.name}.
           </p>
         </div>
-        <button className="btn-primary" onClick={() => router.push('/app/create')}>
+        <button className="btn-primary" onClick={() => router.push('/user/create')}>
           <Plus size={15} /> New Campaign
         </button>
       </div>
@@ -133,7 +133,7 @@ export function CampaignVaultView({ vaultData }: CampaignVaultViewProps) {
               : `No active campaigns with status ${filter.toLowerCase()} found.`}
           </p>
           {viewMode === 'active' && (
-            <button className="btn-primary" onClick={() => router.push('/app/create')}>
+            <button className="btn-primary" onClick={() => router.push('/user/create')}>
               Create Campaign
             </button>
           )}
@@ -149,7 +149,7 @@ export function CampaignVaultView({ vaultData }: CampaignVaultViewProps) {
                   </span>
                   <h3
                     style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginTop: '6px', cursor: 'pointer' }}
-                    onClick={() => router.push(`/app/campaigns/${campaign.id}`)}
+                    onClick={() => router.push(`/user/campaigns/${campaign.id}`)}
                   >
                     {campaign.offer.title || campaign.offer.description}
                   </h3>
@@ -165,7 +165,7 @@ export function CampaignVaultView({ vaultData }: CampaignVaultViewProps) {
                   <button
                     className="btn-primary"
                     style={{ fontSize: '12px', padding: '5px 12px' }}
-                    onClick={() => router.push(`/app/campaigns/${campaign.id}`)}
+                    onClick={() => router.push(`/user/campaigns/${campaign.id}`)}
                   >
                     Open
                   </button>
