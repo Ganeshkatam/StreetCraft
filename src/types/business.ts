@@ -47,6 +47,7 @@ export interface UserSession {
   email: string;
   phone: string;
   name: string;
+  avatarUrl?: string;
   isAuthenticated: boolean;
   activeBusinessId: UUID;
   role: MemberRole;

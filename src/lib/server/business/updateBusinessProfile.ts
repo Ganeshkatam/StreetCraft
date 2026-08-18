@@ -23,7 +23,7 @@ const coerceNumberOrNull = (val: unknown) => {
   return isNaN(parsed) ? null : parsed;
 };
 
-export const BusinessProfileSchema = z.object({
+const BusinessProfileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(60, "Name must be less than 60 characters"),
   category: z.string().trim().min(2, "Category must be at least 2 characters").max(60, "Category must be less than 60 characters"),
   neighborhood: z.preprocess(emptyStringIfEmpty, z.string().max(100)),
@@ -39,6 +39,7 @@ export const BusinessProfileSchema = z.object({
   avg_ticket_inr: z.preprocess(coerceNumberOrNull, z.number().int().min(1, "Amount must be positive").max(100000, "Amount exceeds limit").nullable()),
   target_monthly_customers: z.preprocess(coerceNumberOrNull, z.number().int().min(1).max(1000000).nullable()),
   phone_whatsapp: z.preprocess(emptyStringIfEmpty, z.string().max(30)),
+  logo_url: z.preprocess(emptyStringIfEmpty, z.string().optional()),
 });
 
 export type ActionState = {
@@ -103,6 +104,7 @@ export async function updateBusinessProfile(
         avg_ticket_inr: validData.avg_ticket_inr,
         target_monthly_customers: validData.target_monthly_customers,
         phone_whatsapp: validData.phone_whatsapp,
+        logo_url: validData.logo_url && validData.logo_url.trim() !== '' ? validData.logo_url.trim() : null,
         updated_at: new Date().toISOString(),
       })
       .eq('business_id', business.id);

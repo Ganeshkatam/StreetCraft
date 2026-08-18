@@ -90,11 +90,31 @@ class RealtimeApiClient {
       }
     }
 
+    // Fetch profiles table record for fresh avatar_url and full_name
+    let profileName = session.user.user_metadata?.full_name || '';
+    let profileAvatarUrl = session.user.user_metadata?.avatar_url || '';
+    let profilePhone = session.user.phone || '';
+
+    try {
+      const { data: pData } = await (supabase.from('profiles') as any)
+        .select('full_name, avatar_url, phone')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      if (pData) {
+        if (pData.full_name) profileName = pData.full_name;
+        if (pData.avatar_url) profileAvatarUrl = pData.avatar_url;
+        if (pData.phone) profilePhone = pData.phone;
+      }
+    } catch {
+      // Graceful fallback to user metadata
+    }
+
     return {
       userId: session.user.id,
       email: session.user.email || '',
-      phone: session.user.phone || '',
-      name: session.user.user_metadata?.full_name || session.user.phone || 'User',
+      phone: profilePhone,
+      name: profileName || session.user.email?.split('@')[0] || 'Operator',
+      avatarUrl: profileAvatarUrl,
       isAuthenticated: true,
       activeBusinessId,
       role,

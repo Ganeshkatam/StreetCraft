@@ -17,93 +17,93 @@ export function PublicHeader() {
   return (
     <header className="main-header">
       <div className="header-container">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
-          <Link href="/" className="brand-wrapper">
-            <Logo size="sm" />
-          </Link>
+        <Link href="/" className="brand-wrapper">
+          <Logo size="sm" />
+        </Link>
 
-          <nav className="header-nav-links">
-            <Link
-              href="/how-it-works"
-              className={`nav-item ${pathname === '/how-it-works' ? 'active' : ''}`}
-            >
-              How It Works
-            </Link>
-            <Link
-              href="/pricing"
-              className={`nav-item ${pathname === '/pricing' ? 'active' : ''}`}
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/free-tool"
-              className={`nav-item ${pathname === '/free-tool' ? 'active' : ''}`}
-            >
-              Free Tool
-            </Link>
-            <Link
-              href="/contact"
-              className={`nav-item ${pathname === '/contact' ? 'active' : ''}`}
-            >
-              Contact
-            </Link>
-          </nav>
-        </div>
+        <nav className="header-nav-links">
+          {session.isAuthenticated ? (
+            <>
+              <Link
+                href="/user/today"
+                className={`nav-item ${pathname === '/user/today' ? 'active' : ''}`}
+              >
+                Today
+              </Link>
+              <Link
+                href="/user/create"
+                className={`nav-item ${pathname === '/user/create' ? 'active' : ''}`}
+              >
+                Create
+              </Link>
+              <Link
+                href="/user/campaigns"
+                className={`nav-item ${pathname.startsWith('/user/campaigns') ? 'active' : ''}`}
+              >
+                Campaigns
+              </Link>
+              <Link
+                href="/user/business"
+                className={`nav-item ${pathname === '/user/business' ? 'active' : ''}`}
+              >
+                Business
+              </Link>
+              <Link
+                href="/user/billing"
+                className={`nav-item ${pathname === '/user/billing' ? 'active' : ''}`}
+              >
+                Billing
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/how-it-works"
+                className={`nav-item ${pathname === '/how-it-works' ? 'active' : ''}`}
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/pricing"
+                className={`nav-item ${pathname === '/pricing' ? 'active' : ''}`}
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/free-tool"
+                className={`nav-item ${pathname === '/free-tool' ? 'active' : ''}`}
+              >
+                Free Tool
+              </Link>
+              <Link
+                href="/contact"
+                className={`nav-item ${pathname === '/contact' ? 'active' : ''}`}
+              >
+                Contact
+              </Link>
+            </>
+          )}
+        </nav>
 
         <div className="header-actions">
           {session.isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="header-auth-actions">
               <Link
                 href="/user/today"
-                className="btn-primary"
-                style={{ padding: '8px 18px', fontSize: '13.5px' }}
+                className="btn-primary header-open-workspace-btn"
               >
                 Open Workspace
               </Link>
 
               <Link
                 href="/user/account"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '5px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--color-surface-raised)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-ink)',
-                  textDecoration: 'none',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
-                }}
+                className="header-account-pill"
                 title="Operator Account Settings"
               >
-                <div
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: 'var(--radius-full)',
-                    background: 'var(--color-primary)',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 700,
-                  }}
-                >
+                <div className="header-account-avatar">
                   {userInitial}
                 </div>
-                <span
-                  style={{
-                    maxWidth: '120px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <span className="header-account-name">
                   {session.name || 'Account'}
                 </span>
               </Link>
@@ -112,15 +112,13 @@ export function PublicHeader() {
             <>
               <Link
                 href="/login"
-                className="btn-ghost"
-                style={{ fontSize: '13.5px', padding: '8px 14px' }}
+                className="btn-ghost header-signin-btn"
               >
                 Sign In
               </Link>
               <Link
                 href="/free-tool"
-                className="btn-primary"
-                style={{ padding: '8px 18px', fontSize: '13.5px' }}
+                className="btn-primary header-try-btn"
               >
                 <Sparkles size={13} /> Try Free Tool
               </Link>

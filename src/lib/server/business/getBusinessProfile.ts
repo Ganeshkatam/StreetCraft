@@ -17,6 +17,7 @@ export interface BusinessProfile {
   avg_ticket_inr: number | null;
   target_monthly_customers: number | null;
   phone_whatsapp: string;
+  logo_url?: string | null;
 }
 
 export async function getBusinessProfile(businessId: string): Promise<BusinessProfile | null> {

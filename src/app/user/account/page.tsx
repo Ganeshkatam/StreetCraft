@@ -5,8 +5,8 @@ import { getAccountProfile } from '../../../lib/server/account/getAccountProfile
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Account Settings — StreetCraft Workspace',
-  description: 'Manage operator account details, notification preferences, password updates, and session sign-out.',
+  title: 'Account Settings — StreetCraft',
+  description: 'Manage account details, notification preferences, password updates, and session sign-out.',
 };
 
 export default async function AccountSettingsPage() {

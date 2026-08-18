@@ -31,6 +31,7 @@ const UpdateProfileSchema = z.object({
       });
     }
   }),
+  avatarUrl: z.string().trim().optional(),
   emailNotifs: z.boolean(),
   whatsappNotifs: z.boolean(),
   weeklyDigest: z.boolean(),
@@ -49,6 +50,7 @@ export async function updateAccountProfileAction(
   try {
     const rawFullName = formData.get('fullName');
     const rawPhone = formData.get('phone');
+    const rawAvatarUrl = formData.get('avatarUrl');
     const rawEmailNotifs = formData.get('emailNotifs');
     const rawWhatsappNotifs = formData.get('whatsappNotifs');
     const rawWeeklyDigest = formData.get('weeklyDigest');
@@ -56,6 +58,7 @@ export async function updateAccountProfileAction(
     const parsed = UpdateProfileSchema.safeParse({
       fullName: typeof rawFullName === 'string' ? rawFullName : '',
       phone: typeof rawPhone === 'string' ? rawPhone : '',
+      avatarUrl: typeof rawAvatarUrl === 'string' ? rawAvatarUrl : '',
       emailNotifs: parseCheckbox(rawEmailNotifs),
       whatsappNotifs: parseCheckbox(rawWhatsappNotifs),
       weeklyDigest: parseCheckbox(rawWeeklyDigest),
@@ -69,7 +72,7 @@ export async function updateAccountProfileAction(
       };
     }
 
-    const { fullName, phone, emailNotifs, whatsappNotifs, weeklyDigest } = parsed.data;
+    const { fullName, phone, avatarUrl, emailNotifs, whatsappNotifs, weeklyDigest } = parsed.data;
 
     // 1. Authenticate caller (identity invariant: profiles.id = claims.userId)
     const claims = await requireAuthenticatedClaims('/user/account');
@@ -77,6 +80,7 @@ export async function updateAccountProfileAction(
 
     const trimmedPhone = phone.trim();
     const finalPhone = trimmedPhone === '' ? null : trimmedPhone;
+    const finalAvatar = avatarUrl && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
 
     // 2. Perform RLS-protected update on user's own profile
     const { error: updateError } = await supabase
@@ -84,6 +88,7 @@ export async function updateAccountProfileAction(
       .update({
         full_name: fullName,
         phone: finalPhone,
+        avatar_url: finalAvatar,
         notification_preferences: {
           email: emailNotifs,
           whatsapp: whatsappNotifs,

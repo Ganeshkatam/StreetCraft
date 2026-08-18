@@ -57,17 +57,17 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   } = await supabase.auth.getUser();
 
   const isUserRoute = pathname.startsWith('/user');
-  const isLegacyAppRoute = pathname.startsWith('/user');
+  const isLegacyAppRoute = pathname.startsWith('/app');
   const isAuthRoute =
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password';
 
-  // Legacy redirect: /user/* -> /user/*
+  // Legacy redirect: /app/* -> /user/*
   if (isLegacyAppRoute) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = pathname.replace(/^\/user/, '/user');
+    redirectUrl.pathname = pathname.replace(/^\/app/, '/user');
     return NextResponse.redirect(redirectUrl);
   }
 

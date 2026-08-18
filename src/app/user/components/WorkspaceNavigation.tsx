@@ -7,7 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUsage } from '../../../hooks/useUsage';
 import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ShieldCheck } from 'lucide-react';
+import { LogOut, ChevronDown, Plus, Store, User, CreditCard } from 'lucide-react';
 
 export const WorkspaceNavigation: React.FC = () => {
   const router = useRouter();
@@ -58,84 +58,87 @@ export const WorkspaceNavigation: React.FC = () => {
               <Logo size="sm" />
             </Link>
 
-            <div className="workspace-switcher" ref={switcherRef} style={{ position: 'relative' }}>
+            <div className="workspace-switcher" ref={switcherRef}>
               <button 
-                className="btn-ghost" 
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', fontSize: '14px', fontWeight: 500, color: 'var(--color-ink)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)' }}
+                className="workspace-switcher-btn"
                 onClick={() => setShowSwitcher(!showSwitcher)}
+                title="Select Active Storefront"
               >
-                <Store size={14} color="var(--color-ink-muted)" />
-                <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Store size={15} color="var(--color-primary)" />
+                <span className="workspace-switcher-name">
                   {activeBizName}
                 </span>
                 <ChevronDown size={14} color="var(--color-ink-muted)" />
               </button>
 
               {showSwitcher && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', width: '230px', boxShadow: 'var(--shadow-md)', zIndex: 100 }}>
-                  <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ padding: '4px 8px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                      Storefronts
-                    </div>
+                <div className="workspace-switcher-menu">
+                  <div className="workspace-switcher-header-label">
+                    STOREFRONTS
+                  </div>
 
+                  <div className="workspace-switcher-list">
                     {safeBusinesses.length === 0 ? (
-                      <div style={{ padding: '6px 8px', fontSize: '12.5px', color: 'var(--color-ink-muted)' }}>
+                      <div className="workspace-switcher-quota">
                         No storefronts created
                       </div>
                     ) : (
-                      safeBusinesses.map(biz => (
-                        <button
-                          key={biz.id}
-                          className="btn-ghost"
-                          style={{ width: '100%', justifyContent: 'space-between', padding: '8px 10px', fontSize: '13px', color: biz.id === session.activeBusinessId ? 'var(--color-primary)' : 'var(--color-ink)', background: biz.id === session.activeBusinessId ? 'var(--color-primary-subtle)' : 'transparent', fontWeight: biz.id === session.activeBusinessId ? 600 : 400, borderRadius: 'var(--radius-xs)' }}
-                          onClick={() => {
-                            switchBusiness(biz.id);
-                            setShowSwitcher(false);
-                          }}
-                        >
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-                            {biz.name}
-                          </span>
-                          {biz.id === session.activeBusinessId && (
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-primary)', background: 'var(--color-surface)', padding: '1px 6px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-primary-border)' }}>
-                              Active
+                      safeBusinesses.map((biz) => {
+                        const isActive = biz.id === session.activeBusinessId;
+                        return (
+                          <button
+                            key={biz.id}
+                            type="button"
+                            className={`workspace-switcher-item ${isActive ? 'active' : ''}`}
+                            onClick={() => {
+                              switchBusiness(biz.id);
+                              setShowSwitcher(false);
+                            }}
+                          >
+                            <span className="workspace-switcher-item-name">
+                              {biz.name}
                             </span>
-                          )}
-                        </button>
-                      ))
-                    )}
-                    
-                    <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
-                    
-                    <div style={{ padding: '4px 8px', fontSize: '11.5px', color: 'var(--color-ink-muted)', textAlign: 'center' }}>
-                      {safeBusinesses.length} of {accountLimit} storefronts used
-                    </div>
-
-                    {safeBusinesses.length < accountLimit ? (
-                      <button
-                        className="btn-ghost"
-                        style={{ width: '100%', justifyContent: 'flex-start', padding: '6px 8px', fontSize: '12.5px', color: 'var(--color-primary)', fontWeight: 500 }}
-                        onClick={() => {
-                          setShowSwitcher(false);
-                          router.push('/setup');
-                        }}
-                      >
-                        <Plus size={13} style={{ marginRight: '6px' }} />
-                        {safeBusinesses.length === 0 ? 'Create first storefront' : 'Add another storefront'}
-                      </button>
-                    ) : (
-                      <button
-                        className="btn-ghost"
-                        style={{ width: '100%', justifyContent: 'center', padding: '6px 8px', fontSize: '12px', color: 'var(--color-primary)', fontWeight: 500 }}
-                        onClick={() => {
-                          setShowSwitcher(false);
-                          setShowUpgradeModal(true);
-                        }}
-                      >
-                        Upgrade to add more
-                      </button>
+                            {isActive && (
+                              <span className="workspace-switcher-active-tag">
+                                ACTIVE
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
                     )}
                   </div>
+                  
+                  <div className="user-dropdown-divider" />
+                  
+                  <div className="workspace-switcher-quota">
+                    {safeBusinesses.length} of {accountLimit} storefronts used
+                  </div>
+
+                  {safeBusinesses.length < accountLimit ? (
+                    <button
+                      type="button"
+                      className="workspace-switcher-add-btn"
+                      onClick={() => {
+                        setShowSwitcher(false);
+                        router.push('/setup');
+                      }}
+                    >
+                      <Plus size={14} />
+                      <span>{safeBusinesses.length === 0 ? 'Create first storefront' : 'Add another storefront'}</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => {
+                        setShowSwitcher(false);
+                        setShowUpgradeModal(true);
+                      }}
+                    >
+                      <span>Upgrade to add more</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -185,15 +188,25 @@ export const WorkspaceNavigation: React.FC = () => {
               </button>
             )}
 
-            {/* Operator User Account Menu */}
+            {/* User Account Menu */}
             <div className="user-menu-container" ref={userMenuRef}>
               <button
                 className="user-badge-btn"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                title="Operator Account Menu"
+                title="Account Menu"
               >
-                <div className="user-avatar">{userInitial}</div>
-                <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="user-avatar">
+                  {session.avatarUrl ? (
+                    <img
+                      src={session.avatarUrl}
+                      alt={session.name || 'User'}
+                      className="user-avatar-img"
+                    />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
+                <span className="user-badge-name">
                   {session.name || 'Account'}
                 </span>
                 <ChevronDown size={13} color="var(--color-ink-muted)" />
@@ -202,11 +215,8 @@ export const WorkspaceNavigation: React.FC = () => {
               {showUserMenu && (
                 <div className="user-dropdown-menu">
                   <div className="user-dropdown-header">
-                    <div className="user-dropdown-name">{session.name || 'Store Operator'}</div>
+                    <div className="user-dropdown-name">{session.name || 'Account User'}</div>
                     <div className="user-dropdown-email">{session.email}</div>
-                    <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', fontWeight: 600 }}>
-                      <ShieldCheck size={12} /> Verified Operator
-                    </div>
                   </div>
 
                   <Link
@@ -236,7 +246,7 @@ export const WorkspaceNavigation: React.FC = () => {
                     <span>Billing &amp; Subscription</span>
                   </Link>
 
-                  <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                  <div className="user-dropdown-divider" />
 
                   <button
                     className="user-dropdown-item danger"

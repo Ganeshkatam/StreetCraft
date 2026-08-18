@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { FullCampaignPack, CampaignType } from '../types/campaign';
@@ -20,6 +21,7 @@ import { generateCampaignPack } from '../engine/campaignEngine';
 
 export const LandingView: React.FC = () => {
   const router = useRouter();
+  const { session } = useAuth();
 
   // Database-backed State
   const [, setPlans] = useState<DatabasePlan[]>([]);
@@ -249,12 +251,25 @@ export const LandingView: React.FC = () => {
             </p>
 
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '36px' }}>
-              <button className="btn-primary" style={{ padding: '13px 28px', fontSize: '14.5px' }} onClick={() => router.push('/free-tool')}>
-                Try Free Campaign Tool
-              </button>
-              <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '14.5px' }} onClick={() => router.push('/login')}>
-                Sign in to store
-              </button>
+              {session.isAuthenticated ? (
+                <>
+                  <button className="btn-primary" style={{ padding: '13px 28px', fontSize: '14.5px' }} onClick={() => router.push('/user/today')}>
+                    Open Workspace &rarr;
+                  </button>
+                  <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '14.5px' }} onClick={() => router.push('/user/create')}>
+                    Create Campaign
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn-primary" style={{ padding: '13px 28px', fontSize: '14.5px' }} onClick={() => router.push('/free-tool')}>
+                    Try Free Campaign Tool
+                  </button>
+                  <button className="btn-secondary" style={{ padding: '13px 24px', fontSize: '14.5px' }} onClick={() => router.push('/login')}>
+                    Sign in to store
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Quiet Outcome Indicators */}
