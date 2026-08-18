@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
-import { ContactView } from './ContactView';
+import { ContactPage } from './ContactPage';
 
 export const metadata: Metadata = {
-  title: 'Contact Us — StreetCraft Founder Support',
+  title: 'Contact Support & Inquiries — StreetCraft',
   description:
-    'Have a question about your physical store or StreetCraft? Get in touch with our founder team directly via email or WhatsApp.',
+    'Have a question about your storefront, marketing campaigns, quotas, or partnership integrations? Send a note to the StreetCraft support desk.',
   openGraph: {
-    title: 'Contact StreetCraft',
-    description: 'Direct founder support for physical store operators.',
+    title: 'Contact Support & Inquiries — StreetCraft',
+    description:
+      'Direct support desk for physical storefront operators. Questions about campaigns, billing, or platform integrations.',
   },
 };
 
-export default function ContactPage() {
-  return <ContactView />;
+export default function Page() {
+  return <ContactPage />;
 }

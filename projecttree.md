@@ -1,9 +1,9 @@
 # StreetCraft Project Directory Structure
 
-Generated automatically on: 2026-08-18T20:45:08.079Z
+Generated automatically on: 2026-08-18T20:53:54.309Z
 
-Total Directories: 134  
-Total Files: 327
+Total Directories: 137  
+Total Files: 333
 
 ```text
 streetcraft/
@@ -23,7 +23,6 @@ streetcraft/
 │   │       ├── bg_operations.jpg
 │   │       ├── bg_products.jpg
 │   │       └── bg_review.jpg
-│   ├── ChatGPT Image Aug 17, 2026, 03_19_39 AM.png
 │   ├── illustration_counter_card.jpg
 │   ├── illustration_opportunity.jpg
 │   ├── illustration_storefront.jpg
@@ -61,7 +60,13 @@ streetcraft/
 │   │   │   ├── PublicHeader.tsx
 │   │   │   └── ServerFooter.tsx
 │   │   ├── contact/
-│   │   │   ├── ContactView.tsx
+│   │   │   ├── components/
+│   │   │   │   ├── ContactChannels.tsx
+│   │   │   │   ├── ContactExpectations.tsx
+│   │   │   │   ├── ContactFooter.tsx
+│   │   │   │   ├── ContactForm.tsx
+│   │   │   │   └── ContactHero.tsx
+│   │   │   ├── ContactPage.tsx
 │   │   │   └── page.tsx
 │   │   ├── forgot-password/
 │   │   │   ├── ForgotPasswordView.tsx
@@ -357,6 +362,8 @@ streetcraft/
 │   │   │   │   └── storeProgress.ts
 │   │   │   ├── campaigns/
 │   │   │   │   └── campaignTransitions.ts
+│   │   │   ├── contact/
+│   │   │   │   └── contactSchema.ts
 │   │   │   ├── create/
 │   │   │   │   ├── campaignPackSchema.ts
 │   │   │   │   ├── createPreset.ts
@@ -401,6 +408,8 @@ streetcraft/
 │   │   │   │   ├── regenerateCampaignAction.ts
 │   │   │   │   ├── updateCampaignNotesAction.ts
 │   │   │   │   └── updateCampaignStatusAction.ts
+│   │   │   ├── contact/
+│   │   │   │   └── submitContactAction.ts
 │   │   │   ├── create/
 │   │   │   │   ├── createCampaignAction.ts
 │   │   │   │   └── getCreateContext.ts
