@@ -1,9 +1,9 @@
 # StreetCraft Project Directory Structure
 
-Generated automatically on: 2026-08-18T20:59:24.003Z
+Generated automatically on: 2026-08-18T21:09:40.111Z
 
-Total Directories: 141  
-Total Files: 348
+Total Directories: 148  
+Total Files: 363
 
 ```text
 streetcraft/
@@ -40,6 +40,7 @@ streetcraft/
 ├── src/
 │   ├── __tests__/
 │   │   ├── accountDomain.test.ts
+│   │   ├── brainDomain.test.ts
 │   │   ├── createDomain.test.ts
 │   │   ├── planDomain.test.ts
 │   │   ├── reportDomain.test.ts
@@ -309,6 +310,25 @@ streetcraft/
 │   │   ├── layout.tsx
 │   │   ├── not-found.tsx
 │   │   └── page.tsx
+│   ├── brain/
+│   │   ├── context/
+│   │   │   ├── index.ts
+│   │   │   └── storeContext.ts
+│   │   ├── generation/
+│   │   │   ├── generateCampaignSpec.ts
+│   │   │   └── index.ts
+│   │   ├── opportunity/
+│   │   │   ├── index.ts
+│   │   │   ├── opportunityRadar.ts
+│   │   │   └── scoring.ts
+│   │   ├── strategy/
+│   │   │   ├── campaignStrategy.ts
+│   │   │   ├── channelAngles.ts
+│   │   │   └── index.ts
+│   │   ├── validation/
+│   │   │   ├── index.ts
+│   │   │   └── specValidator.ts
+│   │   └── index.ts
 │   ├── components/
 │   │   ├── public/
 │   │   │   ├── ConversionLaunchpad.tsx
@@ -412,6 +432,8 @@ streetcraft/
 │   │   │   │   └── uploadAccountAvatarAction.ts
 │   │   │   ├── auth/
 │   │   │   │   └── requireAuthenticatedClaims.ts
+│   │   │   ├── brain/
+│   │   │   │   └── getStoreIntelligence.ts
 │   │   │   ├── business/
 │   │   │   │   ├── getAccessibleBusinesses.ts
 │   │   │   │   ├── getBusinessProfile.ts
