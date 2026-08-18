@@ -3,18 +3,18 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AccountStorefrontsViewModel } from '../../../../lib/server/account/getAccountStorefronts';
+import { StorefrontsViewModel } from '../../../../lib/domain/account/accountTypes';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
 import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
 import { Store, Plus, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface StorefrontsPanelViewProps {
-  data: AccountStorefrontsViewModel;
+  data: StorefrontsViewModel;
 }
 
 export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
   const router = useRouter();
-  const { storefronts, activeBusiness, totalStorefrontsCount } = data;
+  const { storefronts, activeBusinessId, totalCount } = data;
 
   const handleSwitch = (bizId: string) => {
     router.push(`/user/account/storefronts?biz=${encodeURIComponent(bizId)}`);
@@ -26,7 +26,7 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
       <AccountProfileHeader
         eyebrow="STOREFRONTS"
         title="Connected Storefronts"
-        subtitle={`You have access to ${totalStorefrontsCount} physical storefront ${totalStorefrontsCount === 1 ? 'profile' : 'profiles'}.`}
+        subtitle={`You have access to ${totalCount} physical storefront ${totalCount === 1 ? 'profile' : 'profiles'}.`}
       />
 
       <div className="account-stage-content">
@@ -47,7 +47,7 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '16px 0 28px' }}>
             {storefronts.map((store) => {
-              const isActive = store.id === activeBusiness?.id || store.isActive;
+              const isActive = store.isActive || store.id === activeBusinessId;
 
               return (
                 <div

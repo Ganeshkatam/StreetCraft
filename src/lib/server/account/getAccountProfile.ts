@@ -1,17 +1,8 @@
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { createClient } from '../../supabase/server';
+import { IdentityViewModel } from '../../domain/account/accountTypes';
 
-export interface AccountIdentityViewModel {
-  userId: string;
-  email: string;
-  fullName: string;
-  phone: string | null;
-  avatarUrl: string | null;
-  createdAt: string;
-  verified: boolean;
-}
-
-export async function getAccountProfile(): Promise<AccountIdentityViewModel> {
+export async function getAccountProfile(): Promise<IdentityViewModel> {
   const claims = await requireAuthenticatedClaims('/user/account/identity');
   const supabase = await createClient();
 
@@ -27,7 +18,7 @@ export async function getAccountProfile(): Promise<AccountIdentityViewModel> {
     fullName: profile?.full_name || '',
     phone: profile?.phone || null,
     avatarUrl: profile?.avatar_url || null,
+    emailVerified: Boolean(claims.email),
     createdAt: profile?.created_at || new Date().toISOString(),
-    verified: Boolean(claims.email),
   };
 }

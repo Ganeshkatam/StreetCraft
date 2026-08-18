@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AccountNotificationPreferences } from '../../../../lib/server/account/getAccountNotifications';
+import { NotificationsViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountPreferencesAction, UpdatePreferencesActionState } from '../../../../lib/server/account/updateAccountPreferencesAction';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
 import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Bell, Mail, MessageSquare, Sparkles, Check } from 'lucide-react';
 
 interface NotificationsPanelViewProps {
-  preferences: AccountNotificationPreferences;
+  preferences: NotificationsViewModel;
 }
 
 const initialState: UpdatePreferencesActionState = { success: false };
@@ -21,7 +21,7 @@ export function NotificationsPanelView({ preferences }: NotificationsPanelViewPr
 
   const [emailAlerts, setEmailAlerts] = useState(preferences.email);
   const [whatsappAlerts, setWhatsappAlerts] = useState(preferences.whatsapp);
-  const [weeklyDigest, setWeeklyDigest] = useState(preferences.weekly_digest);
+  const [weeklyDigest, setWeeklyDigest] = useState(preferences.weeklyDigest);
 
   useEffect(() => {
     if (state) {

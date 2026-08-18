@@ -18,7 +18,7 @@ export default async function CreateCampaignPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const requestedBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
 
-  const context = await getCreateContext(requestedBizId);
+  const context = await getCreateContext(requestedBizId, resolvedParams);
 
   if (!context) {
     redirect('/setup');

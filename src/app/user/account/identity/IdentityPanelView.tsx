@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AccountIdentityViewModel } from '../../../../lib/server/account/getAccountProfile';
+import { IdentityViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountProfileAction, UpdateProfileActionState } from '../../../../lib/server/account/updateAccountProfileAction';
 import { uploadAccountAvatarAction, UploadAvatarActionState } from '../../../../lib/server/account/uploadAccountAvatarAction';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Camera, Check, ShieldCheck, Mail, Phone, User as UserIcon } from 'lucide-react';
 
 interface IdentityPanelViewProps {
-  profile: AccountIdentityViewModel;
+  profile: IdentityViewModel;
 }
 
 const initialProfileState: UpdateProfileActionState = { success: false };

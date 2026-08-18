@@ -13,6 +13,7 @@
     "build": "next build",
     "start": "next start -p 3018",
     "typecheck": "tsc --noEmit",
+    "test": "node scripts/run-tests.js",
     "tree": "node scripts/generate-project-tree.js"
   },
   "dependencies": {

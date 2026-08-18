@@ -1,25 +1,10 @@
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
-import { getAccessibleBusinesses, AccessibleBusiness } from '../business/getAccessibleBusinesses';
+import { getAccessibleBusinesses } from '../business/getAccessibleBusinesses';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { createClient } from '../../supabase/server';
+import { StorefrontsViewModel, StorefrontSummary } from '../../domain/account/accountTypes';
 
-export interface StorefrontItemViewModel {
-  id: string;
-  name: string;
-  category: string;
-  city?: string;
-  neighborhood?: string;
-  role: string;
-  isActive: boolean;
-}
-
-export interface AccountStorefrontsViewModel {
-  storefronts: StorefrontItemViewModel[];
-  activeBusiness: AccessibleBusiness | null;
-  totalStorefrontsCount: number;
-}
-
-export async function getAccountStorefronts(candidateBizId?: string): Promise<AccountStorefrontsViewModel> {
+export async function getAccountStorefronts(candidateBizId?: string): Promise<StorefrontsViewModel> {
   const claims = await requireAuthenticatedClaims('/user/account/storefronts');
   const supabase = await createClient();
 
@@ -28,7 +13,6 @@ export async function getAccountStorefronts(candidateBizId?: string): Promise<Ac
     resolveAuthorizedBusiness(claims.userId, candidateBizId),
   ]);
 
-  // Fetch business_profiles for neighborhood & city details
   const bizIds = accessibleList.map((b) => b.id);
   const { data: profiles } = await supabase
     .from('business_profiles')
@@ -37,7 +21,7 @@ export async function getAccountStorefronts(candidateBizId?: string): Promise<Ac
 
   const profileMap = new Map((profiles || []).map((p) => [p.business_id, p]));
 
-  const storefronts: StorefrontItemViewModel[] = accessibleList.map((b) => {
+  const storefronts: StorefrontSummary[] = accessibleList.map((b) => {
     const p = profileMap.get(b.id);
     return {
       id: b.id,
@@ -51,8 +35,8 @@ export async function getAccountStorefronts(candidateBizId?: string): Promise<Ac
   });
 
   return {
+    activeBusinessId: activeBusiness?.id || null,
     storefronts,
-    activeBusiness,
-    totalStorefrontsCount: storefronts.length,
+    totalCount: storefronts.length,
   };
 }

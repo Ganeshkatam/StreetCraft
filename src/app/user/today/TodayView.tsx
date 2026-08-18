@@ -78,8 +78,18 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
   const bizQuery = profile?.business_id ? `?biz=${encodeURIComponent(profile.business_id)}` : '';
 
   const handleLaunchPreset = (opportunity: DynamicOpportunity) => {
-    sessionStorage.setItem('sc_launched_preset', JSON.stringify(opportunity.preset));
-    router.push(`/user/create${bizQuery}`);
+    const params = new URLSearchParams();
+    if (profile?.business_id) params.set('biz', profile.business_id);
+    if (opportunity.preset.type) params.set('type', opportunity.preset.type);
+    if (opportunity.preset.objective) params.set('objective', opportunity.preset.objective);
+    if (opportunity.preset.offer?.title) params.set('offer_title', opportunity.preset.offer.title);
+    if (opportunity.preset.offer?.description) params.set('offer_desc', opportunity.preset.offer.description);
+    if (opportunity.preset.offer?.value) params.set('offer_value', opportunity.preset.offer.value);
+    if (opportunity.preset.offer?.terms) params.set('offer_terms', opportunity.preset.offer.terms);
+    if (opportunity.preset.schedule?.timingLabel) params.set('timing_label', opportunity.preset.schedule.timingLabel);
+    if (opportunity.preset.customNotes) params.set('custom_notes', opportunity.preset.customNotes);
+
+    router.push(`/user/create?${params.toString()}`);
   };
 
   return (
@@ -340,21 +350,16 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
                       className="btn-ghost"
                       style={{ fontSize: '11px', padding: '2px 8px', color: 'var(--color-primary)', fontWeight: 600 }}
                       onClick={() => {
-                        sessionStorage.setItem('sc_launched_preset', JSON.stringify({
-                          type: 'FESTIVAL_SPECIAL',
-                          objective: 'FESTIVAL_RUSH',
-                          offer: {
-                            title: f.suggested_offer || `${f.name} Special`,
-                            description: `${f.name} celebration special at our storefront.`,
-                            value: 'Festive Special',
-                            terms: `Valid during ${f.name} celebration`,
-                          },
-                          schedule: {
-                            timingLabel: `${f.name} (${f.formattedDate})`,
-                          },
-                          customNotes: `Focus on ${f.marketing_relevance}.`,
-                        }));
-                        router.push('/user/create');
+                        const params = new URLSearchParams();
+                        if (profile?.business_id) params.set('biz', profile.business_id);
+                        params.set('type', 'FESTIVAL_SPECIAL');
+                        params.set('objective', 'FESTIVAL_CELEBRATION');
+                        params.set('offer_title', f.suggested_offer || `${f.name} Special`);
+                        params.set('offer_desc', `${f.name} celebration special at our storefront.`);
+                        params.set('timing_label', `${f.name} (${f.formattedDate})`);
+                        params.set('custom_notes', `Focus on ${f.marketing_relevance}.`);
+
+                        router.push(`/user/create?${params.toString()}`);
                       }}
                     >
                       Draft Promotion

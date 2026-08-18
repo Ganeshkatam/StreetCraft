@@ -1,15 +1,9 @@
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { createClient } from '../../supabase/server';
-
-const UpdatePreferencesSchema = z.object({
-  email: z.coerce.boolean(),
-  whatsapp: z.coerce.boolean(),
-  weekly_digest: z.coerce.boolean(),
-});
+import { UpdatePreferencesSchema } from '../../domain/account/accountSchemas';
 
 export type UpdatePreferencesActionState = {
   success: boolean;
@@ -28,14 +22,14 @@ export async function updateAccountPreferencesAction(
     const rawData = {
       email: formData.get('email') === 'on' || formData.get('email') === 'true',
       whatsapp: formData.get('whatsapp') === 'on' || formData.get('whatsapp') === 'true',
-      weekly_digest: formData.get('weekly_digest') === 'on' || formData.get('weekly_digest') === 'true',
+      weeklyDigest: formData.get('weeklyDigest') === 'on' || formData.get('weeklyDigest') === 'true' || formData.get('weekly_digest') === 'on' || formData.get('weekly_digest') === 'true',
     };
 
     const parsed = UpdatePreferencesSchema.safeParse(rawData);
     if (!parsed.success) {
       return {
         success: false,
-        message: 'Invalid notification preferences.',
+        message: 'Invalid notification preferences provided.',
         errors: parsed.error.flatten().fieldErrors,
       };
     }
@@ -46,7 +40,7 @@ export async function updateAccountPreferencesAction(
         notification_preferences: {
           email: parsed.data.email,
           whatsapp: parsed.data.whatsapp,
-          weekly_digest: parsed.data.weekly_digest,
+          weekly_digest: parsed.data.weeklyDigest,
         },
         updated_at: new Date().toISOString(),
       })

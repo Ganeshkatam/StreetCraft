@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AccountSecurityViewModel } from '../../../../lib/server/account/getAccountSecurity';
+import { SecurityViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountPasswordAction, UpdatePasswordActionState } from '../../../../lib/server/account/updateAccountPasswordAction';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
 import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Lock, Key, LogOut, Check, Shield } from 'lucide-react';
 
 interface SecurityPanelViewProps {
-  security: AccountSecurityViewModel;
+  security: SecurityViewModel;
 }
 
 const initialState: UpdatePasswordActionState = { success: false };
@@ -153,7 +153,7 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
                 {security.email}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                Provider: {security.authProvider.toUpperCase()}
+                Provider: {security.provider.toUpperCase()}
               </div>
             </div>
 

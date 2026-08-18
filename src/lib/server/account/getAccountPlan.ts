@@ -1,24 +1,9 @@
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { createClient } from '../../supabase/server';
+import { PlanViewModel, SubscriptionSummary, PlanSummary, UsageSummary } from '../../domain/account/accountTypes';
 
-export interface AccountPlanViewModel {
-  planId: string;
-  planName: string;
-  status: string;
-  billingCycle: string;
-  monthlyPriceInr: number;
-  businessLimit: number;
-  monthlyCampaignLimit: number;
-  activeBusiness: {
-    id: string;
-    name: string;
-    campaignsRemaining: number;
-    campaignLimit: number;
-  } | null;
-}
-
-export async function getAccountPlan(candidateBizId?: string): Promise<AccountPlanViewModel> {
+export async function getAccountPlan(candidateBizId?: string): Promise<PlanViewModel> {
   const claims = await requireAuthenticatedClaims('/user/account/plan');
   const supabase = await createClient();
 
@@ -27,6 +12,7 @@ export async function getAccountPlan(candidateBizId?: string): Promise<AccountPl
     supabase
       .from('subscriptions')
       .select(`
+        id,
         plan_id,
         status,
         billing_cycle,
@@ -50,29 +36,43 @@ export async function getAccountPlan(candidateBizId?: string): Promise<AccountPl
       .maybeSingle(),
   ]);
 
-  let planId = 'FREE';
-  let planName = 'Neighborhood Starter';
-  let status = 'FREE';
-  let billingCycle = 'monthly';
-  let monthlyPriceInr = 0;
-  let businessLimit = freePlanResult.data?.business_limit ?? 1;
-  let monthlyCampaignLimit = freePlanResult.data?.monthly_campaign_limit ?? 3;
+  let subscription: SubscriptionSummary | null = null;
+  let plan: PlanSummary | null = null;
 
   if (subResult.data) {
     const sub = subResult.data;
-    const plan = Array.isArray(sub.plans) ? sub.plans[0] : sub.plans;
-    planId = sub.plan_id;
-    planName = plan?.name || sub.plan_id;
-    status = sub.status;
-    billingCycle = sub.billing_cycle || 'monthly';
-    monthlyPriceInr = plan?.monthly_inr || 0;
-    businessLimit = plan?.business_limit ?? 1;
-    monthlyCampaignLimit = plan?.monthly_campaign_limit ?? 3;
+    const planRow = Array.isArray(sub.plans) ? sub.plans[0] : sub.plans;
+
+    subscription = {
+      id: sub.id,
+      planId: sub.plan_id,
+      status: sub.status,
+      billingCycle: sub.billing_cycle || 'monthly',
+    };
+
+    if (planRow) {
+      plan = {
+        id: planRow.id,
+        name: planRow.name,
+        monthlyInr: planRow.monthly_inr,
+        businessLimit: planRow.business_limit,
+        monthlyCampaignLimit: planRow.monthly_campaign_limit,
+      };
+    }
+  } else if (freePlanResult.data) {
+    const free = freePlanResult.data;
+    plan = {
+      id: free.id,
+      name: free.name || 'Neighborhood Starter',
+      monthlyInr: free.monthly_inr || 0,
+      businessLimit: free.business_limit ?? 1,
+      monthlyCampaignLimit: free.monthly_campaign_limit ?? 3,
+    };
   }
 
-  let activeBusinessInfo = null;
+  let usage: UsageSummary | null = null;
   if (business) {
-    const { data: usage } = await supabase
+    const { data: usageRow } = await supabase
       .from('usage_periods')
       .select('campaign_limit, campaigns_used')
       .eq('business_id', business.id)
@@ -81,26 +81,22 @@ export async function getAccountPlan(candidateBizId?: string): Promise<AccountPl
       .limit(1)
       .maybeSingle();
 
-    const limit = usage?.campaign_limit ?? monthlyCampaignLimit;
-    const used = usage?.campaigns_used ?? 0;
-    const remaining = Math.max(0, limit - used);
-
-    activeBusinessInfo = {
-      id: business.id,
-      name: business.name,
-      campaignsRemaining: remaining,
-      campaignLimit: limit,
-    };
+    if (usageRow) {
+      const limit = usageRow.campaign_limit ?? (plan?.monthlyCampaignLimit ?? 3);
+      const used = usageRow.campaigns_used ?? 0;
+      usage = {
+        businessId: business.id,
+        businessName: business.name,
+        campaignsUsed: used,
+        campaignLimit: limit,
+        campaignsRemaining: Math.max(0, limit - used),
+      };
+    }
   }
 
   return {
-    planId,
-    planName,
-    status,
-    billingCycle,
-    monthlyPriceInr,
-    businessLimit,
-    monthlyCampaignLimit,
-    activeBusiness: activeBusinessInfo,
+    subscription,
+    plan,
+    usage,
   };
 }

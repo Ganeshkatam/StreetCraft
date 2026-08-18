@@ -1,13 +1,9 @@
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { createClient } from '../../supabase/server';
+import { NotificationsViewModel } from '../../domain/account/accountTypes';
+import { normalizeNotificationPreferences } from '../../domain/account/notificationPreferences';
 
-export interface AccountNotificationPreferences {
-  email: boolean;
-  whatsapp: boolean;
-  weekly_digest: boolean;
-}
-
-export async function getAccountNotifications(): Promise<AccountNotificationPreferences> {
+export async function getAccountNotifications(): Promise<NotificationsViewModel> {
   const claims = await requireAuthenticatedClaims('/user/account/notifications');
   const supabase = await createClient();
 
@@ -17,11 +13,5 @@ export async function getAccountNotifications(): Promise<AccountNotificationPref
     .eq('id', claims.userId)
     .maybeSingle();
 
-  const prefs = profile?.notification_preferences as any;
-
-  return {
-    email: prefs?.email ?? true,
-    whatsapp: prefs?.whatsapp ?? false,
-    weekly_digest: prefs?.weekly_digest ?? true,
-  };
+  return normalizeNotificationPreferences(profile?.notification_preferences);
 }

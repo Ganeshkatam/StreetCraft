@@ -2,19 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { AccountPlanViewModel } from '../../../../lib/server/account/getAccountPlan';
+import { PlanViewModel } from '../../../../lib/domain/account/accountTypes';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
 import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
-import { CreditCard, Sparkles, Store, ChevronRight, Zap } from 'lucide-react';
+import { CreditCard, Sparkles, Store, ChevronRight } from 'lucide-react';
 
 interface PlanPanelViewProps {
-  planData: AccountPlanViewModel;
+  planData: PlanViewModel;
 }
 
 export function PlanPanelView({ planData }: PlanPanelViewProps) {
-  const { planId, planName, status, billingCycle, monthlyPriceInr, businessLimit, monthlyCampaignLimit, activeBusiness } = planData;
+  const { subscription, plan, usage } = planData;
 
-  const isPaid = planId !== 'FREE';
+  const isPaid = subscription && subscription.planId !== 'FREE';
+  const planName = plan?.name || (subscription?.planId ? subscription.planId : 'Neighborhood Starter');
+  const monthlyPriceInr = plan?.monthlyInr ?? 0;
+  const billingCycle = subscription?.billingCycle || 'monthly';
+  const businessLimit = plan?.businessLimit ?? 1;
+  const monthlyCampaignLimit = plan?.monthlyCampaignLimit ?? 3;
 
   return (
     <div>
@@ -77,13 +82,13 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
         </div>
 
         {/* Active Storefront Quota Breakdown */}
-        {activeBusiness && (
+        {usage && (
           <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Store size={18} color="var(--color-accent)" />
                 <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
-                  Active Store Quota ({activeBusiness.name})
+                  Active Store Quota ({usage.businessName})
                 </h3>
               </div>
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
@@ -93,10 +98,10 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: '32px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)' }}>
-                {activeBusiness.campaignsRemaining}
+                {usage.campaignsRemaining}
               </span>
               <span style={{ fontSize: '14px', color: 'var(--color-ink-muted)' }}>
-                campaigns remaining of {activeBusiness.campaignLimit} limit
+                campaigns remaining of {usage.campaignLimit} limit
               </span>
             </div>
 
@@ -104,7 +109,7 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
               <div
                 style={{
                   height: '100%',
-                  width: `${Math.min(100, Math.max(0, ((activeBusiness.campaignLimit - activeBusiness.campaignsRemaining) / activeBusiness.campaignLimit) * 100))}%`,
+                  width: `${Math.min(100, Math.max(0, (usage.campaignsUsed / usage.campaignLimit) * 100))}%`,
                   background: 'var(--color-primary)',
                   transition: 'width 0.3s ease',
                 }}
