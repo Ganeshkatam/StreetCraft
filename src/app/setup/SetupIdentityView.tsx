@@ -2,7 +2,7 @@
 
 import React, { useActionState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { CustomSelect } from '../../components/CustomSelect';
 import { STORE_CATEGORIES } from '../../config/categories';
 import { createBusinessSetupAction, SetupActionState } from '../../lib/server/setup/createBusinessSetupAction';
@@ -21,10 +21,25 @@ export const SetupIdentityView: React.FC<SetupIdentityViewProps> = ({ claimToken
 
   return (
     <div>
-      <h2 className="auth-card-title">Store Identity & Location</h2>
-      <p className="auth-card-subtitle">
-        Name your storefront and anchor your physical neighborhood presence.
-      </p>
+      <div className="setup-canvas-header">
+        <div>
+          <h2 className="auth-card-title" style={{ margin: 0, fontSize: '22px' }}>
+            Store Identity & Location
+          </h2>
+          <p className="auth-card-subtitle" style={{ margin: '4px 0 0', fontSize: '13px' }}>
+            Name your storefront and anchor your physical neighborhood presence.
+          </p>
+        </div>
+
+        <Link
+          href="/user/today"
+          className="setup-exit-pill"
+          title="Exit setup and return to workspace"
+        >
+          <X size={14} />
+          <span>Exit</span>
+        </Link>
+      </div>
 
       {state.message && !state.success && (
         <div className="auth-error-banner" role="alert" style={{ marginBottom: '16px' }}>
@@ -32,7 +47,7 @@ export const SetupIdentityView: React.FC<SetupIdentityViewProps> = ({ claimToken
         </div>
       )}
 
-      <form action={formAction} className="auth-form">
+      <form action={formAction} className="auth-form" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {claimToken && (
           <input type="hidden" name="claimToken" value={claimToken} />
         )}
@@ -118,12 +133,9 @@ export const SetupIdentityView: React.FC<SetupIdentityViewProps> = ({ claimToken
             placeholder="e.g. Opposite Metro Pillar 42, Near Town Square"
             className="form-input"
           />
-          {state.errors?.landmarks && (
-            <span className="auth-field-error">{state.errors.landmarks[0]}</span>
-          )}
         </div>
 
-        <div className="auth-form-field" style={{ marginBottom: '20px' }}>
+        <div className="auth-form-field" style={{ marginBottom: '8px' }}>
           <label className="auth-form-label" htmlFor="phone-input">
             Store WhatsApp / Phone (optional)
           </label>
@@ -136,13 +148,13 @@ export const SetupIdentityView: React.FC<SetupIdentityViewProps> = ({ claimToken
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
           <Link
             href="/user/today"
             className="btn-secondary"
-            style={{ padding: '10px 16px', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }}
+            style={{ padding: '10px 18px', fontSize: '13.5px', display: 'inline-flex', alignItems: 'center' }}
           >
-            Set up later
+            Cancel
           </Link>
           <button
             type="submit"
@@ -153,10 +165,10 @@ export const SetupIdentityView: React.FC<SetupIdentityViewProps> = ({ claimToken
             {isPending ? (
               <>
                 <Loader2 size={15} className="spin" />
-                <span>Creating store...</span>
+                <span>Saving...</span>
               </>
             ) : (
-              <span>Continue to Operating Rhythm</span>
+              <span>Continue</span>
             )}
           </button>
         </div>

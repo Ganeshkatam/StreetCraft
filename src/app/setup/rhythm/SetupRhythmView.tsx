@@ -2,7 +2,7 @@
 
 import React, { useActionState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { CustomSelect } from '../../../components/CustomSelect';
 import { AccessibleBusiness } from '../../../lib/server/business/getAccessibleBusinesses';
 import { BusinessProfile } from '../../../lib/server/business/getBusinessProfile';
@@ -46,24 +46,39 @@ export const SetupRhythmView: React.FC<SetupRhythmViewProps> = ({
 
   return (
     <div>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-        <span
-          style={{
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--color-primary)',
-            letterSpacing: '0.06em',
-            fontWeight: 700,
-          }}
-        >
-          {business.name.toUpperCase()}
-        </span>
-      </div>
+      <div className="setup-canvas-header">
+        <div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span
+              style={{
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-primary)',
+                letterSpacing: '0.06em',
+                fontWeight: 700,
+              }}
+            >
+              {business.name.toUpperCase()}
+            </span>
+          </div>
 
-      <h2 className="auth-card-title">Operating Rhythm & Offers</h2>
-      <p className="auth-card-subtitle">
-        Define your quiet windows, bestseller heroes, and default customer promotions.
-      </p>
+          <h2 className="auth-card-title" style={{ margin: 0, fontSize: '22px' }}>
+            Operating Rhythm & Offers
+          </h2>
+          <p className="auth-card-subtitle" style={{ margin: '4px 0 0', fontSize: '13px' }}>
+            Define your quiet windows, bestseller heroes, and default customer promotions.
+          </p>
+        </div>
+
+        <Link
+          href="/user/today"
+          className="setup-exit-pill"
+          title="Exit setup and return to workspace"
+        >
+          <X size={14} />
+          <span>Exit</span>
+        </Link>
+      </div>
 
       {state.message && !state.success && (
         <div className="auth-error-banner" role="alert" style={{ marginBottom: '16px' }}>
@@ -71,7 +86,7 @@ export const SetupRhythmView: React.FC<SetupRhythmViewProps> = ({
         </div>
       )}
 
-      <form action={formAction} className="auth-form">
+      <form action={formAction} className="auth-form" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {claimToken && (
           <input type="hidden" name="claimToken" value={claimToken} />
         )}
@@ -130,9 +145,9 @@ export const SetupRhythmView: React.FC<SetupRhythmViewProps> = ({
           />
         </div>
 
-        <div className="auth-form-field" style={{ marginBottom: '20px' }}>
+        <div className="auth-form-field" style={{ marginBottom: '8px' }}>
           <label className="auth-form-label" htmlFor="phone-whatsapp-input">
-            Counter WhatsApp / Direct Orders Number (optional)
+            Counter WhatsApp / Direct Orders (optional)
           </label>
           <input
             id="phone-whatsapp-input"
@@ -144,13 +159,13 @@ export const SetupRhythmView: React.FC<SetupRhythmViewProps> = ({
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
           <Link
-            href="/user/today"
+            href="/setup"
             className="btn-secondary"
-            style={{ padding: '10px 16px', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }}
+            style={{ padding: '10px 18px', fontSize: '13.5px', display: 'inline-flex', alignItems: 'center' }}
           >
-            Complete later
+            Back
           </Link>
           <button
             type="submit"
@@ -161,10 +176,10 @@ export const SetupRhythmView: React.FC<SetupRhythmViewProps> = ({
             {isPending ? (
               <>
                 <Loader2 size={15} className="spin" />
-                <span>Launching workspace...</span>
+                <span>Saving...</span>
               </>
             ) : (
-              <span>Launch Workspace</span>
+              <span>Done</span>
             )}
           </button>
         </div>

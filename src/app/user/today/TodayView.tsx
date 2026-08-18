@@ -75,9 +75,11 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
     mappedFestivals
   );
 
+  const bizQuery = profile?.business_id ? `?biz=${encodeURIComponent(profile.business_id)}` : '';
+
   const handleLaunchPreset = (opportunity: DynamicOpportunity) => {
     sessionStorage.setItem('sc_launched_preset', JSON.stringify(opportunity.preset));
-    router.push('/user/create');
+    router.push(`/user/create${bizQuery}`);
   };
 
   return (
@@ -97,10 +99,10 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
         </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button className="btn-secondary" onClick={() => router.push('/user/campaigns')}>
+          <button className="btn-secondary" onClick={() => router.push(`/user/campaigns${bizQuery}`)}>
             Vault ({campaigns.length})
           </button>
-          <button className="btn-primary" onClick={() => router.push('/user/create')}>
+          <button className="btn-primary" onClick={() => router.push(`/user/create${bizQuery}`)}>
             <Plus size={14} /> Create promotion
           </button>
         </div>
@@ -178,7 +180,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)' }}>
                 Campaign Vault
               </h3>
-              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => router.push('/user/campaigns')}>
+              <button className="btn-ghost" style={{ fontSize: '12px' }} onClick={() => router.push(`/user/campaigns${bizQuery}`)}>
                 View all in vault ({campaigns.length})
               </button>
             </div>
@@ -220,7 +222,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-ink-muted)', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
                         <span>{cpn.schedule?.timingLabel || 'Active'}</span>
-                        <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/user/campaigns/${c.id}`)}>
+                        <button className="btn-ghost" style={{ padding: '0', fontSize: '11.5px', color: 'var(--color-primary)' }} onClick={() => router.push(`/user/campaigns/${c.id}${bizQuery}`)}>
                           Proofs
                         </button>
                       </div>
@@ -239,7 +241,7 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', textTransform: 'uppercase' }}>
                 STORE CONTEXT
               </span>
-              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => router.push('/user/business')}>
+              <button className="btn-ghost" style={{ fontSize: '12px', padding: 0, color: 'var(--color-primary)' }} onClick={() => router.push(`/user/business${bizQuery}`)}>
                 Edit
               </button>
             </div>
@@ -365,7 +367,14 @@ export function TodayView({ initialData }: { initialData: WorkspaceTodayViewMode
         </div>
       </div>
 
-      {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />}
+      {showUpgradeModal && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          currentPlanId={usagePeriod?.plan || 'FREE'}
+          onClose={() => setShowUpgradeModal(false)}
+          onPlanUpdated={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }

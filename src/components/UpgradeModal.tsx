@@ -7,6 +7,7 @@ import { getUserFacingErrorMessage } from '../lib/userFacingError';
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentPlanId?: string;
   onPlanUpdated?: () => void;
   onSuccess?: () => void;
 }
@@ -14,6 +15,7 @@ interface UpgradeModalProps {
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
+  currentPlanId,
   onPlanUpdated,
   onSuccess,
 }) => {
@@ -22,6 +24,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const normalizedCurrentPlanId = (currentPlanId || 'FREE').toUpperCase();
 
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +42,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   if (!isOpen) return null;
 
   const handleUpgrade = async (plan: DatabasePlan) => {
+    if (plan.id.toUpperCase() === normalizedCurrentPlanId) return;
     setIsProcessing(true);
     setErrorNotice(null);
     try {
@@ -63,7 +68,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" style={{ maxWidth: '1080px', width: '95vw' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
             <span className="section-eyebrow">STORE QUOTA</span>
@@ -89,56 +94,87 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', margin: '24px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', margin: '24px 0' }}>
               {loading ? (
                 <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: 'var(--color-ink-muted)' }}>Loading plans...</div>
               ) : (
                 plans.map((plan) => {
-                  const isPro = plan.id === 'PRO';
+                  const isCurrent = plan.id.toUpperCase() === normalizedCurrentPlanId;
+                  const isPro = plan.id === 'PRO' && !isCurrent;
                   return (
                     <div
                       key={plan.id}
                       style={{
-                        background: isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
-                        border: isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
-                        borderRadius: 'var(--radius-xs)',
-                        padding: '20px',
+                        background: isCurrent ? 'var(--color-surface)' : isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                        border: isCurrent ? '2px solid #9CA3AF' : isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-sm, 10px)',
+                        padding: '20px 18px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
-                        boxShadow: isPro ? 'var(--shadow-paper)' : 'none',
+                        boxShadow: isPro ? '0 8px 24px rgba(22, 101, 52, 0.12)' : 'none',
+                        position: 'relative',
+                        opacity: isCurrent ? 0.92 : 1,
                       }}
                     >
                       <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)' }}>{plan.name}</span>
-                          {isPro && <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '1px 6px', borderRadius: '2px' }}>POPULAR</span>}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '26px' }}>
+                          <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'var(--color-ink)', lineHeight: 1.2 }}>{plan.name}</span>
+                          {isCurrent ? (
+                            <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#374151', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '2px 6px', borderRadius: '4px' }}>CURRENT PLAN</span>
+                          ) : isPro ? (
+                            <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>POPULAR</span>
+                          ) : null}
                         </div>
-                        <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '8px 0 4px', color: 'var(--color-ink)' }}>
+                        <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '10px 0 2px', color: 'var(--color-ink)', fontWeight: 700 }}>
                           {plan.monthly_inr === 0 ? 'Free' : `₹${plan.monthly_inr}`}
-                          <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}>/mo</span>
+                          <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>/mo</span>
                         </div>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px' }}>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px', fontWeight: 600 }}>
                           {plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 3} campaigns / month
                         </div>
-                        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--color-ink-soft)' }}>
+                        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--color-ink-soft)', padding: 0, margin: 0 }}>
                           {plan.features.slice(0, 3).map((f, i) => (
-                            <li key={i} style={{ display: 'flex', gap: '6px' }}>
-                              <Check size={12} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <li key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.35 }}>
+                              <Check size={13} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
                               <span>{f}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
 
-                      <button
-                        className={isPro ? 'btn-primary' : 'btn-secondary'}
-                        style={{ marginTop: '18px', width: '100%', justifyContent: 'center', fontSize: '12.5px' }}
-                        disabled={isProcessing}
-                        onClick={() => handleUpgrade(plan)}
-                      >
-                        {isProcessing ? 'Updating...' : `Select ${plan.name}`}
-                      </button>
+                      {isCurrent ? (
+                        <button
+                          type="button"
+                          disabled
+                          style={{
+                            marginTop: '20px',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '12.5px',
+                            padding: '9px 12px',
+                            cursor: 'not-allowed',
+                            background: '#F3F4F6',
+                            border: '1px solid #E5E7EB',
+                            color: '#6B7280',
+                            fontWeight: 600,
+                            borderRadius: 'var(--radius-sm, 8px)',
+                          }}
+                        >
+                          Current Plan
+                        </button>
+                      ) : (
+                        <button
+                          className={isPro ? 'btn-primary' : 'btn-secondary'}
+                          style={{ marginTop: '20px', width: '100%', justifyContent: 'center', fontSize: '12.5px', padding: '9px 12px' }}
+                          disabled={isProcessing}
+                          onClick={() => handleUpgrade(plan)}
+                        >
+                          {isProcessing ? 'Updating...' : `Select ${plan.name}`}
+                        </button>
+                      )}
                     </div>
                   );
                 })

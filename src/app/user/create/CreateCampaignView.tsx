@@ -519,7 +519,9 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
       {showUpgradeModal && (
         <UpgradeModal
           isOpen={showUpgradeModal}
+          currentPlanId={usagePeriod?.plan || 'FREE'}
           onClose={() => setShowUpgradeModal(false)}
+          onPlanUpdated={() => router.refresh()}
         />
       )}
     </div>

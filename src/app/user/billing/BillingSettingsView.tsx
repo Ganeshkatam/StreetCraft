@@ -404,7 +404,9 @@ export function BillingSettingsView({ billingData }: BillingSettingsViewProps) {
       {showUpgradeModal && (
         <UpgradeModal
           isOpen={showUpgradeModal}
+          currentPlanId={currentPlan}
           onClose={() => setShowUpgradeModal(false)}
+          onPlanUpdated={() => router.refresh()}
         />
       )}
     </div>
