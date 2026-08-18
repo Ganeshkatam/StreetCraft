@@ -1,23 +1,16 @@
-import type { Metadata } from 'next';
-import { BusinessView } from './BusinessView';
-import { getWorkspaceTodayData } from '../../../lib/server/workspace/getWorkspaceTodayData';
+import { redirect } from 'next/navigation';
+import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
+import { getAccessibleBusinesses } from '../../../lib/server/business/getAccessibleBusinesses';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Store Profile & Context — StreetCraft Workspace',
-  description: 'Manage store identity, neighborhood landmarks, specialties, and operating rhythm.',
-};
+export default async function BusinessResolverPage() {
+  const claims = await requireAuthenticatedClaims('/user/business');
+  const businesses = await getAccessibleBusinesses(claims.userId);
 
-export default async function BusinessPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ biz?: string }>;
-}) {
-  const params = await searchParams;
-  const candidateBizId = params?.biz;
+  if (businesses.length === 0) {
+    redirect('/setup');
+  }
 
-  const data = await getWorkspaceTodayData(candidateBizId);
-
-  return <BusinessView initialData={data} />;
+  redirect(`/user/business/${encodeURIComponent(businesses[0].id)}/today`);
 }

@@ -1,25 +1,26 @@
-import type { Metadata } from 'next';
-import { TodayView } from './TodayView';
-import { getWorkspaceTodayData } from '../../../lib/server/workspace/getWorkspaceTodayData';
+import { redirect } from 'next/navigation';
+import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
+import { resolveAuthorizedBusiness } from '../../../lib/server/business/resolveAuthorizedBusiness';
+import { getAccessibleBusinesses } from '../../../lib/server/business/getAccessibleBusinesses';
+
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Today Dashboard — StreetCraft Workspace',
-  description: 'Daily briefing, store opportunity radar, and active campaigns for your store.',
-};
-
-export default async function TodayPage({
-  searchParams,
-}: {
+interface PageProps {
   searchParams?: Promise<{ biz?: string }>;
-}) {
+}
+
+export default async function TodayPageResolver({ searchParams }: PageProps) {
   const params = await searchParams;
-  const candidateBizId = params?.biz;
+  const claims = await requireAuthenticatedClaims('/user/today');
 
-  const data = await getWorkspaceTodayData(candidateBizId);
+  const business = await resolveAuthorizedBusiness(claims.userId, params?.biz);
+  if (!business) {
+    const accessible = await getAccessibleBusinesses(claims.userId);
+    if (accessible.length === 0) {
+      redirect('/setup');
+    }
+    redirect(`/user/business/${encodeURIComponent(accessible[0].id)}/today`);
+  }
 
-  // Intentional empty state handled cleanly by the view if no businesses exist
-  // We can also pass null to the view to represent "no businesses setup"
-
-  return <TodayView initialData={data} />;
+  redirect(`/user/business/${encodeURIComponent(business.id)}/today`);
 }

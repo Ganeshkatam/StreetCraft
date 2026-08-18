@@ -1,16 +1,18 @@
 'use client';
 
 import React from 'react';
-import { EditableField } from '../../components/EditableField';
-import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
-import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
+import { EditableField } from '../../../../components/EditableField';
+import { BusinessProfile } from '../../../../../../lib/server/business/getBusinessProfile';
+import { updateBusinessProfile } from '../../../../../../lib/server/business/updateBusinessProfile';
 
 interface StoreContactPanelProps {
-  businessId: string;
   profile: BusinessProfile;
+  businessId: string;
 }
 
-export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ businessId, profile }) => {
+export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ profile }) => {
+  const businessId = profile.business_id;
+
   const saveField = async (field: keyof BusinessProfile, value: string): Promise<{ success: boolean; error?: string }> => {
     const formData = new FormData();
     formData.set('name', profile.name || '');
@@ -40,7 +42,7 @@ export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ businessId
   return (
     <div className="account-pane-fields">
       <EditableField
-        label="Store WhatsApp & Phone"
+        label="Store WhatsApp &amp; Phone"
         value={profile.phone_whatsapp || ''}
         placeholder="e.g. +91 98765 43210"
         type="text"

@@ -1,20 +1,20 @@
 'use client';
 
 import React from 'react';
-import { EditableField } from '../../components/EditableField';
+import { EditableField } from '../../../../components/EditableField';
 import { StorePhotoManager } from '../components/StorePhotoManager';
-import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
-import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
-
-import { STORE_CATEGORIES } from '../../../../config/categories';
-import { BRAND_TONE_OPTIONS } from '../../../../config/brandTones';
+import { BusinessProfile } from '../../../../../../lib/server/business/getBusinessProfile';
+import { updateBusinessProfile } from '../../../../../../lib/server/business/updateBusinessProfile';
+import { STORE_CATEGORIES } from '../../../../../../config/categories';
+import { BRAND_TONE_OPTIONS } from '../../../../../../config/brandTones';
 
 interface StoreIdentityPanelProps {
-  businessId: string;
   profile: BusinessProfile;
 }
 
-export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ businessId, profile }) => {
+export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ profile }) => {
+  const businessId = profile.business_id;
+
   const saveField = async (field: keyof BusinessProfile, value: string): Promise<{ success: boolean; error?: string }> => {
     const formData = new FormData();
     formData.set('name', field === 'name' ? value : profile.name || '');
@@ -58,7 +58,7 @@ export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ business
       />
 
       <EditableField
-        label="Category & Concept"
+        label="Category &amp; Concept"
         value={profile.category || ''}
         placeholder="Select business category"
         type="select"
@@ -91,9 +91,9 @@ export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ business
       />
 
       <EditableField
-        label="Brand Voice & Tone"
+        label="Brand Voice &amp; Tone"
         value={profile.style_voice || ''}
-        placeholder="Select brand voice & tone"
+        placeholder="Select brand voice &amp; tone"
         type="select"
         options={BRAND_TONE_OPTIONS}
         onSave={async (val) => { await saveField('style_voice', String(val)); }}

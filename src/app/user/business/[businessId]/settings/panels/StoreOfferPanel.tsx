@@ -1,17 +1,17 @@
 'use client';
 
 import React from 'react';
-import { EditableField } from '../../components/EditableField';
-import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
-import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
-import { getOfferOptionsForCategory, getSignatureItemsPlaceholder } from '../../../../config/storeOptions';
+import { EditableField } from '../../../../components/EditableField';
+import { BusinessProfile } from '../../../../../../lib/server/business/getBusinessProfile';
+import { updateBusinessProfile } from '../../../../../../lib/server/business/updateBusinessProfile';
+import { getOfferOptionsForCategory, getSignatureItemsPlaceholder } from '../../../../../../config/storeOptions';
 
 interface StoreOfferPanelProps {
-  businessId: string;
   profile: BusinessProfile;
 }
 
-export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, profile }) => {
+export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ profile }) => {
+  const businessId = profile.business_id;
   const offerOptions = getOfferOptionsForCategory(profile.category);
   const signatureItemsPlaceholder = getSignatureItemsPlaceholder(profile.category);
 
@@ -61,18 +61,18 @@ export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, pr
       />
 
       <EditableField
-        label="Average Order Value (₹ INR)"
+        label="Average Order Value (INR)"
         value={profile.avg_ticket_inr ? String(profile.avg_ticket_inr) : ''}
         placeholder="e.g. 450"
-        type="number"
+        type="text"
         onSave={async (val) => { await saveField('avg_ticket_inr', String(val)); }}
       />
 
       <EditableField
-        label="Target Monthly Footfall / Customers"
+        label="Monthly Walk-in Target"
         value={profile.target_monthly_customers ? String(profile.target_monthly_customers) : ''}
-        placeholder="e.g. 1200"
-        type="number"
+        placeholder="e.g. 1500"
+        type="text"
         onSave={async (val) => { await saveField('target_monthly_customers', String(val)); }}
       />
     </div>

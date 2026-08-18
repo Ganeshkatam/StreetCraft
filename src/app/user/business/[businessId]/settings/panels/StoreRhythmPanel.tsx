@@ -1,23 +1,22 @@
 'use client';
 
 import React from 'react';
-import { EditableField } from '../../components/EditableField';
-import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
-import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
-
+import { EditableField } from '../../../../components/EditableField';
+import { BusinessProfile } from '../../../../../../lib/server/business/getBusinessProfile';
+import { updateBusinessProfile } from '../../../../../../lib/server/business/updateBusinessProfile';
 import {
   getPeakHoursOptionsForCategory,
   getSlowHoursOptionsForCategory,
   getGoalOptionsForCategory,
   getTargetCustomerOptionsForCategory,
-} from '../../../../config/storeOptions';
+} from '../../../../../../config/storeOptions';
 
 interface StoreRhythmPanelProps {
-  businessId: string;
   profile: BusinessProfile;
 }
 
-export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, profile }) => {
+export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ profile }) => {
+  const businessId = profile.business_id;
   const peakHoursOptions = getPeakHoursOptionsForCategory(profile.category);
   const slowHoursOptions = getSlowHoursOptionsForCategory(profile.category);
   const goalOptions = getGoalOptionsForCategory(profile.category);
@@ -61,7 +60,7 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
       />
 
       <EditableField
-        label="Slow / Quiet Hours"
+        label="Slow Hours &amp; Downtime"
         value={profile.slow_hours || ''}
         placeholder="Select or enter slow hours"
         type="select"
@@ -70,18 +69,18 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
       />
 
       <EditableField
-        label="Primary Business Goal"
+        label="Primary Store Goal"
         value={profile.primary_goal || ''}
-        placeholder="Select primary business goal"
+        placeholder="Select key operational focus"
         type="select"
         options={goalOptions}
         onSave={async (val) => { await saveField('primary_goal', String(val)); }}
       />
 
       <EditableField
-        label="Target Customer Demographic"
+        label="Target Customer Segment"
         value={profile.target_customer || ''}
-        placeholder="Select target customer demographic"
+        placeholder="Select primary patron profile"
         type="select"
         options={targetCustomerOptions}
         onSave={async (val) => { await saveField('target_customer', String(val)); }}

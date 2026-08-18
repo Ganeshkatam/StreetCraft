@@ -73,8 +73,13 @@ export const WorkspaceNavigation: React.FC = () => {
   const activeBizId = activeBiz ? activeBiz.id : null;
   const userInitial = (effectiveName || session.email || 'U').charAt(0).toUpperCase();
 
-  const getBizHref = (basePath: string) => {
-    return activeBizId ? `${basePath}?biz=${encodeURIComponent(activeBizId)}` : basePath;
+  const getBizHref = (section: 'today' | 'create' | 'campaigns' | 'settings' | 'plan') => {
+    if (!activeBizId) {
+      if (section === 'settings') return '/user/business';
+      if (section === 'plan') return '/user/account/plan';
+      return `/user/${section}`;
+    }
+    return `/user/business/${encodeURIComponent(activeBizId)}/${section}`;
   };
 
   return (
@@ -82,80 +87,52 @@ export const WorkspaceNavigation: React.FC = () => {
       <header className="main-header">
         <div className="header-container">
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Link href={getBizHref('/user/today')} className="brand-wrapper">
+            <Link href={getBizHref('today')} className="brand-wrapper">
               <Logo size="md" />
             </Link>
 
             <div className="workspace-switcher" ref={switcherRef}>
               <button
-                className="workspace-switcher-btn"
+                className="switcher-trigger"
                 onClick={() => setShowSwitcher(!showSwitcher)}
-                title="Select Active Storefront"
+                title="Switch Storefront"
               >
                 <Store size={15} color="var(--color-primary)" />
-                <span className="workspace-switcher-name">
-                  {activeBizName}
-                </span>
-                <ChevronDown size={14} color="var(--color-ink-muted)" />
+                <span className="switcher-name">{activeBizName}</span>
+                <ChevronDown size={14} className={`switcher-arrow ${showSwitcher ? 'open' : ''}`} />
               </button>
 
               {showSwitcher && (
-                <div className="workspace-switcher-menu">
-                  <div className="workspace-switcher-header-label">
-                    STOREFRONTS
-                  </div>
-
-                  <div className="workspace-switcher-list">
-                    {safeBusinesses.length === 0 ? (
-                      <div className="workspace-switcher-quota">
-                        No storefronts created
-                      </div>
-                    ) : (
-                      safeBusinesses.map((biz) => {
-                        const isActive = biz.id === session.activeBusinessId;
-                        return (
-                          <button
-                            key={biz.id}
-                            type="button"
-                            className={`workspace-switcher-item ${isActive ? 'active' : ''}`}
-                            onClick={() => {
-                              switchBusiness(biz.id);
-                              setShowSwitcher(false);
-                              router.push(`${pathname}?biz=${encodeURIComponent(biz.id)}`);
-                            }}
-                          >
-                            <span className="workspace-switcher-item-name">
-                              {biz.name}
-                            </span>
-                            {isActive && (
-                              <span className="workspace-switcher-active-tag">
-                                ACTIVE
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  <div className="user-dropdown-divider" />
-
-                  <div className="workspace-switcher-quota">
-                    {safeBusinesses.length} of {accountLimit} storefronts used
+                <div className="switcher-dropdown">
+                  <div className="switcher-header">CONNECTED STOREFRONTS</div>
+                  <div className="switcher-list">
+                    {safeBusinesses.map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        className={`switcher-item ${b.id === activeBizId ? 'active' : ''}`}
+                        onClick={async () => {
+                          await switchBusiness(b.id);
+                          setShowSwitcher(false);
+                          router.push(`/user/business/${encodeURIComponent(b.id)}/today`);
+                        }}
+                      >
+                        <Store size={14} />
+                        <span className="switcher-item-name">{b.name}</span>
+                        {b.id === activeBizId && <span className="switcher-badge">ACTIVE</span>}
+                      </button>
+                    ))}
                   </div>
 
                   {safeBusinesses.length < accountLimit ? (
-                    <button
-                      type="button"
-                      className="workspace-switcher-add-btn"
-                      onClick={() => {
-                        setShowSwitcher(false);
-                        router.push('/setup');
-                      }}
+                    <Link
+                      href="/setup"
+                      className="switcher-action-btn"
+                      onClick={() => setShowSwitcher(false)}
                     >
-                      <Plus size={14} />
-                      <span>{safeBusinesses.length === 0 ? 'Create first storefront' : 'Add another storefront'}</span>
-                    </button>
+                      <Plus size={13} />
+                      <span>Add new storefront</span>
+                    </Link>
                   ) : (
                     <button
                       type="button"
@@ -175,34 +152,34 @@ export const WorkspaceNavigation: React.FC = () => {
 
           <nav className="header-nav-links">
             <Link
-              href={getBizHref('/user/today')}
-              className={`nav-item ${pathname === '/user/today' ? 'active' : ''}`}
+              href={getBizHref('today')}
+              className={`nav-item ${pathname.includes('/today') ? 'active' : ''}`}
             >
               Today
             </Link>
             <Link
-              href={getBizHref('/user/create')}
-              className={`nav-item ${pathname === '/user/create' ? 'active' : ''}`}
+              href={getBizHref('create')}
+              className={`nav-item ${pathname.includes('/create') ? 'active' : ''}`}
             >
               Create
             </Link>
             <Link
-              href={getBizHref('/user/campaigns')}
-              className={`nav-item ${pathname.startsWith('/user/campaigns') ? 'active' : ''}`}
+              href={getBizHref('campaigns')}
+              className={`nav-item ${pathname.includes('/campaigns') ? 'active' : ''}`}
             >
               Campaigns
             </Link>
             <Link
-              href={getBizHref('/user/business')}
-              className={`nav-item ${pathname === '/user/business' ? 'active' : ''}`}
+              href={getBizHref('settings')}
+              className={`nav-item ${pathname.includes('/settings') || pathname === '/user/business' ? 'active' : ''}`}
             >
-              Business
+              Store Settings
             </Link>
             <Link
-              href={getBizHref('/user/myplan')}
-              className={`nav-item ${pathname === '/user/myplan' || pathname === '/user/usage' || pathname === '/user/billing' ? 'active' : ''}`}
+              href={getBizHref('plan')}
+              className={`nav-item ${pathname.includes('/plan') || pathname === '/user/myplan' ? 'active' : ''}`}
             >
-              My Plan
+              Plan &amp; Usage
             </Link>
           </nav>
 
@@ -249,7 +226,7 @@ export const WorkspaceNavigation: React.FC = () => {
                   </div>
 
                   <Link
-                    href={getBizHref('/user/account')}
+                    href="/user/account/identity"
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
@@ -258,21 +235,21 @@ export const WorkspaceNavigation: React.FC = () => {
                   </Link>
 
                   <Link
-                    href={getBizHref('/user/business')}
+                    href={getBizHref('settings')}
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
                     <Store size={14} color="var(--color-ink-muted)" />
-                    <span>Store Preferences</span>
+                    <span>Store Settings</span>
                   </Link>
 
                   <Link
-                    href={getBizHref('/user/myplan')}
+                    href={getBizHref('plan')}
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
                     <CreditCard size={14} color="var(--color-ink-muted)" />
-                    <span>My Plan</span>
+                    <span>Plan &amp; Usage</span>
                   </Link>
 
                   <div className="user-dropdown-divider" />

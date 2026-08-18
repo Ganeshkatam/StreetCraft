@@ -16,6 +16,8 @@ export interface Campaign {
   audience: string;
   status: string;
   created_at: string;
+  offer?: Record<string, unknown>;
+  schedule?: Record<string, unknown>;
   outputs: CampaignOutput[];
 }
 
@@ -31,6 +33,8 @@ export async function getRecentCampaigns(businessId: string): Promise<Campaign[]
       audience,
       status,
       created_at,
+      offer,
+      schedule,
       campaign_outputs (
         id,
         channel,
@@ -42,14 +46,21 @@ export async function getRecentCampaigns(businessId: string): Promise<Campaign[]
     `)
     .eq('business_id', businessId)
     .order('created_at', { ascending: false })
-    .limit(5);
+    .limit(10);
 
   if (error || !data) {
     return [];
   }
 
-  return data.map(c => ({
-    ...c,
-    outputs: (c.campaign_outputs as unknown as CampaignOutput[]) || []
-  })) as Campaign[];
+  return data.map((c) => ({
+    id: c.id,
+    type: c.type,
+    objective: c.objective,
+    audience: c.audience,
+    status: c.status,
+    created_at: c.created_at,
+    offer: c.offer as Record<string, unknown> | undefined,
+    schedule: c.schedule as Record<string, unknown> | undefined,
+    outputs: (c.campaign_outputs || []) as CampaignOutput[],
+  }));
 }

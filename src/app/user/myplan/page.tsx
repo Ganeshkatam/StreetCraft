@@ -1,23 +1,29 @@
-import type { Metadata } from 'next';
-import { MyPlanView } from './MyPlanView';
-import { getMyPlanData } from '../../../lib/server/myplan/getMyPlanData';
+import { redirect } from 'next/navigation';
+import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
+import { resolveAuthorizedBusiness } from '../../../lib/server/business/resolveAuthorizedBusiness';
+import { getAccessibleBusinesses } from '../../../lib/server/business/getAccessibleBusinesses';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'My Plan — StreetCraft Workspace',
-  description: 'Manage subscription tier, monthly campaign allowances, and active store limits.',
-};
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function MyPlanPage({ searchParams }: PageProps) {
+export default async function MyPlanPageResolver({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
-  const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
+  const requestedBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
 
-  const planData = await getMyPlanData(candidateBizId);
+  const claims = await requireAuthenticatedClaims('/user/myplan');
+  const business = await resolveAuthorizedBusiness(claims.userId, requestedBizId);
 
-  return <MyPlanView billingData={planData} />;
+  if (business) {
+    redirect(`/user/business/${encodeURIComponent(business.id)}/plan`);
+  }
+
+  const accessible = await getAccessibleBusinesses(claims.userId);
+  if (accessible.length > 0) {
+    redirect(`/user/business/${encodeURIComponent(accessible[0].id)}/plan`);
+  }
+
+  redirect('/user/account/plan');
 }

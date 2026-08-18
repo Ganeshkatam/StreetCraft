@@ -1,36 +1,36 @@
-import type { Metadata } from 'next';
-import { CampaignVaultView } from './CampaignVaultView';
-import { getCampaignVault } from '../../../lib/server/campaigns/getCampaignVault';
 import { redirect } from 'next/navigation';
+import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
+import { resolveAuthorizedBusiness } from '../../../lib/server/business/resolveAuthorizedBusiness';
+import { getAccessibleBusinesses } from '../../../lib/server/business/getAccessibleBusinesses';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'Campaign Vault — StreetCraft Workspace',
-  description: 'Manage and review your saved marketing campaigns, platform outputs, and walk-in notes.',
-};
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function CampaignVaultPage({ searchParams }: PageProps) {
+export default async function CampaignVaultPageResolver({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const requestedBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
-  const cursorCreatedAt = typeof resolvedParams.cursorCreatedAt === 'string' ? resolvedParams.cursorCreatedAt : undefined;
-  const cursorId = typeof resolvedParams.cursorId === 'string' ? resolvedParams.cursorId : undefined;
-  const viewMode = resolvedParams.view === 'archived' ? 'archived' : 'active';
 
-  let cursor;
-  if (cursorCreatedAt && cursorId) {
-    cursor = { createdAt: cursorCreatedAt, id: cursorId };
+  const claims = await requireAuthenticatedClaims('/user/campaigns');
+  let business = await resolveAuthorizedBusiness(claims.userId, requestedBizId);
+
+  if (!business) {
+    const accessible = await getAccessibleBusinesses(claims.userId);
+    if (accessible.length === 0) {
+      redirect('/setup');
+    }
+    business = accessible[0];
   }
 
-  const vaultData = await getCampaignVault(requestedBizId, cursor, viewMode);
-
-  if (!vaultData) {
-    redirect('/setup');
+  const queryParams = new URLSearchParams();
+  for (const [k, v] of Object.entries(resolvedParams)) {
+    if (k !== 'biz' && typeof v === 'string') {
+      queryParams.set(k, v);
+    }
   }
 
-  return <CampaignVaultView vaultData={vaultData} />;
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  redirect(`/user/business/${encodeURIComponent(business.id)}/campaigns${queryString}`);
 }

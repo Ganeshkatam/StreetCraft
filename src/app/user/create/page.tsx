@@ -1,28 +1,36 @@
-import type { Metadata } from 'next';
-import { CreateCampaignView } from './CreateCampaignView';
-import { getCreateContext } from '../../../lib/server/create/getCreateContext';
 import { redirect } from 'next/navigation';
+import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
+import { resolveAuthorizedBusiness } from '../../../lib/server/business/resolveAuthorizedBusiness';
+import { getAccessibleBusinesses } from '../../../lib/server/business/getAccessibleBusinesses';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'Campaign Composer — StreetCraft Workspace',
-  description: 'Create multi-channel walk-in campaigns across Google, Instagram, WhatsApp, and in-store print.',
-};
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function CreateCampaignPage({ searchParams }: PageProps) {
+export default async function CreateCampaignPageResolver({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const requestedBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
 
-  const context = await getCreateContext(requestedBizId, resolvedParams);
+  const claims = await requireAuthenticatedClaims('/user/create');
+  let business = await resolveAuthorizedBusiness(claims.userId, requestedBizId);
 
-  if (!context) {
-    redirect('/setup');
+  if (!business) {
+    const accessible = await getAccessibleBusinesses(claims.userId);
+    if (accessible.length === 0) {
+      redirect('/setup');
+    }
+    business = accessible[0];
   }
 
-  return <CreateCampaignView context={context} />;
+  const queryParams = new URLSearchParams();
+  for (const [k, v] of Object.entries(resolvedParams)) {
+    if (k !== 'biz' && typeof v === 'string') {
+      queryParams.set(k, v);
+    }
+  }
+
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  redirect(`/user/business/${encodeURIComponent(business.id)}/create${queryString}`);
 }
