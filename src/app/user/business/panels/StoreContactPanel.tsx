@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditableAccountField } from '../../account/identity/EditableAccountField';
+import { EditableField } from '../../components/EditableField';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
 
@@ -39,12 +39,12 @@ export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ businessId
 
   return (
     <div className="account-pane-fields">
-      <EditableAccountField
+      <EditableField
         label="Store WhatsApp & Phone"
         value={profile.phone_whatsapp || ''}
         placeholder="e.g. +91 98765 43210"
-        type="tel"
-        onSave={(val) => saveField('phone_whatsapp', val)}
+        type="text"
+        onSave={async (val) => { await saveField('phone_whatsapp', String(val)); }}
       />
 
       <div className="account-field-row">

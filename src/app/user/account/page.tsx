@@ -1,15 +1,17 @@
-import type { Metadata } from 'next';
-import { AccountSettingsView } from './AccountSettingsView';
-import { getAccountProfile } from '../../../lib/server/account/getAccountProfile';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Account Settings — StreetCraft',
-  description: 'Manage account details, notification preferences, password updates, and session sign-out.',
-};
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-export default async function AccountSettingsPage() {
-  const accountData = await getAccountProfile();
-  return <AccountSettingsView accountData={accountData} />;
+export default async function AccountResolverPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
+  const target = candidateBizId
+    ? `/user/account/identity?biz=${encodeURIComponent(candidateBizId)}`
+    : '/user/account/identity';
+
+  redirect(target);
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditableAccountField } from '../../account/identity/EditableAccountField';
+import { EditableField } from '../../components/EditableField';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
 
@@ -51,36 +51,40 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
 
   return (
     <div className="account-pane-fields">
-      <EditableAccountField
+      <EditableField
         label="Peak Operating Hours"
         value={profile.peak_hours || ''}
         placeholder="Select or enter peak hours"
+        type="select"
         options={peakHoursOptions}
-        onSave={(val) => saveField('peak_hours', val)}
+        onSave={async (val) => { await saveField('peak_hours', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Slow / Quiet Hours"
         value={profile.slow_hours || ''}
         placeholder="Select or enter slow hours"
+        type="select"
         options={slowHoursOptions}
-        onSave={(val) => saveField('slow_hours', val)}
+        onSave={async (val) => { await saveField('slow_hours', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Primary Business Goal"
         value={profile.primary_goal || ''}
         placeholder="Select primary business goal"
+        type="select"
         options={goalOptions}
-        onSave={(val) => saveField('primary_goal', val)}
+        onSave={async (val) => { await saveField('primary_goal', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Target Customer Demographic"
         value={profile.target_customer || ''}
         placeholder="Select target customer demographic"
+        type="select"
         options={targetCustomerOptions}
-        onSave={(val) => saveField('target_customer', val)}
+        onSave={async (val) => { await saveField('target_customer', String(val)); }}
       />
     </div>
   );

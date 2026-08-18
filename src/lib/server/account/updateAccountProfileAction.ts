@@ -5,121 +5,80 @@ import { revalidatePath } from 'next/cache';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { createClient } from '../../supabase/server';
 
-const parseCheckbox = (val: unknown): boolean => {
-  return val === 'on' || val === 'true' || val === true;
-};
-
 const UpdateProfileSchema = z.object({
-  fullName: z.string().trim().min(2, 'Name must be at least 2 characters.').max(100, 'Name cannot exceed 100 characters.'),
-  phone: z.string().superRefine((val, ctx) => {
-    const trimmed = val.trim();
-    if (trimmed === '') return;
-    if (trimmed.length > 20) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.too_big,
-        maximum: 20,
-        type: 'string',
-        inclusive: true,
-        message: 'Phone number cannot exceed 20 characters.',
-      });
-      return;
-    }
-    if (!/^[+\d\s\-()]+$/.test(trimmed)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Phone number contains invalid characters.',
-      });
-    }
-  }),
-  avatarUrl: z.string().trim().optional(),
-  emailNotifs: z.boolean(),
-  whatsappNotifs: z.boolean(),
-  weeklyDigest: z.boolean(),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, 'Full name must be at least 2 characters.')
+    .max(80, 'Full name must be less than 80 characters.'),
+  phone: z
+    .string()
+    .trim()
+    .max(30, 'Phone number must be less than 30 characters.')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val : null)),
 });
 
-export type UpdateAccountProfileActionState = {
+export type UpdateProfileActionState = {
   success: boolean;
-  message: string;
+  message?: string;
   errors?: Record<string, string[]>;
 };
 
 export async function updateAccountProfileAction(
-  prevState: UpdateAccountProfileActionState | null,
+  prevState: UpdateProfileActionState,
   formData: FormData
-): Promise<UpdateAccountProfileActionState> {
+): Promise<UpdateProfileActionState> {
   try {
-    const rawFullName = formData.get('fullName');
-    const rawPhone = formData.get('phone');
-    const rawAvatarUrl = formData.get('avatarUrl');
-    const rawEmailNotifs = formData.get('emailNotifs');
-    const rawWhatsappNotifs = formData.get('whatsappNotifs');
-    const rawWeeklyDigest = formData.get('weeklyDigest');
+    const claims = await requireAuthenticatedClaims('/user/account/identity');
+    const supabase = await createClient();
 
-    const parsed = UpdateProfileSchema.safeParse({
-      fullName: typeof rawFullName === 'string' ? rawFullName : '',
-      phone: typeof rawPhone === 'string' ? rawPhone : '',
-      avatarUrl: typeof rawAvatarUrl === 'string' ? rawAvatarUrl : '',
-      emailNotifs: parseCheckbox(rawEmailNotifs),
-      whatsappNotifs: parseCheckbox(rawWhatsappNotifs),
-      weeklyDigest: parseCheckbox(rawWeeklyDigest),
-    });
+    const rawData = {
+      fullName: formData.get('fullName'),
+      phone: formData.get('phone'),
+    };
 
+    const parsed = UpdateProfileSchema.safeParse(rawData);
     if (!parsed.success) {
       return {
         success: false,
-        message: 'Please fix the errors below.',
+        message: 'Invalid profile data provided.',
         errors: parsed.error.flatten().fieldErrors,
       };
     }
 
-    const { fullName, phone, avatarUrl, emailNotifs, whatsappNotifs, weeklyDigest } = parsed.data;
-
-    // 1. Authenticate caller (identity invariant: profiles.id = claims.userId)
-    const claims = await requireAuthenticatedClaims('/user/account');
-    const supabase = await createClient();
-
-    const trimmedPhone = phone.trim();
-    const finalPhone = trimmedPhone === '' ? null : trimmedPhone;
-    const finalAvatar = avatarUrl && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
-
-    // 2. Perform RLS-protected update on user's own profile
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        full_name: fullName,
-        phone: finalPhone,
-        avatar_url: finalAvatar,
-        notification_preferences: {
-          email: emailNotifs,
-          whatsapp: whatsappNotifs,
-          weekly_digest: weeklyDigest,
-        },
+        full_name: parsed.data.fullName,
+        phone: parsed.data.phone,
         updated_at: new Date().toISOString(),
       })
       .eq('id', claims.userId);
 
     if (updateError) {
-      console.error('updateAccountProfileAction error:', updateError);
+      console.error('updateAccountProfileAction database error:', updateError);
       return {
         success: false,
-        message: 'Failed to update profile preferences. Please try again.',
+        message: updateError.message || 'Failed to update profile.',
       };
     }
 
-    // 3. Dependency-driven revalidation
     revalidatePath('/user/account');
+    revalidatePath('/user/account/identity');
     revalidatePath('/user/today');
 
     return {
       success: true,
-      message: 'Account profile and preferences updated successfully.',
+      message: 'Profile updated successfully.',
     };
   } catch (err: unknown) {
     if (err instanceof Error && err.message === 'REDIRECT_TO_LOGIN') throw err;
-    console.error('updateAccountProfileAction error:', err);
+    console.error('updateAccountProfileAction unexpected error:', err);
     return {
       success: false,
-      message: 'Authentication failed or an unexpected error occurred.',
+      message: 'An unexpected error occurred while updating profile.',
     };
   }
 }

@@ -1,82 +1,72 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { User, Store, Bell, Lock, CreditCard, ChevronRight } from 'lucide-react';
-import { AccountUserProfile, AccountBusinessMembership, AccountEntitlement } from '../../../../lib/server/account/getAccountProfile';
-
-export type AccountTabId = 'identity' | 'stores' | 'notifications' | 'security' | 'plan';
 
 interface AccountRailProps {
-  profile: AccountUserProfile;
-  businesses: AccountBusinessMembership[];
-  entitlement: AccountEntitlement;
-  activeTab: AccountTabId;
-  onSelectTab: (tab: AccountTabId) => void;
+  fullName: string;
+  email: string;
+  avatarUrl: string | null;
 }
 
-export const AccountRail: React.FC<AccountRailProps> = ({
-  profile,
-  businesses,
-  entitlement,
-  activeTab,
-  onSelectTab,
-}) => {
-  const userInitial = (profile.fullName || profile.email || 'U').charAt(0).toUpperCase();
+export function AccountRail({ fullName, email, avatarUrl }: AccountRailProps) {
+  const pathname = usePathname();
+  const userInitial = (fullName || email || 'U').charAt(0).toUpperCase();
 
-  const businessCountText = businesses.length === 1 ? '1 storefront' : `${businesses.length} storefronts`;
-  const businessCountBadge = businesses.length < 10 ? `0${businesses.length}` : `${businesses.length}`;
-  const planSubtitle = entitlement.planName ? `${entitlement.planName} \u2022 Active` : 'Neighborhood Starter \u2022 Free';
-
-  const navItems: Array<{
-    id: AccountTabId;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
-    title: string;
-    subtitle: string;
-    count?: string;
-  }> = [
+  const navItems = [
     {
       id: 'identity',
+      route: '/user/account/identity',
+      stepNumber: '01',
       icon: User,
       title: 'Identity',
-      subtitle: 'Name & contact',
+      subtitle: 'Name & contact details',
     },
     {
-      id: 'stores',
+      id: 'storefronts',
+      route: '/user/account/storefronts',
+      stepNumber: '02',
       icon: Store,
       title: 'Storefronts',
-      subtitle: businessCountText,
-      count: businessCountBadge,
+      subtitle: 'Connected businesses',
     },
     {
       id: 'notifications',
+      route: '/user/account/notifications',
+      stepNumber: '03',
       icon: Bell,
       title: 'Notifications',
-      subtitle: '3 preferences',
-      count: '03',
+      subtitle: 'Alerts & digests',
     },
     {
       id: 'security',
+      route: '/user/account/security',
+      stepNumber: '04',
       icon: Lock,
       title: 'Security',
-      subtitle: 'Password & session',
+      subtitle: 'Password & credentials',
     },
     {
       id: 'plan',
+      route: '/user/account/plan',
+      stepNumber: '05',
       icon: CreditCard,
-      title: 'Plan & usage',
-      subtitle: planSubtitle,
+      title: 'Plan & Usage',
+      subtitle: 'Subscription & limits',
     },
   ];
 
   return (
     <aside className="account-rail">
-      {/* User Profile Summary Card (Horizontal Side-by-Side) */}
+      {/* User Profile Summary Header */}
       <div className="account-rail-profile">
         <div className="account-rail-avatar">
-          {profile.avatarUrl ? (
+          {avatarUrl ? (
             <img
-              src={profile.avatarUrl}
-              alt={profile.fullName || 'User'}
+              src={avatarUrl}
+              alt={fullName || 'User'}
               className="account-rail-avatar-img"
             />
           ) : (
@@ -86,11 +76,10 @@ export const AccountRail: React.FC<AccountRailProps> = ({
 
         <div className="account-rail-profile-info">
           <div className="account-rail-name">
-            {profile.fullName || 'User'}
+            {fullName || 'Account User'}
           </div>
-
           <div className="account-rail-email">
-            {profile.email}
+            {email}
           </div>
         </div>
       </div>
@@ -98,44 +87,39 @@ export const AccountRail: React.FC<AccountRailProps> = ({
       <div className="account-rail-divider" />
 
       {/* Navigation Items */}
-      <nav className="account-rail-nav">
+      <nav className="account-rail-nav" aria-label="Account Settings Navigation">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id;
+          const isActive = pathname === item.route || (item.id === 'identity' && pathname === '/user/account');
           const Icon = item.icon;
+
           return (
-            <button
+            <Link
               key={item.id}
-              type="button"
-              onClick={() => onSelectTab(item.id)}
+              href={item.route}
               className={`account-rail-item ${isActive ? 'active' : ''}`}
             >
-              <div className="account-rail-item-icon-wrapper">
-                <Icon size={17} />
+              <div className="account-rail-item-left">
+                <div className="account-rail-item-icon">
+                  <Icon size={16} />
+                </div>
+                <div className="account-rail-item-content">
+                  <div className="account-rail-item-title">
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10.5px', color: 'var(--color-ink-muted)', marginRight: '6px' }}>
+                      {item.stepNumber}
+                    </span>
+                    {item.title}
+                  </div>
+                  <div className="account-rail-item-subtitle">{item.subtitle}</div>
+                </div>
               </div>
 
-              <div className="account-rail-item-text">
-                <div className="account-rail-item-title">
-                  {item.title}
-                </div>
-                <div className="account-rail-item-subtitle">
-                  {item.subtitle}
-                </div>
+              <div className="account-rail-item-right">
+                <ChevronRight size={13} className="account-rail-item-arrow" />
               </div>
-
-              {isActive ? (
-                <div className="account-rail-item-arrow">
-                  <ChevronRight size={15} />
-                </div>
-              ) : item.count ? (
-                <div className="account-rail-item-count">
-                  {item.count}
-                </div>
-              ) : null}
-            </button>
+            </Link>
           );
         })}
       </nav>
     </aside>
   );
-};
-
+}

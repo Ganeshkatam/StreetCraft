@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditableAccountField } from '../../account/identity/EditableAccountField';
+import { EditableField } from '../../components/EditableField';
 import { StorePhotoManager } from '../components/StorePhotoManager';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
@@ -49,52 +49,54 @@ export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ business
         profile={profile}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Store Name"
         value={profile.name || ''}
         placeholder="e.g. Resto cafe"
         type="text"
-        onSave={(val) => saveField('name', val)}
+        onSave={async (val) => { await saveField('name', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Category & Concept"
         value={profile.category || ''}
         placeholder="Select business category"
+        type="select"
         options={STORE_CATEGORIES}
-        onSave={(val) => saveField('category', val)}
+        onSave={async (val) => { await saveField('category', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Neighborhood"
         value={profile.neighborhood || ''}
         placeholder="e.g. Indiranagar 100ft Road"
         type="text"
-        onSave={(val) => saveField('neighborhood', val)}
+        onSave={async (val) => { await saveField('neighborhood', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="City"
         value={profile.city || ''}
         placeholder="e.g. Bangalore"
         type="text"
-        onSave={(val) => saveField('city', val)}
+        onSave={async (val) => { await saveField('city', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Local Landmarks"
         value={profile.landmarks || ''}
         placeholder="e.g. Opposite Metro Pillar 42"
         type="text"
-        onSave={(val) => saveField('landmarks', val)}
+        onSave={async (val) => { await saveField('landmarks', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Brand Voice & Tone"
         value={profile.style_voice || ''}
         placeholder="Select brand voice & tone"
+        type="select"
         options={BRAND_TONE_OPTIONS}
-        onSave={(val) => saveField('style_voice', val)}
+        onSave={async (val) => { await saveField('style_voice', String(val)); }}
       />
     </div>
   );

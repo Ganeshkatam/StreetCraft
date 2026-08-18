@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditableAccountField } from '../../account/identity/EditableAccountField';
+import { EditableField } from '../../components/EditableField';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
 import { getOfferOptionsForCategory, getSignatureItemsPlaceholder } from '../../../../config/storeOptions';
@@ -43,36 +43,37 @@ export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, pr
 
   return (
     <div className="account-pane-fields">
-      <EditableAccountField
+      <EditableField
         label="Signature Menu Items / Bestsellers"
         value={profile.signature_items || ''}
         placeholder={signatureItemsPlaceholder}
         type="text"
-        onSave={(val) => saveField('signature_items', val)}
+        onSave={async (val) => { await saveField('signature_items', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Default Promotional Offer"
         value={profile.default_offer || ''}
         placeholder="Select a promotional offer or create custom"
+        type="select"
         options={offerOptions}
-        onSave={(val) => saveField('default_offer', val)}
+        onSave={async (val) => { await saveField('default_offer', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Average Order Value (₹ INR)"
         value={profile.avg_ticket_inr ? String(profile.avg_ticket_inr) : ''}
         placeholder="e.g. 450"
         type="number"
-        onSave={(val) => saveField('avg_ticket_inr', val)}
+        onSave={async (val) => { await saveField('avg_ticket_inr', String(val)); }}
       />
 
-      <EditableAccountField
+      <EditableField
         label="Target Monthly Footfall / Customers"
         value={profile.target_monthly_customers ? String(profile.target_monthly_customers) : ''}
         placeholder="e.g. 1200"
         type="number"
-        onSave={(val) => saveField('target_monthly_customers', val)}
+        onSave={async (val) => { await saveField('target_monthly_customers', String(val)); }}
       />
     </div>
   );
