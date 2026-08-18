@@ -55,11 +55,13 @@ function LoginContent() {
 
       toast.success('Signed in successfully.');
 
-      if (session.activeBusinessId) {
+      if (session.activeBusinessId || redirectParam === '/app/account') {
         const dest = redirectParam && redirectParam.startsWith('/app') ? redirectParam : '/app/today';
         router.push(dest);
+        router.refresh();
       } else {
         router.push('/setup');
+        router.refresh();
       }
     } catch (err: unknown) {
       toast.error(getUserFacingErrorMessage(err, 'Failed to sign in. Please verify your credentials and try again.'));

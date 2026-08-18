@@ -12,6 +12,8 @@ export function PublicHeader() {
   const router = useRouter();
   const { session } = useAuth();
 
+  const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();
+
   return (
     <header className="main-header">
       <div className="header-container">
@@ -50,15 +52,62 @@ export function PublicHeader() {
 
         <div className="header-actions">
           {session.isAuthenticated ? (
-            <>
-              <button
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Link
+                href="/app/today"
                 className="btn-primary"
-                onClick={() => router.push('/app/today')}
                 style={{ padding: '8px 18px', fontSize: '13.5px' }}
               >
                 Open Workspace
-              </button>
-            </>
+              </Link>
+
+              <Link
+                href="/app/account"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '5px 12px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'var(--color-surface-raised)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-ink)',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
+                }}
+                title="Operator Account Settings"
+              >
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--color-primary)',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                  }}
+                >
+                  {userInitial}
+                </div>
+                <span
+                  style={{
+                    maxWidth: '120px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {session.name || 'Account'}
+                </span>
+              </Link>
+            </div>
           ) : (
             <>
               <Link
