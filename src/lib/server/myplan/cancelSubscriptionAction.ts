@@ -16,12 +16,10 @@ export async function cancelSubscriptionAction(
 ): Promise<CancelSubscriptionActionState> {
   try {
     // 1. Authenticate caller
-    await requireAuthenticatedClaims('/user/billing');
+    await requireAuthenticatedClaims('/user/myplan');
     const supabase = await createClient();
 
-    // 2. Execute transactional RPC to schedule cancellation at period end
-    // The RPC locks the active subscription row, sets cancel_at_period_end = true,
-    // and records the audit event without prematurely destroying the active usage_periods.
+    // 2. Execute transactional RPC to immediately cancel subscription and reset usage periods to Free tier
     const { data: rpcResult, error: rpcError } = await supabase.rpc('request_subscription_cancellation');
 
     if (rpcError) {
@@ -33,30 +31,19 @@ export async function cancelSubscriptionAction(
       }
       return {
         success: false,
-        message: 'Failed to schedule subscription cancellation: ' + rpcError.message,
+        message: 'Failed to cancel subscription: ' + rpcError.message,
       };
     }
 
     // 3. Revalidate affected surfaces
-    revalidatePath('/user/billing');
+    revalidatePath('/user/myplan');
     revalidatePath('/user/account');
     revalidatePath('/user/today');
-
-    const periodEndStr = (rpcResult as any)?.current_period_end
-      ? new Date((rpcResult as any).current_period_end).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })
-      : 'the end of the cycle';
-
-    if ((rpcResult as any)?.already_scheduled === true) {
-      return {
-        success: true,
-        message: `Subscription cancellation is already scheduled for ${periodEndStr}. No further action needed.`,
-        data: rpcResult,
-      };
-    }
+    revalidatePath('/user/create');
 
     return {
       success: true,
-      message: `Your subscription is scheduled to cancel on ${periodEndStr}. Your full campaign quota and store features remain active until then.`,
+      message: 'Subscription cancelled. Your workspace has been reverted to the Free tier with 3 monthly campaigns.',
       data: rpcResult,
     };
   } catch (err: unknown) {

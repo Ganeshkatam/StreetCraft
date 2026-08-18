@@ -48,8 +48,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     try {
       const paymentRef = 'pay_' + Math.random().toString(36).substring(2, 11);
       const orderRef = 'order_' + Math.random().toString(36).substring(2, 11);
+      const billingCycle: 'monthly' | 'quarterly' | 'annual' = plan.id === 'FOUNDER' ? 'quarterly' : 'monthly';
 
-      await api.confirmPaymentAndActivateSubscription('razorpay', paymentRef, orderRef, plan.id, 'monthly');
+      await api.confirmPaymentAndActivateSubscription('razorpay', paymentRef, orderRef, plan.id, billingCycle);
 
       const limit = plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 100;
       setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${limit} monthly campaigns.`);

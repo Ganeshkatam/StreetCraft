@@ -199,10 +199,10 @@ export const WorkspaceNavigation: React.FC = () => {
               Business
             </Link>
             <Link
-              href={getBizHref('/user/billing')}
-              className={`nav-item ${pathname === '/user/billing' ? 'active' : ''}`}
+              href={getBizHref('/user/myplan')}
+              className={`nav-item ${pathname === '/user/myplan' || pathname === '/user/usage' || pathname === '/user/billing' ? 'active' : ''}`}
             >
-              Billing
+              My Plan
             </Link>
           </nav>
 
@@ -267,12 +267,12 @@ export const WorkspaceNavigation: React.FC = () => {
                   </Link>
 
                   <Link
-                    href={getBizHref('/user/billing')}
+                    href={getBizHref('/user/myplan')}
                     className="user-dropdown-item"
                     onClick={() => setShowUserMenu(false)}
                   >
                     <CreditCard size={14} color="var(--color-ink-muted)" />
-                    <span>Billing &amp; Subscription</span>
+                    <span>My Plan</span>
                   </Link>
 
                   <div className="user-dropdown-divider" />

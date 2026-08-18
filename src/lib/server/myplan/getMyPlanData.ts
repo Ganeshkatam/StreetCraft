@@ -2,7 +2,7 @@ import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { createClient } from '../../supabase/server';
 
-export interface BillingUsagePeriodViewModel {
+export interface MyPlanUsagePeriodViewModel {
   id: string;
   plan: string;
   periodStart: string;
@@ -13,7 +13,7 @@ export interface BillingUsagePeriodViewModel {
   percentageUsed: number;
 }
 
-export interface BillingSubscriptionViewModel {
+export interface MyPlanSubscriptionViewModel {
   id: string;
   planId: string;
   planName: string;
@@ -26,7 +26,7 @@ export interface BillingSubscriptionViewModel {
   monthlyPriceInr: number;
 }
 
-export interface BillingUsageEventViewModel {
+export interface MyPlanUsageEventViewModel {
   id: string;
   eventType: string;
   units: number;
@@ -34,7 +34,7 @@ export interface BillingUsageEventViewModel {
   createdAt: string;
 }
 
-export interface BillingPlanViewModel {
+export interface MyPlanPlanOptionViewModel {
   id: string;
   name: string;
   monthlyCampaignLimit: number;
@@ -44,22 +44,26 @@ export interface BillingPlanViewModel {
   features: string[];
 }
 
-export interface BillingViewModel {
-  business: { id: string; name: string } | null;
-  subscription: BillingSubscriptionViewModel | null;
-  usagePeriod: BillingUsagePeriodViewModel | null;
-  events: BillingUsageEventViewModel[];
-  availablePlans: BillingPlanViewModel[];
+export interface MyPlanViewModel {
+  business: {
+    id: string;
+    name: string;
+    category: string;
+  } | null;
+  subscription: MyPlanSubscriptionViewModel | null;
+  usagePeriod: MyPlanUsagePeriodViewModel | null;
+  events: MyPlanUsageEventViewModel[];
+  availablePlans: MyPlanPlanOptionViewModel[];
   isEntitled: boolean;
 }
 
-export async function getBillingData(candidateBizId?: string): Promise<BillingViewModel> {
-  const claims = await requireAuthenticatedClaims('/user/billing');
+export async function getMyPlanData(candidateBizId?: string): Promise<MyPlanViewModel> {
+  const claims = await requireAuthenticatedClaims('/user/myplan');
   const supabase = await createClient();
 
   const business = await resolveAuthorizedBusiness(claims.userId, candidateBizId);
 
-  // If user has zero businesses, we still resolve their account-level subscription and plan catalogue
+  // If user has zero businesses, resolve account-level subscription and plan catalogue
   if (!business) {
     const [subResult, plansResult] = await Promise.all([
       supabase
@@ -91,7 +95,7 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
         .order('monthly_inr', { ascending: true }),
     ]);
 
-    let subscription: BillingSubscriptionViewModel | null = null;
+    let subscription: MyPlanSubscriptionViewModel | null = null;
     if (subResult.data) {
       const sub = subResult.data;
       const plan = Array.isArray(sub.plans) ? sub.plans[0] : sub.plans;
@@ -109,7 +113,7 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
       };
     }
 
-    const availablePlans: BillingPlanViewModel[] = (plansResult.data || []).map((p: any) => ({
+    const availablePlans: MyPlanPlanOptionViewModel[] = (plansResult.data || []).map((p: any) => ({
       id: p.id,
       name: p.name,
       monthlyCampaignLimit: p.monthly_campaign_limit,
@@ -129,19 +133,8 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
     };
   }
 
-  // Business exists: Parallelize business-level and account-level reads
-  const todayIso = new Date().toISOString().split('T')[0];
-
-  const [usagePeriodResult, subResult, eventsResult, plansResult] = await Promise.all([
-    supabase
-      .from('usage_periods')
-      .select('id, plan, period_start, period_end, campaign_limit, campaigns_used')
-      .eq('business_id', business.id)
-      .lte('period_start', todayIso)
-      .gte('period_end', todayIso)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+  // Fetch subscription, active usage_periods, plans catalog, and usage_events in parallel
+  const [subResult, usageResult, plansResult, eventsResult] = await Promise.all([
     supabase
       .from('subscriptions')
       .select(`
@@ -165,40 +158,27 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
       .limit(1)
       .maybeSingle(),
     supabase
-      .from('usage_events')
-      .select('id, event_type, units, description, created_at')
+      .from('usage_periods')
+      .select('id, plan, period_start, period_end, campaign_limit, campaigns_used')
       .eq('business_id', business.id)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(50),
+      .gte('period_end', new Date().toISOString().split('T')[0])
+      .order('period_end', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
     supabase
       .from('plans')
       .select('*')
       .eq('active', true)
       .order('monthly_inr', { ascending: true }),
+    supabase
+      .from('usage_events')
+      .select('id, event_type, units, description, created_at')
+      .eq('business_id', business.id)
+      .order('created_at', { ascending: false })
+      .limit(15),
   ]);
 
-  let usagePeriod: BillingUsagePeriodViewModel | null = null;
-  if (usagePeriodResult.data) {
-    const raw = usagePeriodResult.data;
-    const limit = raw.campaign_limit || 0;
-    const used = raw.campaigns_used || 0;
-    const remaining = Math.max(0, limit - used);
-    const percentageUsed = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-
-    usagePeriod = {
-      id: raw.id,
-      plan: raw.plan,
-      periodStart: raw.period_start,
-      periodEnd: raw.period_end,
-      campaignLimit: limit,
-      campaignsUsed: used,
-      campaignsRemaining: remaining,
-      percentageUsed,
-    };
-  }
-
-  let subscription: BillingSubscriptionViewModel | null = null;
+  let subscription: MyPlanSubscriptionViewModel | null = null;
   if (subResult.data) {
     const sub = subResult.data;
     const plan = Array.isArray(sub.plans) ? sub.plans[0] : sub.plans;
@@ -216,15 +196,27 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
     };
   }
 
-  const events: BillingUsageEventViewModel[] = (eventsResult.data || []).map((e: any) => ({
-    id: e.id,
-    eventType: e.event_type,
-    units: e.units,
-    description: e.description || '',
-    createdAt: e.created_at,
-  }));
+  let usagePeriod: MyPlanUsagePeriodViewModel | null = null;
+  if (usageResult.data) {
+    const u = usageResult.data;
+    const limit = u.campaign_limit ?? 3;
+    const used = u.campaigns_used ?? 0;
+    const remaining = Math.max(0, limit - used);
+    const percentage = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
 
-  const availablePlans: BillingPlanViewModel[] = (plansResult.data || []).map((p: any) => ({
+    usagePeriod = {
+      id: u.id,
+      plan: u.plan || 'FREE',
+      periodStart: u.period_start,
+      periodEnd: u.period_end,
+      campaignLimit: limit,
+      campaignsUsed: used,
+      campaignsRemaining: remaining,
+      percentageUsed: percentage,
+    };
+  }
+
+  const availablePlans: MyPlanPlanOptionViewModel[] = (plansResult.data || []).map((p: any) => ({
     id: p.id,
     name: p.name,
     monthlyCampaignLimit: p.monthly_campaign_limit,
@@ -234,12 +226,26 @@ export async function getBillingData(candidateBizId?: string): Promise<BillingVi
     features: Array.isArray(p.features) ? p.features : [],
   }));
 
+  const events: MyPlanUsageEventViewModel[] = (eventsResult.data || []).map((e: any) => ({
+    id: e.id,
+    eventType: e.event_type,
+    units: e.units,
+    description: e.description,
+    createdAt: e.created_at,
+  }));
+
+  const isEntitled = !!usagePeriod;
+
   return {
-    business: { id: business.id, name: business.name },
+    business: {
+      id: business.id,
+      name: business.name,
+      category: business.category,
+    },
     subscription,
     usagePeriod,
     events,
     availablePlans,
-    isEntitled: !!usagePeriod,
+    isEntitled,
   };
 }

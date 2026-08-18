@@ -76,8 +76,8 @@ export const PlanUsagePanel: React.FC<PlanUsagePanelProps> = ({ entitlement, bus
             <div className="account-plan-sub">Invoices, payment methods, and tier upgrades</div>
           </div>
 
-          <Link href="/user/billing" className="account-field-edit-action">
-            <span>Manage billing</span>
+          <Link href="/user/myplan" className="account-field-edit-action">
+            <span>Manage My Plan</span>
             <ChevronRight size={14} />
           </Link>
         </div>

@@ -49,10 +49,10 @@ export function PublicHeader() {
                 Business
               </Link>
               <Link
-                href="/user/billing"
-                className={`nav-item ${pathname === '/user/billing' ? 'active' : ''}`}
+                href="/user/myplan"
+                className={`nav-item ${pathname === '/user/myplan' || pathname === '/user/usage' || pathname === '/user/billing' ? 'active' : ''}`}
               >
-                Billing
+                My Plan
               </Link>
             </>
           ) : (
