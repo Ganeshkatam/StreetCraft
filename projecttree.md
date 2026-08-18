@@ -1,9 +1,9 @@
 # StreetCraft Project Directory Structure
 
-Generated automatically on: 2026-08-18T20:53:54.309Z
+Generated automatically on: 2026-08-18T20:59:24.003Z
 
-Total Directories: 137  
-Total Files: 333
+Total Directories: 141  
+Total Files: 348
 
 ```text
 streetcraft/
@@ -42,6 +42,7 @@ streetcraft/
 │   │   ├── accountDomain.test.ts
 │   │   ├── createDomain.test.ts
 │   │   ├── planDomain.test.ts
+│   │   ├── reportDomain.test.ts
 │   │   ├── setupDomain.test.ts
 │   │   └── todayDomain.test.ts
 │   ├── app/
@@ -226,6 +227,18 @@ streetcraft/
 │   │   │   │   │   ├── plan/
 │   │   │   │   │   │   ├── page.tsx
 │   │   │   │   │   │   └── PlanView.tsx
+│   │   │   │   │   ├── report/
+│   │   │   │   │   │   ├── components/
+│   │   │   │   │   │   │   ├── CampaignPerformance.tsx
+│   │   │   │   │   │   │   ├── CampaignTimeline.tsx
+│   │   │   │   │   │   │   ├── ChannelCoverage.tsx
+│   │   │   │   │   │   │   ├── GenerationUsage.tsx
+│   │   │   │   │   │   │   ├── ReportFooter.tsx
+│   │   │   │   │   │   │   ├── ReportHeader.tsx
+│   │   │   │   │   │   │   ├── ReportInsights.tsx
+│   │   │   │   │   │   │   └── StoreSnapshot.tsx
+│   │   │   │   │   │   ├── page.tsx
+│   │   │   │   │   │   └── ReportPage.tsx
 │   │   │   │   │   ├── settings/
 │   │   │   │   │   │   ├── components/
 │   │   │   │   │   │   │   ├── StorePhotoManager.tsx
@@ -374,6 +387,10 @@ streetcraft/
 │   │   │   │   ├── entitlementState.ts
 │   │   │   │   ├── planSchemas.ts
 │   │   │   │   └── planTypes.ts
+│   │   │   ├── report/
+│   │   │   │   ├── reportMetrics.ts
+│   │   │   │   ├── reportSchemas.ts
+│   │   │   │   └── reportTypes.ts
 │   │   │   ├── setup/
 │   │   │   │   ├── deriveSetupProgress.ts
 │   │   │   │   ├── setupSchemas.ts
@@ -420,6 +437,8 @@ streetcraft/
 │   │   │   ├── plan/
 │   │   │   │   ├── getStorePlan.ts
 │   │   │   │   └── requestSubscriptionCancellationAction.ts
+│   │   │   ├── report/
+│   │   │   │   └── getStoreReport.ts
 │   │   │   ├── setup/
 │   │   │   │   ├── deriveSetupProgress.ts
 │   │   │   │   ├── getSetupContext.ts
