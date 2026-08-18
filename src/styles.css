@@ -3766,3 +3766,309 @@ span.footer-link {
     border-radius: 20px;
   }
 }
+
+/* ==========================================================================
+   SETUP 9-DOMAIN NORMALIZED WORKSPACE
+   ========================================================================== */
+
+.setup-workspace-wrapper {
+  min-height: 100vh;
+  background: var(--color-page);
+  padding: 40px var(--space-gutter) 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.setup-workspace-container {
+  width: 100%;
+  max-width: 1060px;
+}
+
+.setup-workspace-grid {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Setup Rail (Left Map) */
+.setup-rail-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 20px 16px;
+  position: sticky;
+  top: 32px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.setup-rail-header {
+  padding-bottom: 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setup-rail-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.setup-rail-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.setup-rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setup-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  text-decoration: none;
+  color: var(--color-ink-soft);
+  transition: var(--motion-fast);
+  border: 1px solid transparent;
+}
+
+.setup-rail-item:hover:not(.disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+}
+
+.setup-rail-item.active {
+  background: var(--color-primary-subtle);
+  border-color: rgba(var(--color-primary-rgb, 14, 165, 233), 0.25);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.setup-rail-item.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.setup-rail-item-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.setup-rail-item.active .setup-rail-item-num {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.setup-rail-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.setup-rail-item-label {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setup-rail-item-class {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.setup-rail-item-status {
+  flex-shrink: 0;
+}
+
+.setup-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.setup-status-badge.complete {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.setup-status-badge.partial {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.setup-status-badge.optional {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink-muted);
+}
+
+.setup-status-badge.empty {
+  background: var(--color-surface-subtle);
+  color: var(--color-ink-muted);
+}
+
+.setup-status-badge.locked {
+  color: var(--color-ink-muted);
+  opacity: 0.4;
+}
+
+/* Setup Canvas Header & Editor */
+.setup-editor-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.setup-canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setup-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.setup-title {
+  font-size: 24px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0 0 6px;
+}
+
+.setup-subtitle {
+  font-size: 13.5px;
+  color: var(--color-ink-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.setup-exit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  transition: var(--motion-fast);
+  flex-shrink: 0;
+}
+
+.setup-exit-pill:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+  border-color: var(--color-border-dark);
+}
+
+/* Setup Footer Nav */
+.setup-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+.setup-footer-back,
+.setup-footer-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 18px;
+}
+
+/* Setup Review Grid */
+.setup-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.setup-review-domain-card {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 16px;
+}
+
+.setup-review-domain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.setup-review-domain-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.setup-review-domain-value {
+  font-size: 13px;
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .setup-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-rail-container {
+    position: static;
+  }
+
+  .setup-review-grid {
+    grid-template-columns: 1fr;
+  }
+}

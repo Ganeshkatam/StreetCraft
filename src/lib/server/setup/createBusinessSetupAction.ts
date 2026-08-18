@@ -117,10 +117,10 @@ export async function createBusinessSetupAction(
     };
   }
 
-  // 7. Authoritative server-side redirect to Step 2
+  // 7. Authoritative server-side redirect to Step 02 Location
   const redirectUrl = targetClaimToken
-    ? `/setup/rhythm?biz=${encodeURIComponent(createdBusinessId)}&claim=${encodeURIComponent(targetClaimToken)}`
-    : `/setup/rhythm?biz=${encodeURIComponent(createdBusinessId)}`;
+    ? `/setup/location?biz=${encodeURIComponent(createdBusinessId)}&claim=${encodeURIComponent(targetClaimToken)}`
+    : `/setup/location?biz=${encodeURIComponent(createdBusinessId)}`;
 
   redirect(redirectUrl);
 }

@@ -57,6 +57,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   } = await supabase.auth.getUser();
 
   const isUserRoute = pathname.startsWith('/user');
+  const isSetupRoute = pathname.startsWith('/setup');
   const isLegacyAppRoute = pathname.startsWith('/app');
   const isAuthRoute =
     pathname === '/login' ||
@@ -72,7 +73,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   }
 
   // 1. Protected Route Boundary: Redirect unauthenticated users to /login
-  if (isUserRoute && !user) {
+  if ((isUserRoute || isSetupRoute) && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     // Store requested destination with open-redirect protection (relative paths only)

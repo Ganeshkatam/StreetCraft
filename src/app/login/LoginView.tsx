@@ -55,12 +55,14 @@ function LoginContent() {
 
       toast.success('Signed in successfully.');
 
+      const isAllowedRedirect = redirectParam && (redirectParam.startsWith('/user') || redirectParam.startsWith('/setup')) && !redirectParam.startsWith('//');
       if (session.activeBusinessId || redirectParam === '/user/account') {
-        const dest = redirectParam && redirectParam.startsWith('/user') ? redirectParam : '/user/today';
+        const dest = isAllowedRedirect ? redirectParam : '/user/today';
         router.push(dest);
         router.refresh();
       } else {
-        router.push('/setup');
+        const dest = isAllowedRedirect && redirectParam.startsWith('/setup') ? redirectParam : '/setup';
+        router.push(dest);
         router.refresh();
       }
     } catch (err: unknown) {
