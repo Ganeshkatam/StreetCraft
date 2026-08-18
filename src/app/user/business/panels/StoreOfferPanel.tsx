@@ -4,6 +4,7 @@ import React from 'react';
 import { EditableAccountField } from '../../account/identity/EditableAccountField';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
+import { getOfferOptionsForCategory, getSignatureItemsPlaceholder } from '../../../../config/storeOptions';
 
 interface StoreOfferPanelProps {
   businessId: string;
@@ -11,6 +12,9 @@ interface StoreOfferPanelProps {
 }
 
 export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, profile }) => {
+  const offerOptions = getOfferOptionsForCategory(profile.category);
+  const signatureItemsPlaceholder = getSignatureItemsPlaceholder(profile.category);
+
   const saveField = async (field: keyof BusinessProfile, value: string): Promise<{ success: boolean; error?: string }> => {
     const formData = new FormData();
     formData.set('name', profile.name || '');
@@ -42,7 +46,7 @@ export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, pr
       <EditableAccountField
         label="Signature Menu Items / Bestsellers"
         value={profile.signature_items || ''}
-        placeholder="e.g. Sourdough Croissants, Cold Brew, Truffle Pasta"
+        placeholder={signatureItemsPlaceholder}
         type="text"
         onSave={(val) => saveField('signature_items', val)}
       />
@@ -50,8 +54,8 @@ export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ businessId, pr
       <EditableAccountField
         label="Default Promotional Offer"
         value={profile.default_offer || ''}
-        placeholder="e.g. Complimentary beverage with any dessert after 4 PM"
-        type="text"
+        placeholder="Select a promotional offer or create custom"
+        options={offerOptions}
         onSave={(val) => saveField('default_offer', val)}
       />
 

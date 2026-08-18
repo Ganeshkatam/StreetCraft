@@ -38,15 +38,40 @@ export const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ accoun
     );
   }
 
-  const sectionLabels: Record<AccountTabId, string> = {
-    identity: 'Identity',
-    stores: 'Storefronts',
-    notifications: 'Notifications',
-    security: 'Security',
-    plan: 'Plan & usage',
+  const formattedDate = new Date(profile.createdAt).toLocaleDateString('en-IN', {
+    month: 'short',
+    year: 'numeric',
+  });
+
+  const tabHeaders: Record<AccountTabId, { eyebrow: string; title: string; subtitle: string }> = {
+    identity: {
+      eyebrow: 'YOUR PROFILE',
+      title: profile.fullName || 'Your Profile',
+      subtitle: `${profile.email} • Joined ${formattedDate}`,
+    },
+    stores: {
+      eyebrow: 'STOREFRONTS',
+      title: 'Connected Storefronts',
+      subtitle: 'Manage your connected physical businesses and storefront profiles',
+    },
+    notifications: {
+      eyebrow: 'PREFERENCES',
+      title: 'Notification Preferences',
+      subtitle: 'Configure alerts for customer bookings, campaign launches, and weekly digests',
+    },
+    security: {
+      eyebrow: 'ACCOUNT & SECURITY',
+      title: 'Password & Security',
+      subtitle: 'Manage your password, login authorization codes, and verified credentials',
+    },
+    plan: {
+      eyebrow: 'SUBSCRIPTION',
+      title: 'Plan & Usage Limits',
+      subtitle: 'View your workspace tier, quotas, and active storefront allowances',
+    },
   };
 
-  const activeTabLabel = sectionLabels[activeTab];
+  const currentHeader = tabHeaders[activeTab];
 
   return (
     <div className="account-workspace-container">
@@ -62,12 +87,11 @@ export const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ accoun
 
         {/* Right Stage (Active Control Surface) */}
         <main className="account-stage-workspace" role="main" aria-label="Account Settings Stage">
-          {/* Fixed Architectural Header */}
+          {/* Contextual Tab Header */}
           <AccountProfileHeader
-            sectionLabel={activeTabLabel}
-            displayName={profile.fullName || 'Account'}
-            email={profile.email}
-            createdAt={profile.createdAt}
+            eyebrow={currentHeader.eyebrow}
+            title={currentHeader.title}
+            subtitle={currentHeader.subtitle}
           />
 
           <div className="account-stage-content" key={activeTab}>

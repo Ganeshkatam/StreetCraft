@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Camera, Trash2, Upload, Loader2, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Loader2, Camera } from 'lucide-react';
+import { toast } from 'sonner';
 import { BusinessProfile } from '../../../../lib/server/business/getBusinessProfile';
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
 import { supabase } from '../../../../lib/supabase';
-import { toast } from 'sonner';
 
 interface StorePhotoManagerProps {
   businessId: string;
@@ -13,9 +14,9 @@ interface StorePhotoManagerProps {
 }
 
 export const StorePhotoManager: React.FC<StorePhotoManagerProps> = ({ businessId, profile }) => {
+  const router = useRouter();
   const [logoUrl, setLogoUrl] = useState<string | null>(profile.logo_url || null);
   const [isUploading, setIsUploading] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const storeInitial = (profile.name || 'S').charAt(0).toUpperCase();
@@ -24,79 +25,48 @@ export const StorePhotoManager: React.FC<StorePhotoManagerProps> = ({ businessId
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setFeedback({ type: 'error', message: 'Please select a valid image file (PNG, JPEG, WebP).' });
+    // Strict 2MB Limit
+    const MAX_SIZE = 2 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error('Store image size exceeds 2MB limit. Please choose a smaller file.');
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setFeedback({ type: 'error', message: 'Image size cannot exceed 2MB.' });
+    // Supported formats
+    const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Unsupported image format. Please upload PNG, JPEG or WebP.');
       return;
     }
 
     setIsUploading(true);
-    setFeedback(null);
 
     try {
-      // 1. Upload to dedicated Supabase Storage 'storefronts' bucket
-      const fileExt = file.name.split('.').pop() || 'jpg';
+      const fileExt = file.name.split('.').pop() || 'png';
       const filePath = `${businessId}/logo-${Date.now()}.${fileExt}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload into isolated storefronts bucket
+      const { error: uploadError } = await supabase.storage
         .from('storefronts')
         .upload(filePath, file, {
-          cacheControl: '3600',
           upsert: true,
+          cacheControl: '3600',
         });
 
-      let finalLogoUrl: string;
-
-      if (!uploadError && uploadData) {
-        const { data: publicUrlData } = supabase.storage
-          .from('storefronts')
-          .getPublicUrl(uploadData.path);
-        finalLogoUrl = publicUrlData.publicUrl;
-      } else {
-        // Fallback: client-side compressed base64 data URI
-        finalLogoUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              const maxDim = 400;
-              let width = img.width;
-              let height = img.height;
-              if (width > height) {
-                if (width > maxDim) {
-                  height = Math.round((height * maxDim) / width);
-                  width = maxDim;
-                }
-              } else {
-                if (height > maxDim) {
-                  width = Math.round((width * maxDim) / height);
-                  height = maxDim;
-                }
-              }
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.85));
-              } else {
-                resolve(ev.target?.result as string);
-              }
-            };
-            img.onerror = reject;
-            img.src = ev.target?.result as string;
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+      if (uploadError) {
+        setIsUploading(false);
+        toast.error(`Upload error: ${uploadError.message}`);
+        return;
       }
 
-      // 2. Persist URL in business_profiles via Server Action
+      // Public URL retrieval
+      const { data: urlData } = supabase.storage
+        .from('storefronts')
+        .getPublicUrl(filePath);
+
+      const newPublicUrl = urlData.publicUrl;
+
+      // Persist to business profile database record
       const formData = new FormData();
       formData.set('name', profile.name || '');
       formData.set('category', profile.category || '');
@@ -113,32 +83,28 @@ export const StorePhotoManager: React.FC<StorePhotoManagerProps> = ({ businessId
       formData.set('avg_ticket_inr', profile.avg_ticket_inr ? String(profile.avg_ticket_inr) : '');
       formData.set('target_monthly_customers', profile.target_monthly_customers ? String(profile.target_monthly_customers) : '');
       formData.set('phone_whatsapp', profile.phone_whatsapp || '');
-      formData.set('logo_url', finalLogoUrl);
+      formData.set('logo_url', newPublicUrl);
 
       const res = await updateBusinessProfile(businessId, { success: false }, formData);
       setIsUploading(false);
 
       if (res.success) {
-        setLogoUrl(finalLogoUrl);
-        setFeedback({ type: 'success', message: 'Store photo updated.' });
-        toast.success('Store photo updated successfully.');
-        setTimeout(() => setFeedback(null), 3000);
+        setLogoUrl(newPublicUrl);
+        router.refresh();
+        toast.success('Store photo updated');
       } else {
-        const msg = res.message || 'Failed to save photo.';
-        setFeedback({ type: 'error', message: msg });
+        const msg = res.errors?.logo_url?.[0] || res.message || 'Failed to update store photo.';
         toast.error(msg);
       }
-    } catch (err) {
-      console.error('Store photo upload error:', err);
+    } catch (err: unknown) {
       setIsUploading(false);
-      setFeedback({ type: 'error', message: 'An error occurred while uploading.' });
-      toast.error('An error occurred while uploading.');
+      const errMsg = err instanceof Error ? err.message : 'Upload failed.';
+      toast.error(errMsg);
     }
   };
 
   const handleRemovePhoto = async () => {
     setIsUploading(true);
-    setFeedback(null);
 
     const formData = new FormData();
     formData.set('name', profile.name || '');
@@ -163,88 +129,83 @@ export const StorePhotoManager: React.FC<StorePhotoManagerProps> = ({ businessId
 
     if (res.success) {
       setLogoUrl(null);
-      setFeedback({ type: 'success', message: 'Store photo removed.' });
-      toast.success('Store photo removed.');
-      setTimeout(() => setFeedback(null), 3000);
+      router.refresh();
+      toast.success('Store photo removed');
     } else {
       const msg = res.message || 'Failed to remove photo.';
-      setFeedback({ type: 'error', message: msg });
       toast.error(msg);
     }
   };
 
   return (
     <div className="account-field-row">
-      <div className="account-field-meta-label">
-        STOREFRONT PHOTO &amp; LOGO
-      </div>
-
       <div className="account-avatar-manager-row">
-        {/* Store Logo Preview */}
-        <div className="account-avatar-preview-box">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={profile.name || 'Storefront'}
-              className="account-avatar-preview-img"
-            />
-          ) : (
-            <div className="account-avatar-preview-fallback">
-              {storeInitial}
-            </div>
-          )}
+        {/* Left Side: Store Logo with Hover Camera Overlay + Title */}
+        <div className="account-avatar-left-group">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png, image/jpeg, image/webp"
+            onChange={handleFileChange}
+            className="account-avatar-hidden-input"
+          />
 
-          {isUploading && (
-            <div className="account-avatar-loading-overlay">
-              <Loader2 size={16} className="spin" />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="account-avatar-interactive-trigger"
+            title="Click to change store photo"
+            aria-label="Change store photo"
+          >
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={profile.name || 'Storefront'}
+                className="account-avatar-preview-img"
+              />
+            ) : (
+              <div className="account-avatar-preview-fallback">
+                {storeInitial}
+              </div>
+            )}
+
+            {/* Hover Camera Icon Overlay */}
+            <div className="account-avatar-hover-overlay">
+              {isUploading ? (
+                <Loader2 size={18} className="spin" />
+              ) : (
+                <Camera size={20} />
+              )}
             </div>
-          )}
+          </button>
+
+          <div className="account-avatar-meta-title">
+            Store Photo
+          </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="account-avatar-actions-stack">
-          <div className="account-avatar-btn-group">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png, image/jpeg, image/webp"
-              onChange={handleFileChange}
-              className="account-avatar-hidden-input"
-            />
-
+        {/* Right Side: Remove photo link & Change photo button */}
+        <div className="account-avatar-right-actions">
+          {logoUrl && (
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleRemovePhoto}
               disabled={isUploading}
-              className="account-field-edit-action"
+              className="account-avatar-text-action"
             >
-              <Upload size={14} />
-              <span>{logoUrl ? 'Change Photo' : 'Upload Store Photo'}</span>
+              Remove photo
             </button>
-
-            {logoUrl && (
-              <button
-                type="button"
-                onClick={handleRemovePhoto}
-                disabled={isUploading}
-                className="account-avatar-remove-btn"
-              >
-                <Trash2 size={13} />
-                <span>Remove</span>
-              </button>
-            )}
-          </div>
-
-          <div className="account-avatar-help-text">
-            Recommended: Square image &bull; PNG, JPEG or WebP (max 2MB)
-          </div>
-
-          {feedback && (
-            <div className={`account-avatar-feedback ${feedback.type}`}>
-              {feedback.type === 'success' && <Check size={12} />}
-              <span>{feedback.message}</span>
-            </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="account-field-edit-action"
+          >
+            {logoUrl ? 'Change photo' : 'Add photo'}
+          </button>
         </div>
       </div>
 

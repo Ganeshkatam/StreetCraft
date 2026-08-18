@@ -20,6 +20,8 @@ export const WorkspaceNavigation: React.FC = () => {
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [liveAvatarUrl, setLiveAvatarUrl] = useState<string | null>(null);
+  const [liveName, setLiveName] = useState<string | null>(null);
   const switcherRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +31,25 @@ export const WorkspaceNavigation: React.FC = () => {
       getAccountLimits().then((res) => setAccountLimit(res?.limit || 2));
     }
   }, [session.isAuthenticated, session.activeBusinessId]);
+
+  useEffect(() => {
+    const handleProfileUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ avatarUrl?: string | null; fullName?: string }>;
+      if (customEvent.detail) {
+        if (customEvent.detail.avatarUrl !== undefined) {
+          setLiveAvatarUrl(customEvent.detail.avatarUrl || null);
+        }
+        if (customEvent.detail.fullName !== undefined) {
+          setLiveName(customEvent.detail.fullName || null);
+        }
+      }
+    };
+
+    window.addEventListener('streetcraft:profile-updated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('streetcraft:profile-updated', handleProfileUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,11 +64,14 @@ export const WorkspaceNavigation: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const effectiveAvatarUrl = liveAvatarUrl !== null ? liveAvatarUrl : session.avatarUrl;
+  const effectiveName = liveName !== null ? liveName : session.name;
+
   const safeBusinesses = Array.isArray(businesses) ? businesses : [];
   const activeBizName =
     safeBusinesses.find((b) => b && b.id === session.activeBusinessId)?.name ||
     (safeBusinesses.length > 0 ? safeBusinesses[0].name : 'No Store Selected');
-  const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();
+  const userInitial = (effectiveName || session.email || 'U').charAt(0).toUpperCase();
 
   return (
     <>
@@ -55,7 +79,7 @@ export const WorkspaceNavigation: React.FC = () => {
         <div className="header-container">
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <Link href="/user/today" className="brand-wrapper">
-              <Logo size="sm" />
+              <Logo size="md" />
             </Link>
 
             <div className="workspace-switcher" ref={switcherRef}>
@@ -196,10 +220,10 @@ export const WorkspaceNavigation: React.FC = () => {
                 title="Account Menu"
               >
                 <div className="user-avatar">
-                  {session.avatarUrl ? (
+                  {effectiveAvatarUrl ? (
                     <img
-                      src={session.avatarUrl}
-                      alt={session.name || 'User'}
+                      src={effectiveAvatarUrl}
+                      alt={effectiveName || 'User'}
                       className="user-avatar-img"
                     />
                   ) : (
@@ -207,7 +231,7 @@ export const WorkspaceNavigation: React.FC = () => {
                   )}
                 </div>
                 <span className="user-badge-name">
-                  {session.name || 'Account'}
+                  {effectiveName || 'Account'}
                 </span>
                 <ChevronDown size={13} color="var(--color-ink-muted)" />
               </button>
@@ -215,7 +239,7 @@ export const WorkspaceNavigation: React.FC = () => {
               {showUserMenu && (
                 <div className="user-dropdown-menu">
                   <div className="user-dropdown-header">
-                    <div className="user-dropdown-name">{session.name || 'Account User'}</div>
+                    <div className="user-dropdown-name">{effectiveName || 'Account User'}</div>
                     <div className="user-dropdown-email">{session.email}</div>
                   </div>
 

@@ -11,13 +11,12 @@ interface AuthIdentityFieldProps {
 export const AuthIdentityField: React.FC<AuthIdentityFieldProps> = ({ label, email }) => {
   return (
     <div className="account-field-row">
-      <div className="account-field-meta-label">
-        {label.toUpperCase()}
-      </div>
-
       <div className="account-field-content-row">
-        <div className="account-field-display-value">
-          {email}
+        <div className="account-field-info">
+          <div className="account-field-label">{label}</div>
+          <div className="account-field-display-value">
+            {email}
+          </div>
         </div>
 
         <div className="account-auth-identity-pill" title="Authentication identity is managed by Supabase Auth">

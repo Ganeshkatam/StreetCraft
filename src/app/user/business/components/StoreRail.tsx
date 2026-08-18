@@ -71,43 +71,35 @@ export const StoreRail: React.FC<StoreRailProps> = ({
           )}
         </div>
 
-        <div className="account-rail-name">
-          {business.name || 'Storefront'}
-        </div>
-
-        <div className="account-rail-email">
-          {business.category || 'Local Business'} {profile.city ? `\u2022 ${profile.city}` : ''}
-        </div>
-
-        {/* Configuration Progress Card */}
-        {progress.isComplete ? (
-          <div className="account-progress-card">
-            <div className="account-progress-complete-badge">
-              <CheckCircle2 size={13} />
-              <span>100% Configured</span>
-            </div>
-            <div className="account-progress-status-text">
-              Store profile is fully configured
-            </div>
+        <div className="account-rail-profile-info">
+          <div className="account-rail-name">
+            {business.name || 'Storefront'}
           </div>
-        ) : (
-          <div className="account-progress-card">
-            <div className="account-progress-header">
-              <span className="account-progress-label">Store Setup</span>
-              <span className="account-progress-pct">{progress.percentage}%</span>
-            </div>
-            <div className="account-progress-track">
-              <div
-                className="account-progress-fill"
-                style={{ width: `${progress.percentage}%` }}
-              />
-            </div>
-            <div className="account-progress-status-text">
-              {progress.completedCount} of {progress.totalCount} parameters configured
-            </div>
+
+          <div className="account-rail-email">
+            {business.category || 'Local Business'} {profile.city ? `\u2022 ${profile.city}` : ''}
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Store Setup Progress Card (Hidden automatically once 100% full) */}
+      {!progress.isComplete && (
+        <div className="account-progress-card">
+          <div className="account-progress-header">
+            <span className="account-progress-label">Store Setup</span>
+            <span className="account-progress-pct">{progress.percentage}%</span>
+          </div>
+          <div className="account-progress-track">
+            <div
+              className="account-progress-fill"
+              style={{ width: `${progress.percentage}%` }}
+            />
+          </div>
+          <div className="account-progress-status-text">
+            {progress.completedCount} of {progress.totalCount} parameters configured
+          </div>
+        </div>
+      )}
 
       <div className="account-rail-divider" />
 

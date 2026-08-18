@@ -12,15 +12,15 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
 }) => {
   const iconSizes = {
-    sm: 20,
-    md: 26,
-    lg: 36,
+    sm: 24,
+    md: 30,
+    lg: 40,
   };
 
   const textSizes = {
-    sm: { title: '16px', subtitle: '9px' },
-    md: { title: '20px', subtitle: '10.5px' },
-    lg: { title: '28px', subtitle: '12px' },
+    sm: { title: '18px', subtitle: '10px' },
+    md: { title: '22px', subtitle: '11px' },
+    lg: { title: '30px', subtitle: '13px' },
   };
 
   const dim = iconSizes[size];

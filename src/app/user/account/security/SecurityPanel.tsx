@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, KeyRound, Mail, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { KeyRound, Mail, Check, AlertCircle, Loader2, Lock } from 'lucide-react';
 import { AccountUserProfile } from '../../../../lib/server/account/getAccountProfile';
 import {
   sendPasswordOtpAction,
@@ -104,17 +104,13 @@ export const SecurityPanel: React.FC<SecurityPanelProps> = ({ profile }) => {
     <div className="account-pane-fields">
       {/* PASSWORD SECTION */}
       <div className="account-field-row">
-        <div className="account-field-meta-label">
-          PASSWORD &amp; ACCESS SECURITY
-        </div>
-
         {step === 'idle' && (
           <div className="account-field-content-row">
-            <div>
+            <div className="account-field-info">
+              <div className="account-field-label">Password</div>
               <div className="account-security-masked-value">
                 &bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;
               </div>
-              <div className="account-field-help-muted">Protected with email OTP authorization</div>
             </div>
 
             <button
@@ -123,7 +119,6 @@ export const SecurityPanel: React.FC<SecurityPanelProps> = ({ profile }) => {
               className="account-field-edit-action"
             >
               <span>Change</span>
-              <ChevronRight size={14} />
             </button>
           </div>
         )}
@@ -140,24 +135,15 @@ export const SecurityPanel: React.FC<SecurityPanelProps> = ({ profile }) => {
               </div>
             </div>
 
-            <div className="account-password-actions-row">
+            <div className="account-otp-btn-group">
               <button
                 type="button"
                 onClick={handleRequestOtp}
                 disabled={isSendingOtp}
                 className="btn-primary"
               >
-                {isSendingOtp ? (
-                  <>
-                    <Loader2 size={14} className="spin" />
-                    <span>Sending Code…</span>
-                  </>
-                ) : (
-                  <>
-                    <Mail size={14} />
-                    <span>Send Verification Code</span>
-                  </>
-                )}
+                {isSendingOtp ? <Loader2 size={14} className="spin" /> : null}
+                <span>Send 6-Digit Code</span>
               </button>
 
               <button
@@ -174,13 +160,6 @@ export const SecurityPanel: React.FC<SecurityPanelProps> = ({ profile }) => {
 
         {step === 'verify_and_update' && (
           <form onSubmit={handlePasswordSubmit} className="account-password-inline-form">
-            <div className="account-otp-form-header">
-              <div className="account-otp-form-title">Enter Verification Code &amp; New Password</div>
-              <div className="account-otp-form-sub">
-                Enter the 6-digit code sent to {profile.email}
-              </div>
-            </div>
-
             <div className="account-otp-inputs-grid">
               <div>
                 <label className="account-input-label">6-DIGIT VERIFICATION CODE</label>
@@ -276,17 +255,14 @@ export const SecurityPanel: React.FC<SecurityPanelProps> = ({ profile }) => {
 
       {/* VERIFIED AUTH ROW */}
       <div className="account-field-row">
-        <div className="account-field-meta-label">
-          AUTHENTICATION IDENTITY
-        </div>
-
         <div className="account-field-content-row">
-          <div>
+          <div className="account-field-info">
+            <div className="account-field-label">Authentication Email</div>
             <div className="account-auth-name">{profile.email}</div>
-            <div className="account-field-help-muted">Authenticated via Supabase Auth Security Provider</div>
           </div>
 
           <div className="account-auth-identity-pill">
+            <Lock size={12} />
             <span>Verified Auth</span>
           </div>
         </div>

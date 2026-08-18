@@ -4,31 +4,29 @@ import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 
 interface StoreProfileHeaderProps {
-  sectionLabel: string;
-  storeName: string;
-  category: string;
-  city: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
   progressPercentage?: number;
   isComplete?: boolean;
 }
 
 export const StoreProfileHeader: React.FC<StoreProfileHeaderProps> = ({
-  sectionLabel,
-  storeName,
-  category,
-  city,
+  eyebrow,
+  title,
+  subtitle,
   progressPercentage,
   isComplete,
 }) => {
   return (
     <div className="account-workspace-header">
       <div className="account-workspace-eyebrow">
-        {sectionLabel.toUpperCase()}
+        {eyebrow.toUpperCase()}
       </div>
 
       <div className="account-workspace-title-row">
         <h1 className="account-workspace-title">
-          {storeName}
+          {title}
         </h1>
 
         {progressPercentage !== undefined && (
@@ -48,7 +46,7 @@ export const StoreProfileHeader: React.FC<StoreProfileHeaderProps> = ({
       </div>
 
       <div className="account-workspace-subtitle">
-        {category || 'Storefront'} {city ? `\u2022 ${city}` : ''}
+        {subtitle}
       </div>
 
       <div className="account-workspace-divider" />

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, Store, Bell, Lock, CreditCard, LogOut, ChevronRight } from 'lucide-react';
+import { User, Store, Bell, Lock, CreditCard, ChevronRight } from 'lucide-react';
 import { AccountUserProfile, AccountBusinessMembership, AccountEntitlement } from '../../../../lib/server/account/getAccountProfile';
 
 export type AccountTabId = 'identity' | 'stores' | 'notifications' | 'security' | 'plan';
@@ -70,7 +70,7 @@ export const AccountRail: React.FC<AccountRailProps> = ({
 
   return (
     <aside className="account-rail">
-      {/* User Profile Summary Card */}
+      {/* User Profile Summary Card (Horizontal Side-by-Side) */}
       <div className="account-rail-profile">
         <div className="account-rail-avatar">
           {profile.avatarUrl ? (
@@ -84,12 +84,14 @@ export const AccountRail: React.FC<AccountRailProps> = ({
           )}
         </div>
 
-        <div className="account-rail-name">
-          {profile.fullName || 'User'}
-        </div>
+        <div className="account-rail-profile-info">
+          <div className="account-rail-name">
+            {profile.fullName || 'User'}
+          </div>
 
-        <div className="account-rail-email">
-          {profile.email}
+          <div className="account-rail-email">
+            {profile.email}
+          </div>
         </div>
       </div>
 
@@ -133,14 +135,7 @@ export const AccountRail: React.FC<AccountRailProps> = ({
           );
         })}
       </nav>
-
-      {/* Sign Out Action */}
-      <form action="/auth/signout" method="POST" className="account-rail-signout-form">
-        <button type="submit" className="account-rail-signout-btn">
-          <LogOut size={15} />
-          <span>Sign out</span>
-        </button>
-      </form>
     </aside>
   );
 };
+

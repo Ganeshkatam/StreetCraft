@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Download, Check } from 'lucide-react';
 import { EditableAccountField } from './EditableAccountField';
 import { AuthIdentityField } from './AuthIdentityField';
@@ -14,6 +15,7 @@ interface IdentityPanelProps {
 }
 
 export const IdentityPanel: React.FC<IdentityPanelProps> = ({ profile }) => {
+  const router = useRouter();
   const [downloaded, setDownloaded] = useState(false);
 
   const handleSaveName = async (newName: string): Promise<{ success: boolean; error?: string }> => {
@@ -30,6 +32,10 @@ export const IdentityPanel: React.FC<IdentityPanelProps> = ({ profile }) => {
       const firstErr = res.errors?.fullName?.[0] || res.message;
       return { success: false, error: firstErr };
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('streetcraft:profile-updated', { detail: { fullName: newName } }));
+    }
+    router.refresh();
     return { success: true };
   };
 

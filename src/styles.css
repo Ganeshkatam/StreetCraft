@@ -83,7 +83,7 @@ button {
   max-width: var(--layout-page-max);
   width: 100%;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 var(--space-6) 0 var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -246,6 +246,11 @@ button {
 }
 
 /* Header Workspace Store Switcher */
+.workspace-switcher {
+  position: relative;
+  display: inline-flex;
+}
+
 .workspace-switcher-btn {
   display: inline-flex;
   align-items: center;
@@ -2046,26 +2051,34 @@ span.footer-link {
 
 .account-rail-profile {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 4px 10px;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 6px;
+  width: 100%;
+}
+
+.account-rail-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
 }
 
 .account-rail-avatar {
-  width: 68px;
-  height: 68px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-full);
   background: #12291C;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
   font-family: var(--font-display);
   box-shadow: 0 4px 16px rgba(18, 41, 28, 0.15);
-  margin-bottom: 12px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .account-rail-avatar-img {
@@ -2074,13 +2087,24 @@ span.footer-link {
   object-fit: cover;
 }
 
+.account-rail-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
 .account-rail-name {
-  font-size: 24px;
+  font-size: 18px;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-ink);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-rail-verified {
@@ -2110,8 +2134,9 @@ span.footer-link {
 .account-rail-email {
   font-size: 12.5px;
   color: var(--color-ink-muted);
-  margin-top: 6px;
-  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-rail-divider {
@@ -2207,14 +2232,16 @@ span.footer-link {
 
 /* Storefront Configuration Progress */
 .account-progress-card {
+  width: 100%;
   margin-top: 14px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--color-surface-raised, #f9fafb);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm, 8px);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .account-progress-header {
@@ -2242,7 +2269,7 @@ span.footer-link {
 .account-progress-track {
   width: 100%;
   height: 6px;
-  background: var(--color-border);
+  background: #E5E7EB;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -2255,9 +2282,9 @@ span.footer-link {
 }
 
 .account-progress-status-text {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--color-ink-muted);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .account-progress-complete-badge {
@@ -2288,29 +2315,6 @@ span.footer-link {
   background: var(--color-primary-subtle);
   color: var(--color-primary);
   border: 1px solid var(--color-primary-border);
-}
-
-.account-rail-signout-form {
-  margin-top: 24px;
-  padding: 0 4px;
-}
-
-.account-rail-signout-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--color-danger, #ef4444);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.account-rail-signout-btn:hover {
-  opacity: 0.75;
 }
 
 /* Right Workspace (Fixed Clean Fit Control Surface) */
@@ -2431,12 +2435,7 @@ span.footer-link {
 .account-pane-fields {
   display: flex;
   flex-direction: column;
-}
-
-.account-field-row {
-  display: flex;
-  flex-direction: column;
-  padding: 22px 0 0;
+  width: 100%;
 }
 
 .account-field-meta-label {
@@ -2449,26 +2448,42 @@ span.footer-link {
   margin-bottom: 10px;
 }
 
-/* Avatar Photo Manager */
+/* Avatar & Store Photo Manager (Canva Style) */
 .account-avatar-manager-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 20px;
+  width: 100%;
 }
 
-.account-avatar-preview-box {
+.account-avatar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-avatar-interactive-trigger {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-full);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   background: #12291C;
   color: #FFFFFF;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(18, 41, 28, 0.15);
-  overflow: hidden;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(18, 41, 28, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.account-avatar-interactive-trigger:hover {
+  transform: scale(1.02);
 }
 
 .account-avatar-preview-img {
@@ -2478,94 +2493,290 @@ span.footer-link {
 }
 
 .account-avatar-preview-fallback {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   font-family: var(--font-display);
 }
 
-.account-avatar-loading-overlay {
+.account-avatar-hover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.18s ease;
 }
 
-.account-avatar-actions-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.account-avatar-interactive-trigger:hover .account-avatar-hover-overlay {
+  opacity: 1;
 }
 
-.account-avatar-btn-group {
+.account-avatar-meta-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.account-avatar-right-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.account-avatar-text-action {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  padding: 6px 4px;
+  transition: color 0.15s ease;
+}
+
+.account-avatar-text-action:hover:not(:disabled) {
+  color: var(--color-danger, #ef4444);
 }
 
 .account-avatar-hidden-input {
   display: none;
 }
 
-.account-avatar-remove-btn {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--color-danger, #ef4444);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  transition: opacity 0.15s ease;
-}
-
-.account-avatar-remove-btn:hover {
-  opacity: 0.75;
-}
-
-.account-avatar-help-text {
-  font-size: 11.5px;
-  color: var(--color-ink-muted);
-}
-
-.account-avatar-feedback {
-  font-size: 11.5px;
-  font-family: var(--font-mono);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
-}
-
-.account-avatar-feedback.success {
-  color: var(--color-primary);
-}
-
-.account-avatar-feedback.error {
-  color: var(--color-danger, #ef4444);
+.account-field-row {
+  position: relative;
+  padding: 22px 0;
 }
 
 .account-field-content-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
+}
+
+.account-field-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.account-field-label {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
 }
 
 .account-field-display-value {
-  font-size: 20px;
-  color: var(--color-ink);
-  font-weight: 500;
+  font-size: 17px;
+  color: #374151;
+  font-weight: 400;
+  line-height: 1.5;
   letter-spacing: -0.01em;
 }
 
 .account-field-display-value.placeholder {
-  color: var(--color-ink-muted);
-  font-style: italic;
+  font-size: 15.5px;
+  color: #9CA3AF;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.account-security-masked-value {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: #374151;
+  line-height: 1.2;
+}
+
+.account-auth-name {
+  font-size: 17px;
+  font-weight: 400;
+  color: #374151;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.account-field-help-muted {
+  font-size: 13.5px;
+  color: #6B7280;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Option Fields: Custom Dropdown Popover (No OS select) */
+.account-field-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.account-custom-dropdown-container {
+  position: relative;
+}
+
+.account-custom-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111827;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+  transition: all 0.15s ease;
+  min-width: 150px;
+  max-width: 360px;
+}
+
+.account-custom-dropdown-trigger:hover,
+.account-custom-dropdown-trigger.active {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.account-dropdown-trigger-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.account-dropdown-chevron {
+  color: #6B7280;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.account-dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
+.account-custom-dropdown-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  z-index: 60;
+  overflow: hidden;
+  animation: editModalScaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.account-custom-dropdown-popover.open-upwards {
+  top: auto;
+  bottom: calc(100% + 6px);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  animation: editModalScaleInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes editModalScaleInUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.account-custom-dropdown-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px;
+  gap: 2px;
+}
+
+.account-custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  width: 100%;
+}
+
+.account-custom-dropdown-item:hover {
+  background: #F3F4F6;
+}
+
+.account-custom-dropdown-item.selected {
+  background: var(--color-surface-raised, #F0FDF4);
+}
+
+.account-dropdown-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.account-dropdown-item-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.account-dropdown-item-label.custom-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+}
+
+.account-dropdown-item-desc {
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.35;
+}
+
+.account-dropdown-item-check {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.account-dropdown-divider {
+  height: 1px;
+  background: #F3F4F6;
+  margin: 4px 6px;
+}
+
+.account-field-select-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
 }
 
 /* Reusable Edit Field Modal - Canva Style */
@@ -2876,30 +3087,36 @@ span.footer-link {
 }
 
 .account-field-edit-action {
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 600;
-  color: var(--color-primary);
-  background: transparent;
-  border: none;
+  color: #111827;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  transition: opacity 0.15s ease;
+  justify-content: center;
+  min-width: 72px;
+  height: 38px;
+  padding: 0 16px;
+  transition: all 0.15s ease;
 }
 
 .account-field-edit-action:hover {
-  opacity: 0.75;
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+  transform: translateY(-0.5px);
 }
 
 .account-auth-identity-pill {
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-family: var(--font-mono);
   color: var(--color-ink-muted);
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-xs);
   display: inline-flex;
   align-items: center;

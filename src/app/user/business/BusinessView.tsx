@@ -63,14 +63,30 @@ export function BusinessView({ initialData }: { initialData: WorkspaceTodayViewM
     updated_at: new Date().toISOString(),
   };
 
-  const sectionLabels: Record<StoreTabId, string> = {
-    identity: 'Store Identity & Voice',
-    rhythm: 'Operating Rhythm & Hours',
-    offer: 'Offer & Growth Economics',
-    contact: 'Contact & Communication',
+  const tabHeaders: Record<StoreTabId, { eyebrow: string; title: string; subtitle: string }> = {
+    identity: {
+      eyebrow: 'STORE IDENTITY',
+      title: business.name || 'Storefront Identity',
+      subtitle: `${business.category || 'Retail Store'}${currentProfile.city ? ` • ${currentProfile.city}` : ''}`,
+    },
+    rhythm: {
+      eyebrow: 'OPERATING RHYTHM',
+      title: 'Operating Rhythm & Hours',
+      subtitle: 'Peak rush windows, slow hours, and demographic targeting',
+    },
+    offer: {
+      eyebrow: 'ECONOMICS & OFFERINGS',
+      title: 'Offer & Pricing Economics',
+      subtitle: 'Signature menu items, default promotional offers, and average ticket size',
+    },
+    contact: {
+      eyebrow: 'COMMUNICATION',
+      title: 'Store Contact & Channels',
+      subtitle: 'Direct customer contact and WhatsApp order routing numbers',
+    },
   };
 
-  const activeTabLabel = sectionLabels[activeTab];
+  const currentHeader = tabHeaders[activeTab];
   const progress = computeStoreProgress(currentProfile);
 
   return (
@@ -86,12 +102,11 @@ export function BusinessView({ initialData }: { initialData: WorkspaceTodayViewM
 
         {/* Right Stage (Active Control Surface) */}
         <main className="account-stage-workspace" role="main" aria-label="Store Preferences Stage">
-          {/* Fixed Architectural Header */}
+          {/* Contextual Tab Header */}
           <StoreProfileHeader
-            sectionLabel={activeTabLabel}
-            storeName={business.name || 'Storefront'}
-            category={business.category || 'Retail Store'}
-            city={currentProfile.city || ''}
+            eyebrow={currentHeader.eyebrow}
+            title={currentHeader.title}
+            subtitle={currentHeader.subtitle}
             progressPercentage={progress.percentage}
             isComplete={progress.isComplete}
           />

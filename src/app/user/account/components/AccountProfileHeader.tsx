@@ -3,37 +3,30 @@
 import React from 'react';
 
 interface AccountProfileHeaderProps {
-  sectionLabel: string;
-  displayName: string;
-  email: string;
-  createdAt: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
 }
 
 export const AccountProfileHeader: React.FC<AccountProfileHeaderProps> = ({
-  sectionLabel,
-  displayName,
-  email,
-  createdAt,
+  eyebrow,
+  title,
+  subtitle,
 }) => {
-  const formattedDate = new Date(createdAt).toLocaleDateString('en-IN', {
-    month: 'short',
-    year: 'numeric',
-  });
-
   return (
     <div className="account-workspace-header">
       <div className="account-workspace-eyebrow">
-        {sectionLabel.toUpperCase()}
+        {eyebrow.toUpperCase()}
       </div>
 
       <div className="account-workspace-title-row">
         <h1 className="account-workspace-title">
-          {displayName}
+          {title}
         </h1>
       </div>
 
       <div className="account-workspace-subtitle">
-        {email} &bull; Joined {formattedDate}
+        {subtitle}
       </div>
 
       <div className="account-workspace-divider" />

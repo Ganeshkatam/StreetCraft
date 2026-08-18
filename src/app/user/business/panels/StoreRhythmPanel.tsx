@@ -6,10 +6,10 @@ import { BusinessProfile } from '../../../../lib/server/business/getBusinessProf
 import { updateBusinessProfile } from '../../../../lib/server/business/updateBusinessProfile';
 
 import {
-  PEAK_HOURS_OPTIONS,
-  SLOW_HOURS_OPTIONS,
-  PRIMARY_GOAL_OPTIONS,
-  TARGET_CUSTOMER_OPTIONS,
+  getPeakHoursOptionsForCategory,
+  getSlowHoursOptionsForCategory,
+  getGoalOptionsForCategory,
+  getTargetCustomerOptionsForCategory,
 } from '../../../../config/storeOptions';
 
 interface StoreRhythmPanelProps {
@@ -18,6 +18,11 @@ interface StoreRhythmPanelProps {
 }
 
 export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, profile }) => {
+  const peakHoursOptions = getPeakHoursOptionsForCategory(profile.category);
+  const slowHoursOptions = getSlowHoursOptionsForCategory(profile.category);
+  const goalOptions = getGoalOptionsForCategory(profile.category);
+  const targetCustomerOptions = getTargetCustomerOptionsForCategory(profile.category);
+
   const saveField = async (field: keyof BusinessProfile, value: string): Promise<{ success: boolean; error?: string }> => {
     const formData = new FormData();
     formData.set('name', profile.name || '');
@@ -50,7 +55,7 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
         label="Peak Operating Hours"
         value={profile.peak_hours || ''}
         placeholder="Select or enter peak hours"
-        options={PEAK_HOURS_OPTIONS}
+        options={peakHoursOptions}
         onSave={(val) => saveField('peak_hours', val)}
       />
 
@@ -58,7 +63,7 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
         label="Slow / Quiet Hours"
         value={profile.slow_hours || ''}
         placeholder="Select or enter slow hours"
-        options={SLOW_HOURS_OPTIONS}
+        options={slowHoursOptions}
         onSave={(val) => saveField('slow_hours', val)}
       />
 
@@ -66,7 +71,7 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
         label="Primary Business Goal"
         value={profile.primary_goal || ''}
         placeholder="Select primary business goal"
-        options={PRIMARY_GOAL_OPTIONS}
+        options={goalOptions}
         onSave={(val) => saveField('primary_goal', val)}
       />
 
@@ -74,7 +79,7 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ businessId, 
         label="Target Customer Demographic"
         value={profile.target_customer || ''}
         placeholder="Select target customer demographic"
-        options={TARGET_CUSTOMER_OPTIONS}
+        options={targetCustomerOptions}
         onSave={(val) => saveField('target_customer', val)}
       />
     </div>

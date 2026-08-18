@@ -63,12 +63,18 @@ export const EditFieldModal: React.FC<EditFieldModalProps> = ({
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
-          const len = inputRef.current.value.length;
-          inputRef.current.setSelectionRange(len, len);
+          try {
+            if (type !== 'number' && typeof inputRef.current.setSelectionRange === 'function') {
+              const len = inputRef.current.value?.length || 0;
+              inputRef.current.setSelectionRange(len, len);
+            }
+          } catch {
+            // Non-text input types do not support selection ranges
+          }
         }
       }, 50);
     }
-  }, [isOpen, initialValue, options]);
+  }, [isOpen, initialValue, options, type]);
 
   if (!isOpen) return null;
 
@@ -255,10 +261,10 @@ export const EditFieldModal: React.FC<EditFieldModalProps> = ({
               {isSaving ? (
                 <>
                   <Loader2 size={14} className="spin" />
-                  <span>Saving...</span>
+                  <span>Saving…</span>
                 </>
               ) : (
-                <span>Save</span>
+                <span>Done</span>
               )}
             </button>
           </div>

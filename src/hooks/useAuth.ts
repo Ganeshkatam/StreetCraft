@@ -29,15 +29,34 @@ export function useAuth() {
   useEffect(() => {
     refreshSession();
 
+    const handleProfileUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ avatarUrl?: string | null; fullName?: string }>;
+      if (customEvent.detail) {
+        setSession((prev) => ({
+          ...prev,
+          avatarUrl: customEvent.detail.avatarUrl !== undefined ? (customEvent.detail.avatarUrl || '') : prev.avatarUrl,
+          name: customEvent.detail.fullName !== undefined ? (customEvent.detail.fullName || prev.name) : prev.name,
+        }));
+      }
+      refreshSession();
+    };
+
+    window.addEventListener('streetcraft:profile-updated', handleProfileUpdate);
+
     if (isSupabaseConfigured) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async () => {
         await refreshSession();
       });
 
       return () => {
+        window.removeEventListener('streetcraft:profile-updated', handleProfileUpdate);
         subscription.unsubscribe();
       };
     }
+
+    return () => {
+      window.removeEventListener('streetcraft:profile-updated', handleProfileUpdate);
+    };
   }, []);
 
   const signIn = async (email: string, pass: string) => {

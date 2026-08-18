@@ -102,7 +102,10 @@ class RealtimeApiClient {
         .maybeSingle();
       if (pData) {
         if (pData.full_name) profileName = pData.full_name;
-        if (pData.avatar_url) profileAvatarUrl = pData.avatar_url;
+        // Prioritize explicit profiles table avatar_url (or empty if removed)
+        if (pData.avatar_url !== undefined) {
+          profileAvatarUrl = pData.avatar_url || '';
+        }
         if (pData.phone) profilePhone = pData.phone;
       }
     } catch {
@@ -113,7 +116,7 @@ class RealtimeApiClient {
       userId: session.user.id,
       email: session.user.email || '',
       phone: profilePhone,
-      name: profileName || session.user.email?.split('@')[0] || 'Operator',
+      name: profileName || session.user.email?.split('@')[0] || 'User',
       avatarUrl: profileAvatarUrl,
       isAuthenticated: true,
       activeBusinessId,

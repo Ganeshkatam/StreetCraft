@@ -1,11 +1,25 @@
 import type { Metadata } from 'next';
-import { SetupView } from './SetupView';
+import { requireAuthenticatedClaims } from '../../lib/server/auth/requireAuthenticatedClaims';
+import { SetupLayoutShell } from './components/SetupLayoutShell';
+import { SetupIdentityView } from './SetupIdentityView';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Store Setup & Onboarding — StreetCraft',
-  description: 'Initialize your store profile, operating rhythm, and signature items to customize your StreetCraft workspace.',
+  title: 'Store Identity & Location — StreetCraft Onboarding',
+  description: 'Initialize your store identity, neighborhood, and physical concept.',
 };
 
-export default function SetupPage() {
-  return <SetupView />;
+export default async function SetupPage(props: {
+  searchParams?: Promise<{ claim?: string }>;
+}) {
+  await requireAuthenticatedClaims('/setup');
+  const searchParams = await props.searchParams;
+  const claimToken = searchParams?.claim;
+
+  return (
+    <SetupLayoutShell currentStep={1}>
+      <SetupIdentityView claimToken={claimToken} />
+    </SetupLayoutShell>
+  );
 }
