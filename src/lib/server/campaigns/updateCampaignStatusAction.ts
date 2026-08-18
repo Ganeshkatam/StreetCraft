@@ -16,7 +16,7 @@ export type UpdateCampaignStatusResult =
   | { success: false; error: string; code?: string };
 
 export async function updateCampaignStatusAction(
-  prevState: any,
+  _prevState: any,
   formData: FormData
 ): Promise<UpdateCampaignStatusResult> {
   try {

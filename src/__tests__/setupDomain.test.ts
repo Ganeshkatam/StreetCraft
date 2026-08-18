@@ -108,6 +108,14 @@ describe('Setup Domain: Schemas Validation', () => {
     assert.strictEqual(invalid.success, false);
   });
 
+  it('validates IdentityDomainSchema properly', () => {
+    const valid = IdentityDomainSchema.safeParse({
+      name: 'Indiranagar Craft Cafe',
+      category: 'Cafe & Coffee Bar',
+    });
+    assert.strictEqual(valid.success, true);
+  });
+
   it('validates LocationDomainSchema properly', () => {
     const valid = LocationDomainSchema.safeParse({
       neighborhood: 'Koramangala 4th Block',

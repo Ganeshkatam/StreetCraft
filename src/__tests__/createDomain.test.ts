@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseCreatePresetFromSearchParams } from '../lib/domain/create/createPreset';
 import {
-  CreatePresetSchema,
   CreateCampaignInputSchema,
 } from '../lib/domain/create/createSchemas';
 import { CampaignPackSchema } from '../lib/domain/create/campaignPackSchema';

@@ -27,7 +27,7 @@ export type UpdateProfileActionState = {
 };
 
 export async function updateAccountProfileAction(
-  prevState: UpdateProfileActionState,
+  _prevState: UpdateProfileActionState,
   formData: FormData
 ): Promise<UpdateProfileActionState> {
   try {

@@ -14,7 +14,7 @@ export type CreateStoreActionState = {
 };
 
 export async function createStoreAction(
-  prevState: CreateStoreActionState,
+  _prevState: CreateStoreActionState,
   formData: FormData
 ): Promise<CreateStoreActionState> {
   let createdBusinessId: string | null = null;

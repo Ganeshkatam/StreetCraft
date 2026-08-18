@@ -1,4 +1,4 @@
-import { CommercialSubscriptionSummary, SubscriptionStatus } from './planTypes';
+import { SubscriptionStatus } from './planTypes';
 
 export function deriveCommercialEntitlementStatus(
   sub: { status: string; cancel_at_period_end?: boolean; current_period_end?: string } | null

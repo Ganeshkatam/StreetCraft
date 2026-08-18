@@ -12,7 +12,7 @@ export type UpdatePreferencesActionState = {
 };
 
 export async function updateAccountPreferencesAction(
-  prevState: UpdatePreferencesActionState,
+  _prevState: UpdatePreferencesActionState,
   formData: FormData
 ): Promise<UpdatePreferencesActionState> {
   try {

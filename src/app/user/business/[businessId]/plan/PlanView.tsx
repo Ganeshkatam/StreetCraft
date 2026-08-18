@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useActionState } from 'react';
+import React, { useState, useActionState, useEffect } from 'react';
 import Link from 'next/link';
 import { StorePlanViewModel } from '../../../../../lib/domain/plan/planTypes';
 import { requestSubscriptionCancellationAction, CancellationActionState } from '../../../../../lib/server/plan/requestSubscriptionCancellationAction';
 import { UpgradeModal } from '../../../../../components/UpgradeModal';
-import { CreditCard, Sparkles, Store, ChevronRight, AlertTriangle, CheckCircle2, Zap, ArrowLeft } from 'lucide-react';
+import { Sparkles, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PlanViewProps {
@@ -23,6 +23,17 @@ export function PlanView({ planData }: PlanViewProps) {
     requestSubscriptionCancellationAction,
     initialCancelState
   );
+
+  useEffect(() => {
+    if (cancelState) {
+      if (cancelState.success) {
+        toast.success('Subscription cancellation requested.');
+        setShowCancelDialog(false);
+      } else if (cancelState.message) {
+        toast.error(cancelState.message);
+      }
+    }
+  }, [cancelState]);
 
   const isPaid = subscription.planId !== 'FREE';
   const renewalDateStr = new Date(subscription.currentPeriodEnd).toLocaleDateString('en-IN', {

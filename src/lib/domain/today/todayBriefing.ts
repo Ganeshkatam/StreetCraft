@@ -1,4 +1,4 @@
-import { TodayBriefingSummary, TodayOpportunitySummary, TodayFestivalSummary } from './todayTypes';
+import { TodayFestivalSummary } from './todayTypes';
 import { FestivalMoment } from '../../server/opportunities/getFestivalMoments';
 
 export function getGreetingForHour(hour: number = new Date().getHours()): string {

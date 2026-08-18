@@ -11,7 +11,7 @@ export type CancellationActionState = {
 };
 
 export async function requestSubscriptionCancellationAction(
-  prevState: CancellationActionState,
+  _prevState: CancellationActionState,
   formData: FormData
 ): Promise<CancellationActionState> {
   try {

@@ -20,7 +20,7 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function uploadAccountAvatarAction(
-  prevState: UploadAvatarActionState,
+  _prevState: UploadAvatarActionState,
   formData: FormData
 ): Promise<UploadAvatarActionState> {
   let uploadedPath: string | null = null;

@@ -21,7 +21,7 @@ export type RegenerateCampaignActionState = {
 };
 
 export async function regenerateCampaignAction(
-  prevState: RegenerateCampaignActionState | null,
+  _prevState: RegenerateCampaignActionState | null,
   formData: FormData
 ): Promise<RegenerateCampaignActionState> {
   try {

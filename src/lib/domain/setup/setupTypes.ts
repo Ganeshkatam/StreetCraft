@@ -1,5 +1,3 @@
-import { BusinessProfile } from '../../server/business/getBusinessProfile';
-
 export type DomainKey =
   | 'identity'
   | 'location'

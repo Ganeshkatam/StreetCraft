@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { getBusinessProfile, BusinessProfile } from '../business/getBusinessProfile';

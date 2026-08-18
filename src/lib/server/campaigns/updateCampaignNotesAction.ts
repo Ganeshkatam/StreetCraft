@@ -28,7 +28,7 @@ export type UpdateCampaignNotesResult =
   | { success: false; error: string };
 
 export async function updateCampaignNotesAction(
-  prevState: any,
+  _prevState: any,
   formData: FormData
 ): Promise<UpdateCampaignNotesResult> {
   try {
@@ -59,12 +59,12 @@ export async function updateCampaignNotesAction(
       .map(b => b.id);
 
     if (validBusinessIds.length === 0) {
-      return { success: false, error: 'Unauthorized. You do not have operator permissions.' };
+      return { success: false, error: 'Unauthorized. You do not have owner or admin permissions.' };
     }
 
     // 3. Perform RLS-protected scoped UPDATE
     // The query explicitly constrains the update to the caller's authorized business IDs.
-    const { error: updateError, count } = await supabase
+    const { error: updateError } = await supabase
       .from('campaigns')
       .update({
         performance_notes: finalNotes,

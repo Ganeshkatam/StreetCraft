@@ -12,7 +12,7 @@ export type SwitchStorefrontActionState = {
 };
 
 export async function switchStorefrontAction(
-  prevState: SwitchStorefrontActionState,
+  _prevState: SwitchStorefrontActionState,
   formData: FormData
 ): Promise<SwitchStorefrontActionState> {
   const claims = await requireAuthenticatedClaims('/user/account/storefronts');

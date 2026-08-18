@@ -16,7 +16,7 @@ export type ArchiveCampaignActionState = {
 };
 
 export async function archiveCampaignAction(
-  prevState: ArchiveCampaignActionState | null,
+  _prevState: ArchiveCampaignActionState | null,
   formData: FormData
 ): Promise<ArchiveCampaignActionState> {
   try {

@@ -6,12 +6,6 @@ import { createClient } from './../../../lib/supabase/server';
 import { requireAuthenticatedClaims } from './../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from './resolveAuthorizedBusiness';
 
-const nullIfEmpty = (val: string | undefined | null) => {
-  if (typeof val !== 'string') return null;
-  const trimmed = val.trim();
-  return trimmed === '' ? null : trimmed;
-};
-
 const emptyStringIfEmpty = (val: unknown) => {
   if (typeof val !== 'string') return '';
   return val.trim();
@@ -50,7 +44,7 @@ export type ActionState = {
 
 export async function updateBusinessProfile(
   candidateBizId: string | undefined,
-  prevState: ActionState,
+  _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   try {

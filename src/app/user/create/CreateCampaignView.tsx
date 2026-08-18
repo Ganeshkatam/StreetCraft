@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useActionState } from 'react';
-import { useRouter } from 'next/navigation';
 import { CampaignType, CampaignObjective } from '../../../types/campaign';
 import { CreateCampaignViewModel } from '../../../lib/domain/create/createTypes';
 import { createCampaignAction, CreateCampaignActionState } from '../../../lib/server/create/createCampaignAction';
@@ -24,7 +23,6 @@ interface CreateCampaignViewProps {
 const initialState: CreateCampaignActionState = { success: false, message: '' };
 
 export function CreateCampaignView({ context }: CreateCampaignViewProps) {
-  const router = useRouter();
   const { business, profile, entitlement, preset } = context;
 
   // Initialize step & parameters based on preset

@@ -21,7 +21,7 @@ export type UpdatePasswordActionState = {
 };
 
 export async function updateAccountPasswordAction(
-  prevState: UpdatePasswordActionState,
+  _prevState: UpdatePasswordActionState,
   formData: FormData
 ): Promise<UpdatePasswordActionState> {
   try {

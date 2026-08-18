@@ -24,7 +24,7 @@ export type SetupDomainActionState = {
 export async function saveSetupDomainAction(
   businessId: string,
   domain: 'identity' | 'location' | 'products' | 'customers' | 'offer' | 'brand' | 'operations' | 'contact',
-  prevState: SetupDomainActionState,
+  _prevState: SetupDomainActionState,
   formData: FormData
 ): Promise<SetupDomainActionState> {
   try {

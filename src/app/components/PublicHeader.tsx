@@ -2,14 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Logo } from '../../components/Logo';
 import { useAuth } from '../../hooks/useAuth';
 import { Sparkles } from 'lucide-react';
 
 export function PublicHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const { session } = useAuth();
 
   const userInitial = (session.name || session.email || 'U').charAt(0).toUpperCase();

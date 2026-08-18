@@ -20,7 +20,7 @@ export interface CreateCampaignActionState {
 }
 
 export async function createCampaignAction(
-  prevState: CreateCampaignActionState,
+  _prevState: CreateCampaignActionState,
   formData: FormData
 ): Promise<CreateCampaignActionState> {
   try {
