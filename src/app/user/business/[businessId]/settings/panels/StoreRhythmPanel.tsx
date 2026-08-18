@@ -49,42 +49,52 @@ export const StoreRhythmPanel: React.FC<StoreRhythmPanelProps> = ({ profile }) =
   };
 
   return (
-    <div className="account-pane-fields">
-      <EditableField
-        label="Peak Operating Hours"
-        value={profile.peak_hours || ''}
-        placeholder="Select or enter peak hours"
-        type="select"
-        options={peakHoursOptions}
-        onSave={async (val) => { await saveField('peak_hours', String(val)); }}
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">STORE RHYTHM</span>
+        <h1 className="account-pane-title">Hours &amp; Customer Rhythm</h1>
+        <p className="account-pane-subtitle">
+          Configure peak rush hours, afternoon slow times, and primary commercial goals.
+        </p>
+      </div>
 
-      <EditableField
-        label="Slow Hours &amp; Downtime"
-        value={profile.slow_hours || ''}
-        placeholder="Select or enter slow hours"
-        type="select"
-        options={slowHoursOptions}
-        onSave={async (val) => { await saveField('slow_hours', String(val)); }}
-      />
+      <div className="account-pane-fields">
+        <EditableField
+          label="Peak Operating Hours"
+          value={profile.peak_hours || ''}
+          placeholder="Select or enter peak hours"
+          type="select"
+          options={peakHoursOptions}
+          onSave={async (val) => { await saveField('peak_hours', String(val)); }}
+        />
 
-      <EditableField
-        label="Primary Store Goal"
-        value={profile.primary_goal || ''}
-        placeholder="Select key operational focus"
-        type="select"
-        options={goalOptions}
-        onSave={async (val) => { await saveField('primary_goal', String(val)); }}
-      />
+        <EditableField
+          label="Slow Hours &amp; Downtime"
+          value={profile.slow_hours || ''}
+          placeholder="Select or enter slow hours"
+          type="select"
+          options={slowHoursOptions}
+          onSave={async (val) => { await saveField('slow_hours', String(val)); }}
+        />
 
-      <EditableField
-        label="Target Customer Segment"
-        value={profile.target_customer || ''}
-        placeholder="Select primary patron profile"
-        type="select"
-        options={targetCustomerOptions}
-        onSave={async (val) => { await saveField('target_customer', String(val)); }}
-      />
+        <EditableField
+          label="Primary Store Goal"
+          value={profile.primary_goal || ''}
+          placeholder="Select key operational focus"
+          type="select"
+          options={goalOptions}
+          onSave={async (val) => { await saveField('primary_goal', String(val)); }}
+        />
+
+        <EditableField
+          label="Target Customer Segment"
+          value={profile.target_customer || ''}
+          placeholder="Select primary patron profile"
+          type="select"
+          options={targetCustomerOptions}
+          onSave={async (val) => { await saveField('target_customer', String(val)); }}
+        />
+      </div>
     </div>
   );
 };

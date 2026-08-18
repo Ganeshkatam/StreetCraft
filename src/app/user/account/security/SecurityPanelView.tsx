@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useActionState, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { SecurityViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountPasswordAction, UpdatePasswordActionState } from '../../../../lib/server/account/updateAccountPasswordAction';
-import { AccountProfileHeader } from '../components/AccountProfileHeader';
-import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
 import { toast } from 'sonner';
-import { Lock, Key, LogOut, Check, Shield } from 'lucide-react';
+import { Key, LogOut, Check, Shield } from 'lucide-react';
 
 interface SecurityPanelViewProps {
   security: SecurityViewModel;
@@ -16,7 +13,6 @@ interface SecurityPanelViewProps {
 const initialState: UpdatePasswordActionState = { success: false };
 
 export function SecurityPanelView({ security }: SecurityPanelViewProps) {
-  const router = useRouter();
   const [state, formAction, isSaving] = useActionState(updateAccountPasswordAction, initialState);
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -38,54 +34,90 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
 
   const lastSignInDate = security.lastSignInAt
     ? new Date(security.lastSignInAt).toLocaleString('en-IN', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
     : 'Active Session';
 
   return (
-    <div>
-      <AccountProfileHeader
-        eyebrow="ACCOUNT &amp; SECURITY"
-        title="Password &amp; Security"
-        subtitle="Manage your password, login authorization credentials, and authenticated session state."
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">ACCOUNT SECURITY</span>
+        <h1 className="account-pane-title">Password &amp; Credentials</h1>
+        <p className="account-pane-subtitle">
+          Manage your password, login authorization credentials, and authenticated session state.
+        </p>
+      </div>
 
-      <div className="account-stage-content">
-        {/* Password Update Form */}
-        <div style={{ marginBottom: '32px', paddingBottom: '28px', borderBottom: '1px solid var(--color-border)' }}>
-          <div className="account-field-label" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Key size={14} color="var(--color-primary)" />
-            <span>CHANGE PASSWORD</span>
+      <div className="account-pane-fields">
+        {/* Session Metadata Grid */}
+        <div className="account-fields-grid" style={{ marginBottom: '14px', marginTop: 0 }}>
+          <div className="account-field-card locked">
+            <div className="account-field-card-header">
+              <span className="account-field-card-label">PRIMARY IDENTITY</span>
+              <Shield size={13} color="var(--color-primary)" />
+            </div>
+            <div className="account-field-card-value">
+              {security.email}
+            </div>
+            <div className="account-field-card-helper">
+              Provider: {security.provider.toUpperCase()} (Supabase Auth)
+            </div>
+          </div>
+
+          <div className="account-field-card locked">
+            <div className="account-field-card-header">
+              <span className="account-field-card-label">LAST SIGN-IN TIMESTAMP</span>
+              <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontWeight: 700 }}>
+                VERIFIED
+              </span>
+            </div>
+            <div className="account-field-card-value">
+              {lastSignInDate}
+            </div>
+            <div className="account-field-card-helper">
+              Active browser session
+            </div>
+          </div>
+        </div>
+
+        {/* Change Password Card */}
+        <div className="account-field-card locked" style={{ padding: '16px 20px', marginBottom: '14px' }}>
+          <div className="account-field-card-header" style={{ marginBottom: '12px' }}>
+            <span className="account-field-card-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Key size={13} color="var(--color-primary)" />
+              <span>UPDATE PASSWORD</span>
+            </span>
           </div>
 
           <form action={formAction}>
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="form-label" htmlFor="currentPassword">
-                Current Password <span style={{ color: 'var(--color-danger)' }}>*</span>
-              </label>
-              <input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                className="input-field"
-                placeholder="••••••••••••"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-              />
-              {state.errors?.currentPassword && (
-                <span className="field-error">{state.errors.currentPassword[0]}</span>
-              )}
-            </div>
-
-            <div className="workspace-grid-2col" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
               <div className="form-group">
-                <label className="form-label" htmlFor="newPassword">
+                <label className="form-label" htmlFor="currentPassword" style={{ fontSize: '11.5px' }}>
+                  Current Password <span style={{ color: 'var(--color-danger)' }}>*</span>
+                </label>
+                <input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  className="input-field"
+                  placeholder="••••••••••••"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  style={{ height: '36px', fontSize: '13px' }}
+                  required
+                />
+                {state.errors?.currentPassword && (
+                  <span className="field-error">{state.errors.currentPassword[0]}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="newPassword" style={{ fontSize: '11.5px' }}>
                   New Password <span style={{ color: 'var(--color-danger)' }}>*</span>
                 </label>
                 <input
@@ -93,9 +125,10 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
                   name="newPassword"
                   type="password"
                   className="input-field"
-                  placeholder="At least 8 characters"
+                  placeholder="Min. 8 chars"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  style={{ height: '36px', fontSize: '13px' }}
                   required
                 />
                 {state.errors?.newPassword && (
@@ -104,7 +137,7 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
               </div>
 
               <div className="form-group">
-                <label className="form-label" htmlFor="confirmPassword">
+                <label className="form-label" htmlFor="confirmPassword" style={{ fontSize: '11.5px' }}>
                   Confirm New Password <span style={{ color: 'var(--color-danger)' }}>*</span>
                 </label>
                 <input
@@ -112,9 +145,10 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
                   name="confirmPassword"
                   type="password"
                   className="input-field"
-                  placeholder="Re-enter new password"
+                  placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{ height: '36px', fontSize: '13px' }}
                   required
                 />
                 {state.errors?.confirmPassword && (
@@ -127,74 +161,40 @@ export function SecurityPanelView({ security }: SecurityPanelViewProps) {
               <button
                 type="submit"
                 className="btn-primary"
-                style={{ fontSize: '13px', padding: '7px 20px' }}
+                style={{ fontSize: '12px', padding: '6px 16px' }}
                 disabled={isSaving}
               >
-                <Check size={14} />
+                <Check size={13} />
                 <span>{isSaving ? 'Updating...' : 'Update Password'}</span>
               </button>
             </div>
           </form>
         </div>
 
-        {/* Authentication Session Metadata */}
-        <div style={{ marginBottom: '32px', paddingBottom: '28px', borderBottom: '1px solid var(--color-border)' }}>
-          <div className="account-field-label" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Shield size={14} color="var(--color-primary)" />
-            <span>SESSION CREDENTIALS</span>
-          </div>
-
-          <div className="workspace-grid-2col">
-            <div className="account-review-domain-card" style={{ padding: '16px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>
-                PRIMARY IDENTITY
+        {/* Sign Out Action Card */}
+        <div className="account-field-card locked" style={{ padding: '12px 18px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                Sign Out of Account
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                {security.email}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                Provider: {security.provider.toUpperCase()}
+              <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>
+                End your active session on this device.
               </div>
             </div>
 
-            <div className="account-review-domain-card" style={{ padding: '16px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)', marginBottom: '4px' }}>
-                LAST SIGN-IN TIMESTAMP
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                {lastSignInDate}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                Session State: Verified
-              </div>
-            </div>
+            <form action="/auth/signout" method="POST">
+              <button
+                type="submit"
+                className="btn-secondary"
+                style={{ fontSize: '12px', padding: '5px 14px', color: 'var(--color-danger)' }}
+              >
+                <LogOut size={13} />
+                <span>Sign Out</span>
+              </button>
+            </form>
           </div>
         </div>
-
-        {/* Sign Out Action */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)', margin: '0 0 2px' }}>
-              Sign Out of Account
-            </h4>
-            <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', margin: 0 }}>
-              End your active session on this device.
-            </p>
-          </div>
-
-          <form action="/auth/signout" method="POST">
-            <button
-              type="submit"
-              className="btn-secondary"
-              style={{ fontSize: '12.5px', padding: '6px 16px', color: 'var(--color-danger)' }}
-            >
-              <LogOut size={14} />
-              <span>Sign Out</span>
-            </button>
-          </form>
-        </div>
-
-        <AccountSecurityFooter />
       </div>
     </div>
   );

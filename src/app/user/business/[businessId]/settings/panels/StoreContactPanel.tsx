@@ -7,7 +7,6 @@ import { updateBusinessProfile } from '../../../../../../lib/server/business/upd
 
 interface StoreContactPanelProps {
   profile: BusinessProfile;
-  businessId: string;
 }
 
 export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ profile }) => {
@@ -40,32 +39,42 @@ export const StoreContactPanel: React.FC<StoreContactPanelProps> = ({ profile })
   };
 
   return (
-    <div className="account-pane-fields">
-      <EditableField
-        label="Store WhatsApp &amp; Phone"
-        value={profile.phone_whatsapp || ''}
-        placeholder="e.g. +91 98765 43210"
-        type="text"
-        onSave={async (val) => { await saveField('phone_whatsapp', String(val)); }}
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">STORE CONTACT</span>
+        <h1 className="account-pane-title">Direct Communications</h1>
+        <p className="account-pane-subtitle">
+          Manage verified telephone and WhatsApp dispatch channel for automated campaign notices.
+        </p>
+      </div>
 
-      <div className="account-field-row">
-        <div className="account-field-meta-label">
-          COMMUNICATION DISPATCH
-        </div>
+      <div className="account-pane-fields">
+        <EditableField
+          label="Store WhatsApp &amp; Phone"
+          value={profile.phone_whatsapp || ''}
+          placeholder="e.g. +91 98765 43210"
+          type="text"
+          onSave={async (val) => { await saveField('phone_whatsapp', String(val)); }}
+        />
 
-        <div className="account-field-content-row">
-          <div>
-            <div className="account-notif-title">WhatsApp Dispatch Channel</div>
-            <div className="account-notif-desc">Campaign notifications and draft confirmations route to this verified business line.</div>
+        <div className="account-field-row">
+          <div className="account-field-meta-label">
+            COMMUNICATION DISPATCH
           </div>
 
-          <div className="account-auth-identity-pill">
-            <span>Direct Routing</span>
-          </div>
-        </div>
+          <div className="account-field-content-row">
+            <div>
+              <div className="account-notif-title">WhatsApp Dispatch Channel</div>
+              <div className="account-notif-desc">Campaign notifications and draft confirmations route to this verified business line.</div>
+            </div>
 
-        <div className="account-field-row-divider" />
+            <div className="account-auth-identity-pill">
+              <span>Direct Routing</span>
+            </div>
+          </div>
+
+          <div className="account-field-row-divider" />
+        </div>
       </div>
     </div>
   );

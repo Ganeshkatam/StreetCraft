@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { NotificationsViewModel } from '../../../../lib/domain/account/accountTypes';
 import { updateAccountPreferencesAction, UpdatePreferencesActionState } from '../../../../lib/server/account/updateAccountPreferencesAction';
 import { AccountProfileHeader } from '../components/AccountProfileHeader';
-import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
 import { toast } from 'sonner';
-import { Bell, Mail, MessageSquare, Sparkles, Check } from 'lucide-react';
+import { Mail, MessageSquare, Sparkles, Check } from 'lucide-react';
 
 interface NotificationsPanelViewProps {
   preferences: NotificationsViewModel;
@@ -45,7 +44,7 @@ export function NotificationsPanelView({ preferences }: NotificationsPanelViewPr
       <div className="account-stage-content">
         <form action={formAction}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', margin: '20px 0 28px' }}>
-            
+
             {/* Email Notifications */}
             <div
               style={{
@@ -240,8 +239,6 @@ export function NotificationsPanelView({ preferences }: NotificationsPanelViewPr
             </button>
           </div>
         </form>
-
-        <AccountSecurityFooter />
       </div>
     </div>
   );

@@ -26,10 +26,12 @@ export default async function StoreSettingsLayout({ children, params }: StoreSet
   }
 
   return (
-    <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
-      <div className="account-workspace-layout">
+    <div className="account-workspace-container">
+      <div className="account-workspace-grid">
         <StoreSettingsRail business={business} profile={profile} />
-        <main className="account-stage">{children}</main>
+        <main className="account-stage-workspace" role="main" aria-label="Store Settings Stage">
+          {children}
+        </main>
       </div>
     </div>
   );

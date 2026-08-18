@@ -42,39 +42,49 @@ export const StoreOfferPanel: React.FC<StoreOfferPanelProps> = ({ profile }) => 
   };
 
   return (
-    <div className="account-pane-fields">
-      <EditableField
-        label="Signature Menu Items / Bestsellers"
-        value={profile.signature_items || ''}
-        placeholder={signatureItemsPlaceholder}
-        type="text"
-        onSave={async (val) => { await saveField('signature_items', String(val)); }}
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">OFFER &amp; ECONOMICS</span>
+        <h1 className="account-pane-title">Promotions &amp; Pricing</h1>
+        <p className="account-pane-subtitle">
+          Manage signature menu bestsellers, default promotional offers, and monthly target walk-ins.
+        </p>
+      </div>
 
-      <EditableField
-        label="Default Promotional Offer"
-        value={profile.default_offer || ''}
-        placeholder="Select a promotional offer or create custom"
-        type="select"
-        options={offerOptions}
-        onSave={async (val) => { await saveField('default_offer', String(val)); }}
-      />
+      <div className="account-pane-fields">
+        <EditableField
+          label="Signature Menu Items / Bestsellers"
+          value={profile.signature_items || ''}
+          placeholder={signatureItemsPlaceholder}
+          type="text"
+          onSave={async (val) => { await saveField('signature_items', String(val)); }}
+        />
 
-      <EditableField
-        label="Average Order Value (INR)"
-        value={profile.avg_ticket_inr ? String(profile.avg_ticket_inr) : ''}
-        placeholder="e.g. 450"
-        type="text"
-        onSave={async (val) => { await saveField('avg_ticket_inr', String(val)); }}
-      />
+        <EditableField
+          label="Default Promotional Offer"
+          value={profile.default_offer || ''}
+          placeholder="Select a promotional offer or create custom"
+          type="select"
+          options={offerOptions}
+          onSave={async (val) => { await saveField('default_offer', String(val)); }}
+        />
 
-      <EditableField
-        label="Monthly Walk-in Target"
-        value={profile.target_monthly_customers ? String(profile.target_monthly_customers) : ''}
-        placeholder="e.g. 1500"
-        type="text"
-        onSave={async (val) => { await saveField('target_monthly_customers', String(val)); }}
-      />
+        <EditableField
+          label="Average Order Value (INR)"
+          value={profile.avg_ticket_inr ? String(profile.avg_ticket_inr) : ''}
+          placeholder="e.g. 450"
+          type="text"
+          onSave={async (val) => { await saveField('avg_ticket_inr', String(val)); }}
+        />
+
+        <EditableField
+          label="Monthly Walk-in Target"
+          value={profile.target_monthly_customers ? String(profile.target_monthly_customers) : ''}
+          placeholder="e.g. 1500"
+          type="text"
+          onSave={async (val) => { await saveField('target_monthly_customers', String(val)); }}
+        />
+      </div>
     </div>
   );
 };

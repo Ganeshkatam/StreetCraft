@@ -4,8 +4,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { StorefrontsViewModel } from '../../../../lib/domain/account/accountTypes';
-import { AccountProfileHeader } from '../components/AccountProfileHeader';
-import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
 import { Store, Plus, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface StorefrontsPanelViewProps {
@@ -22,53 +20,55 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
   };
 
   return (
-    <div>
-      <AccountProfileHeader
-        eyebrow="STOREFRONTS"
-        title="Connected Storefronts"
-        subtitle={`You have access to ${totalCount} physical storefront ${totalCount === 1 ? 'profile' : 'profiles'}.`}
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">STOREFRONTS</span>
+        <h1 className="account-pane-title">Connected Storefronts</h1>
+        <p className="account-pane-subtitle">
+          You have access to {totalCount} physical storefront {totalCount === 1 ? 'profile' : 'profiles'}.
+        </p>
+      </div>
 
-      <div className="account-stage-content">
+      <div className="account-pane-fields">
         {storefronts.length === 0 ? (
-          <div className="card" style={{ padding: '36px 24px', textAlign: 'center', margin: '20px 0' }}>
+          <div className="account-field-card locked" style={{ padding: '36px 24px', textAlign: 'center', margin: '14px 0' }}>
             <Store size={32} color="var(--color-primary)" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '6px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '4px' }}>
               No Storefronts Connected
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginBottom: '20px' }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
               Complete the onboarding setup to connect your first physical storefront.
             </p>
-            <Link href="/setup" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Plus size={15} />
+            <Link href="/setup" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', padding: '6px 14px' }}>
+              <Plus size={14} />
               <span>Connect Storefront</span>
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '16px 0 28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '8px 0 16px' }}>
             {storefronts.map((store) => {
               const isActive = store.isActive || store.id === activeBusinessId;
 
               return (
                 <div
                   key={store.id}
+                  className="account-field-card locked"
                   style={{
-                    padding: '18px 20px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: isActive ? '1.5px solid var(--color-primary)' : '1px solid var(--color-border)',
-                    background: isActive ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
+                    padding: '14px 18px',
+                    borderColor: isActive ? 'var(--color-primary)' : 'var(--color-border)',
+                    background: isActive ? 'rgba(23, 107, 77, 0.04)' : '#FFFFFF',
                     display: 'flex',
+                    flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     gap: '16px',
-                    transition: 'var(--motion-fast)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div
                       style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '38px',
+                        height: '38px',
                         borderRadius: '8px',
                         background: isActive ? 'var(--color-primary)' : 'var(--color-surface-raised)',
                         color: isActive ? '#ffffff' : 'var(--color-ink-soft)',
@@ -78,35 +78,35 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
                         flexShrink: 0,
                       }}
                     >
-                      <Store size={20} />
+                      <Store size={18} />
                     </div>
 
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
                           {store.name}
-                        </h4>
+                        </span>
                         {isActive && (
                           <span
                             style={{
-                              fontSize: '10.5px',
+                              fontSize: '10px',
                               fontFamily: 'var(--font-mono)',
                               fontWeight: 700,
                               background: '#10b981',
                               color: '#ffffff',
-                              padding: '2px 7px',
-                              borderRadius: '4px',
+                              padding: '1px 6px',
+                              borderRadius: '3px',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '3px',
                             }}
                           >
-                            <CheckCircle2 size={10} strokeWidth={3} /> ACTIVE CONTEXT
+                            <CheckCircle2 size={9} strokeWidth={3} /> ACTIVE CONTEXT
                           </span>
                         )}
                       </div>
 
-                      <div style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
                         {store.category} {store.neighborhood ? `• ${store.neighborhood}` : ''} {store.city ? `(${store.city})` : ''} • Role: {store.role}
                       </div>
                     </div>
@@ -117,16 +117,16 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
                       <Link
                         href={`/user/today?biz=${encodeURIComponent(store.id)}`}
                         className="btn-primary"
-                        style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        style={{ fontSize: '12px', padding: '5px 12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                       >
                         <span>Open Workspace</span>
-                        <ArrowRight size={13} />
+                        <ArrowRight size={12} />
                       </Link>
                     ) : (
                       <button
                         type="button"
                         className="btn-secondary"
-                        style={{ fontSize: '12.5px', padding: '6px 14px' }}
+                        style={{ fontSize: '12px', padding: '5px 12px' }}
                         onClick={() => handleSwitch(store.id)}
                       >
                         Switch to Store
@@ -139,14 +139,12 @@ export function StorefrontsPanelView({ data }: StorefrontsPanelViewProps) {
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-          <Link href="/setup" className="btn-secondary" style={{ fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <Plus size={14} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
+          <Link href="/setup" className="btn-secondary" style={{ fontSize: '12.5px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <Plus size={13} />
             <span>Connect Another Storefront</span>
           </Link>
         </div>
-
-        <AccountSecurityFooter />
       </div>
     </div>
   );

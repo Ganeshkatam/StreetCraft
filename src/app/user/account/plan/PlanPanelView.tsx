@@ -3,9 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { PlanViewModel } from '../../../../lib/domain/account/accountTypes';
-import { AccountProfileHeader } from '../components/AccountProfileHeader';
-import { AccountSecurityFooter } from '../components/AccountSecurityFooter';
-import { CreditCard, Sparkles, Store, ChevronRight } from 'lucide-react';
+import { CreditCard, Sparkles, Store, ChevronRight, Check, FileText } from 'lucide-react';
 
 interface PlanPanelViewProps {
   planData: PlanViewModel;
@@ -22,22 +20,30 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
   const monthlyCampaignLimit = plan?.monthlyCampaignLimit ?? 3;
 
   return (
-    <div>
-      <AccountProfileHeader
-        eyebrow="SUBSCRIPTION"
-        title="Plan &amp; Usage Limits"
-        subtitle="Manage your commercial subscription tier, monthly campaign allowances, and active store limits."
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">COMMERCIAL SUBSCRIPTION</span>
+        <h1 className="account-pane-title">Plan &amp; Usage Limits</h1>
+        <p className="account-pane-subtitle">
+          Manage your subscription tier, monthly campaign allowances, and connected store limits.
+        </p>
+      </div>
 
-      <div className="account-stage-content">
-        {/* Current Plan Summary Card */}
-        <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
+      <div className="account-pane-fields">
+        {/* Tier Hero Card */}
+        <div
+          className="account-field-card locked"
+          style={{
+            padding: '20px 24px',
+            marginBottom: '14px',
+            background: 'linear-gradient(180deg, #FFFFFF 0%, #FAFAF9 100%)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CreditCard size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
-                Account Subscription
-              </h3>
+              <CreditCard size={16} color="var(--color-primary)" />
+              <span className="account-field-card-label" style={{ margin: 0 }}>ACTIVE MEMBERSHIP</span>
             </div>
             <span
               style={{
@@ -47,34 +53,47 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
                 color: 'var(--color-primary)',
                 background: 'var(--color-primary-subtle)',
                 padding: '3px 10px',
-                borderRadius: 'var(--radius-xs)',
+                borderRadius: '4px',
+                letterSpacing: '0.04em',
               }}
             >
               {planName.toUpperCase()}
             </span>
           </div>
 
-          <div className="workspace-grid-2col" style={{ alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
             <div>
               <div style={{ fontSize: '28px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)' }}>
                 {isPaid ? `₹${monthlyPriceInr}` : 'Free'}
-                <span style={{ fontSize: '13px', fontWeight: 400, color: 'var(--color-ink-muted)', marginLeft: '4px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 400, color: 'var(--color-ink-muted)', marginLeft: '6px' }}>
                   / month {isPaid ? `(${billingCycle})` : ''}
                 </span>
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--color-ink-soft)', marginTop: '4px', margin: '4px 0 0' }}>
-                Allows up to <strong>{businessLimit} connected {businessLimit === 1 ? 'storefront' : 'storefronts'}</strong> and <strong>{monthlyCampaignLimit} campaigns/mo</strong> per store.
-              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-ink)' }}>
+                  <Check size={14} color="var(--color-primary)" />
+                  <span>Up to <strong>{businessLimit} connected {businessLimit === 1 ? 'storefront' : 'storefronts'}</strong></span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-ink)' }}>
+                  <Check size={14} color="var(--color-primary)" />
+                  <span><strong>{monthlyCampaignLimit} AI campaign packs</strong> per month</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-ink)' }}>
+                  <Check size={14} color="var(--color-primary)" />
+                  <span>Multi-channel publishing (WhatsApp, Instagram, Posters, SMS)</span>
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div>
               <Link
                 href="/user/myplan"
                 className="btn-primary"
-                style={{ fontSize: '13px', padding: '8px 18px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                style={{ fontSize: '13px', padding: '8px 18px', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '8px' }}
               >
                 <Sparkles size={14} />
-                <span>{isPaid ? 'Manage / Upgrade Plan' : 'Upgrade to Pro'}</span>
+                <span>{isPaid ? 'Manage Subscription' : 'Upgrade to Pro'}</span>
                 <ChevronRight size={14} />
               </Link>
             </div>
@@ -83,29 +102,29 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
 
         {/* Active Storefront Quota Breakdown */}
         {usage && (
-          <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
+          <div className="account-field-card locked" style={{ padding: '18px 22px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Store size={18} color="var(--color-accent)" />
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
-                  Active Store Quota ({usage.businessName})
-                </h3>
+                <Store size={15} color="var(--color-primary)" />
+                <span className="account-field-card-label" style={{ margin: 0 }}>
+                  ACTIVE STORE QUOTA ({usage.businessName.toUpperCase()})
+                </span>
               </div>
               <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
-                CURRENT PERIOD
+                CURRENT BILLING CYCLE
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '32px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '26px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)' }}>
                 {usage.campaignsRemaining}
               </span>
-              <span style={{ fontSize: '14px', color: 'var(--color-ink-muted)' }}>
-                campaigns remaining of {usage.campaignLimit} limit
+              <span style={{ fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+                campaigns remaining of {usage.campaignLimit} allowance
               </span>
             </div>
 
-            <div style={{ background: 'var(--color-surface-raised)', height: '8px', borderRadius: '4px', overflow: 'hidden', margin: '12px 0 16px', border: '1px solid var(--color-border)' }}>
+            <div style={{ background: '#E5E7EB', height: '6px', borderRadius: '3px', overflow: 'hidden', margin: '8px 0 4px' }}>
               <div
                 style={{
                   height: '100%',
@@ -118,26 +137,41 @@ export function PlanPanelView({ planData }: PlanPanelViewProps) {
           </div>
         )}
 
-        <div className="account-field-row" style={{ paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-          <div className="account-field-label">INVOICES &amp; BILLING HISTORY</div>
-          <div className="account-field-content-row">
+        {/* Invoices & Billing History Card */}
+        <div
+          className="account-field-card locked"
+          style={{
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--color-primary-subtle)', color: 'var(--color-primary)', flexShrink: 0 }}>
+              <FileText size={16} />
+            </div>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                Detailed ledger &amp; campaign consumption records
+              <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                Invoices &amp; Billing History
               </div>
-              <div style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                View complete ledger audit log and invoices on the dedicated My Plan page.
+              <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
+                View past payment receipts, tax invoices, and detailed campaign generation logs.
               </div>
             </div>
-
-            <Link href="/user/myplan" className="account-field-edit-action" style={{ fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span>Open My Plan</span>
-              <ChevronRight size={14} />
-            </Link>
           </div>
-        </div>
 
-        <AccountSecurityFooter />
+          <Link
+            href="/user/myplan"
+            className="btn-secondary"
+            style={{ fontSize: '12px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}
+          >
+            <span>View Invoices</span>
+            <ChevronRight size={13} />
+          </Link>
+        </div>
       </div>
     </div>
   );

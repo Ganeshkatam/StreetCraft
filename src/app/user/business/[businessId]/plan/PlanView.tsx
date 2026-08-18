@@ -32,7 +32,7 @@ export function PlanView({ planData }: PlanViewProps) {
   });
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+    <div style={{ width: '100%', padding: '24px var(--space-gutter) 80px' }}>
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '28px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '16px' }}>
         <div>

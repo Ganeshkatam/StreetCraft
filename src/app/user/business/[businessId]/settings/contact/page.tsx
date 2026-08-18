@@ -22,5 +22,5 @@ export default async function StoreContactSettingsPage({ params }: PageProps) {
     notFound();
   }
 
-  return <StoreContactPanel profile={profile} businessId={businessId} />;
+  return <StoreContactPanel profile={profile} />;
 }

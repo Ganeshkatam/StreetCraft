@@ -43,61 +43,71 @@ export const StoreIdentityPanel: React.FC<StoreIdentityPanelProps> = ({ profile 
   };
 
   return (
-    <div className="account-pane-fields">
-      <StorePhotoManager
-        businessId={businessId}
-        profile={profile}
-      />
+    <div className="account-pane">
+      <div className="account-pane-header">
+        <span className="account-pane-tag">STORE PROFILE</span>
+        <h1 className="account-pane-title">{profile.name || 'Store Identity'}</h1>
+        <p className="account-pane-subtitle">
+          {profile.category || 'Retail Store'} &bull; {profile.neighborhood ? `${profile.neighborhood}, ` : ''}{profile.city || 'Local Area'}
+        </p>
+      </div>
 
-      <EditableField
-        label="Store Name"
-        value={profile.name || ''}
-        placeholder="e.g. Resto cafe"
-        type="text"
-        onSave={async (val) => { await saveField('name', String(val)); }}
-      />
+      <div className="account-pane-fields">
+        <StorePhotoManager
+          businessId={businessId}
+          profile={profile}
+        />
 
-      <EditableField
-        label="Category &amp; Concept"
-        value={profile.category || ''}
-        placeholder="Select business category"
-        type="select"
-        options={STORE_CATEGORIES}
-        onSave={async (val) => { await saveField('category', String(val)); }}
-      />
+        <EditableField
+          label="Store Name"
+          value={profile.name || ''}
+          placeholder="e.g. Resto cafe"
+          type="text"
+          onSave={async (val) => { await saveField('name', String(val)); }}
+        />
 
-      <EditableField
-        label="Neighborhood"
-        value={profile.neighborhood || ''}
-        placeholder="e.g. Indiranagar 100ft Road"
-        type="text"
-        onSave={async (val) => { await saveField('neighborhood', String(val)); }}
-      />
+        <EditableField
+          label="Category &amp; Concept"
+          value={profile.category || ''}
+          placeholder="Select business category"
+          type="select"
+          options={STORE_CATEGORIES}
+          onSave={async (val) => { await saveField('category', String(val)); }}
+        />
 
-      <EditableField
-        label="City"
-        value={profile.city || ''}
-        placeholder="e.g. Bangalore"
-        type="text"
-        onSave={async (val) => { await saveField('city', String(val)); }}
-      />
+        <EditableField
+          label="Neighborhood"
+          value={profile.neighborhood || ''}
+          placeholder="e.g. Indiranagar 100ft Road"
+          type="text"
+          onSave={async (val) => { await saveField('neighborhood', String(val)); }}
+        />
 
-      <EditableField
-        label="Local Landmarks"
-        value={profile.landmarks || ''}
-        placeholder="e.g. Opposite Metro Pillar 42"
-        type="text"
-        onSave={async (val) => { await saveField('landmarks', String(val)); }}
-      />
+        <EditableField
+          label="City"
+          value={profile.city || ''}
+          placeholder="e.g. Bangalore"
+          type="text"
+          onSave={async (val) => { await saveField('city', String(val)); }}
+        />
 
-      <EditableField
-        label="Brand Voice &amp; Tone"
-        value={profile.style_voice || ''}
-        placeholder="Select brand voice &amp; tone"
-        type="select"
-        options={BRAND_TONE_OPTIONS}
-        onSave={async (val) => { await saveField('style_voice', String(val)); }}
-      />
+        <EditableField
+          label="Local Landmarks"
+          value={profile.landmarks || ''}
+          placeholder="e.g. Opposite Metro Pillar 42"
+          type="text"
+          onSave={async (val) => { await saveField('landmarks', String(val)); }}
+        />
+
+        <EditableField
+          label="Brand Voice &amp; Tone"
+          value={profile.style_voice || ''}
+          placeholder="Select brand voice &amp; tone"
+          type="select"
+          options={BRAND_TONE_OPTIONS}
+          onSave={async (val) => { await saveField('style_voice', String(val)); }}
+        />
+      </div>
     </div>
   );
 };

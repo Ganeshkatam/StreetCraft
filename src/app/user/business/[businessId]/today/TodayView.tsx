@@ -21,7 +21,7 @@ export function TodayView({ data }: TodayViewProps) {
   const { storefront, briefing, opportunities, recentVault, quota, festivals } = data;
 
   return (
-    <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+    <div style={{ width: '100%', padding: '24px var(--space-gutter) 80px' }}>
       <TodayHeader
         businessId={storefront.id}
         briefing={briefing}

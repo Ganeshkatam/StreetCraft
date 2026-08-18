@@ -82,106 +82,128 @@ export const WorkspaceNavigation: React.FC = () => {
     return `/user/business/${encodeURIComponent(activeBizId)}/${section}`;
   };
 
+  const isAccountSpace = pathname.startsWith('/user/account');
+
   return (
     <>
       <header className="main-header">
         <div className="header-container">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <Link href={getBizHref('today')} className="brand-wrapper">
               <Logo size="md" />
             </Link>
 
-            <div className="workspace-switcher" ref={switcherRef}>
-              <button
-                className="switcher-trigger"
-                onClick={() => setShowSwitcher(!showSwitcher)}
-                title="Switch Storefront"
+            {isAccountSpace ? (
+              <Link
+                href={activeBizId ? `/user/business/${encodeURIComponent(activeBizId)}/today` : '/user/today'}
+                className="btn-ghost"
+                style={{
+                  fontSize: '12.5px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: 'var(--color-ink-muted)',
+                  padding: '4px 10px',
+                }}
               >
-                <Store size={15} color="var(--color-primary)" />
-                <span className="switcher-name">{activeBizName}</span>
-                <ChevronDown size={14} className={`switcher-arrow ${showSwitcher ? 'open' : ''}`} />
-              </button>
+                <span>&larr;</span>
+                <span>Back to Store Workspace</span>
+              </Link>
+            ) : (
+              <div className="workspace-switcher" ref={switcherRef}>
+                <button
+                  className="switcher-trigger"
+                  onClick={() => setShowSwitcher(!showSwitcher)}
+                  title="Switch Storefront"
+                >
+                  <Store size={15} color="var(--color-primary)" />
+                  <span className="switcher-name">{activeBizName}</span>
+                  <ChevronDown size={14} className={`switcher-arrow ${showSwitcher ? 'open' : ''}`} />
+                </button>
 
-              {showSwitcher && (
-                <div className="switcher-dropdown">
-                  <div className="switcher-header">CONNECTED STOREFRONTS</div>
-                  <div className="switcher-list">
-                    {safeBusinesses.map((b) => (
+                {showSwitcher && (
+                  <div className="switcher-dropdown">
+                    <div className="switcher-header">CONNECTED STOREFRONTS</div>
+                    <div className="switcher-list">
+                      {safeBusinesses.map((b) => (
+                        <button
+                          key={b.id}
+                          type="button"
+                          className={`switcher-item ${b.id === activeBizId ? 'active' : ''}`}
+                          onClick={async () => {
+                            await switchBusiness(b.id);
+                            setShowSwitcher(false);
+                            router.push(`/user/business/${encodeURIComponent(b.id)}/today`);
+                          }}
+                        >
+                          <Store size={14} />
+                          <span className="switcher-item-name">{b.name}</span>
+                          {b.id === activeBizId && <span className="switcher-badge">ACTIVE</span>}
+                        </button>
+                      ))}
+                    </div>
+
+                    {safeBusinesses.length < accountLimit ? (
+                      <Link
+                        href="/setup"
+                        className="switcher-action-btn"
+                        onClick={() => setShowSwitcher(false)}
+                      >
+                        <Plus size={13} />
+                        <span>Add new storefront</span>
+                      </Link>
+                    ) : (
                       <button
-                        key={b.id}
                         type="button"
-                        className={`switcher-item ${b.id === activeBizId ? 'active' : ''}`}
-                        onClick={async () => {
-                          await switchBusiness(b.id);
+                        className="btn-ghost"
+                        onClick={() => {
                           setShowSwitcher(false);
-                          router.push(`/user/business/${encodeURIComponent(b.id)}/today`);
+                          setShowUpgradeModal(true);
                         }}
                       >
-                        <Store size={14} />
-                        <span className="switcher-item-name">{b.name}</span>
-                        {b.id === activeBizId && <span className="switcher-badge">ACTIVE</span>}
+                        <span>Upgrade to add more</span>
                       </button>
-                    ))}
+                    )}
                   </div>
-
-                  {safeBusinesses.length < accountLimit ? (
-                    <Link
-                      href="/setup"
-                      className="switcher-action-btn"
-                      onClick={() => setShowSwitcher(false)}
-                    >
-                      <Plus size={13} />
-                      <span>Add new storefront</span>
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      className="btn-ghost"
-                      onClick={() => {
-                        setShowSwitcher(false);
-                        setShowUpgradeModal(true);
-                      }}
-                    >
-                      <span>Upgrade to add more</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <nav className="header-nav-links">
-            <Link
-              href={getBizHref('today')}
-              className={`nav-item ${pathname.includes('/today') ? 'active' : ''}`}
-            >
-              Today
-            </Link>
-            <Link
-              href={getBizHref('create')}
-              className={`nav-item ${pathname.includes('/create') ? 'active' : ''}`}
-            >
-              Create
-            </Link>
-            <Link
-              href={getBizHref('campaigns')}
-              className={`nav-item ${pathname.includes('/campaigns') ? 'active' : ''}`}
-            >
-              Campaigns
-            </Link>
-            <Link
-              href={getBizHref('settings')}
-              className={`nav-item ${pathname.includes('/settings') || pathname === '/user/business' ? 'active' : ''}`}
-            >
-              Store Settings
-            </Link>
-            <Link
-              href={getBizHref('plan')}
-              className={`nav-item ${pathname.includes('/plan') || pathname === '/user/myplan' ? 'active' : ''}`}
-            >
-              Plan &amp; Usage
-            </Link>
-          </nav>
+          {!isAccountSpace && (
+            <nav className="header-nav-links">
+              <Link
+                href={getBizHref('today')}
+                className={`nav-item ${pathname.includes('/today') ? 'active' : ''}`}
+              >
+                Today
+              </Link>
+              <Link
+                href={getBizHref('create')}
+                className={`nav-item ${pathname.includes('/create') ? 'active' : ''}`}
+              >
+                Create
+              </Link>
+              <Link
+                href={getBizHref('campaigns')}
+                className={`nav-item ${pathname.includes('/campaigns') ? 'active' : ''}`}
+              >
+                Campaigns
+              </Link>
+              <Link
+                href={getBizHref('settings')}
+                className={`nav-item ${pathname.includes('/settings') || pathname === '/user/business' ? 'active' : ''}`}
+              >
+                Store Settings
+              </Link>
+              <Link
+                href={getBizHref('plan')}
+                className={`nav-item ${pathname.includes('/plan') || pathname === '/user/myplan' ? 'active' : ''}`}
+              >
+                Plan &amp; Usage
+              </Link>
+            </nav>
+          )}
 
           <div className="header-actions">
             {usage && (
