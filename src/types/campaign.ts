@@ -73,6 +73,7 @@ export interface Campaign {
   status: CampaignStatus;
   errorMessage?: string | null;
   performanceNotes: string;
+  generationRevision?: number;
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }

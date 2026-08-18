@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { CampaignDetailView } from './CampaignDetailView';
+import { getCampaignDetail } from '../../../../lib/server/campaigns/getCampaignDetail';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +10,17 @@ export const metadata: Metadata = {
   description: 'View and export multi-channel campaign copy, Instagram frames, Google updates, and printable posters.',
 };
 
-export default function CampaignDetailPage() {
-  return <CampaignDetailView />;
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CampaignDetailPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const detailData = await getCampaignDetail(resolvedParams.id);
+
+  if (!detailData) {
+    notFound();
+  }
+
+  return <CampaignDetailView detailData={detailData} />;
 }

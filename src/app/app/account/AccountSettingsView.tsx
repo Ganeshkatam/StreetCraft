@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserProfile } from '../../../types/business';
-import { useAuth } from '../../../hooks/useAuth';
-import { supabase } from '../../../lib/supabase';
-import { getUserFacingErrorMessage } from '../../../lib/userFacingError';
-import { api } from '../../../lib/api';
+import { AccountViewModel } from '../../../lib/server/account/getAccountProfile';
+import { updateAccountProfileAction } from '../../../lib/server/account/updateAccountProfileAction';
+import { updateAccountPasswordAction } from '../../../lib/server/account/updateAccountPasswordAction';
 import { toast } from 'sonner';
 import {
   User,
@@ -14,133 +12,81 @@ import {
   LogOut,
   Save,
   ShieldCheck,
-  CheckCircle2,
   Store,
   CreditCard,
   Copy,
   Bell,
+  AlertTriangle,
 } from 'lucide-react';
 
-export function AccountSettingsView() {
+interface AccountSettingsViewProps {
+  accountData: AccountViewModel;
+}
+
+export function AccountSettingsView({ accountData }: AccountSettingsViewProps) {
   const router = useRouter();
-  const { session, getMyBusinesses, getAccountLimits, switchBusiness, signOut } = useAuth();
+  const { profileInitialized, profile, businesses, entitlement } = accountData;
 
-  const [, setProfile] = useState<UserProfile | null>(null);
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [emailNotifs, setEmailNotifs] = useState(true);
-  const [whatsappNotifs, setWhatsappNotifs] = useState(false);
-  const [weeklyDigest, setWeeklyDigest] = useState(true);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileState, profileFormAction, isSavingProfile] = useActionState(updateAccountProfileAction, null);
+  const [passwordState, passwordFormAction, isUpdatingPassword] = useActionState(updateAccountPasswordAction, null);
 
-  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
-  const [accountLimit, setAccountLimit] = useState(2);
-
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [updatingPassword, setUpdatingPassword] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
 
   useEffect(() => {
-    if (session.userId) {
-      api.getUserProfile(session.userId).then((data) => {
-        if (data) {
-          setProfile(data);
-          setFullName(data.fullName || session.name || '');
-          setPhone(data.phone || session.phone || '');
-          setEmailNotifs(data.notificationPreferences?.email ?? true);
-          setWhatsappNotifs(data.notificationPreferences?.whatsapp ?? false);
-          setWeeklyDigest(data.notificationPreferences?.weeklyDigest ?? true);
-        }
-      });
-
-      getMyBusinesses().then((res) => setBusinesses(Array.isArray(res) ? res : []));
-      getAccountLimits().then((res) => setAccountLimit(res?.limit || 2));
+    if (profileState) {
+      if (profileState.success) {
+        toast.success(profileState.message);
+      } else {
+        toast.error(profileState.message);
+      }
     }
-  }, [session.userId, session.name, session.phone, session.activeBusinessId]);
+  }, [profileState]);
+
+  useEffect(() => {
+    if (passwordState) {
+      if (passwordState.success) {
+        toast.success(passwordState.message);
+      } else {
+        toast.error(passwordState.message);
+      }
+    }
+  }, [passwordState]);
 
   const handleCopyUserId = () => {
-    if (!session.userId) return;
-    navigator.clipboard.writeText(session.userId);
+    if (!profile?.id) return;
+    navigator.clipboard.writeText(profile.id);
     setCopiedId(true);
     toast.success('Account ID copied to clipboard');
     setTimeout(() => setCopiedId(false), 2500);
   };
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session.userId) return;
+  if (!profileInitialized || !profile) {
+    return (
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
+        <div className="card" style={{ padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', padding: '12px', background: 'var(--color-danger-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--color-danger)', marginBottom: '16px' }}>
+            <AlertTriangle size={28} />
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '8px' }}>
+            Operator Profile Not Initialized
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', maxWidth: '440px', margin: '0 auto 24px', lineHeight: '1.5' }}>
+            Your authentication identity is active, but your operator profile record is missing. Please complete store onboarding to initialize your workspace profile.
+          </p>
+          <button className="btn-primary" onClick={() => router.push('/setup')}>
+            Complete Store Setup
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-    setIsSavingProfile(true);
-
-    try {
-      const updated = await api.updateUserProfile(session.userId, {
-        fullName,
-        phone,
-        notificationPreferences: {
-          email: emailNotifs,
-          whatsapp: whatsappNotifs,
-          weeklyDigest,
-        },
-      });
-
-      if (updated) {
-        setProfile(updated);
-        toast.success('Profile preferences saved successfully.');
-      }
-    } catch (err: unknown) {
-      toast.error(getUserFacingErrorMessage(err, 'Failed to update profile. Please try again.'));
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters long.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match.');
-      return;
-    }
-
-    setUpdatingPassword(true);
-
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-
-      toast.success('Password updated successfully.');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: unknown) {
-      toast.error(getUserFacingErrorMessage(err, 'Failed to update password. Please try again.'));
-    } finally {
-      setUpdatingPassword(false);
-    }
-  };
-
-  const handleGlobalSignOut = async () => {
-    try {
-      await supabase.auth.signOut({ scope: 'global' });
-      await signOut();
-      toast.success('Signed out from all active devices.');
-      router.push('/login');
-    } catch (err: unknown) {
-      console.warn('Global signout error, proceeding with local signout:', err);
-      await signOut();
-      router.push('/login');
-    }
-  };
-
-  const userInitial = (fullName || session.name || session.email || 'U').charAt(0).toUpperCase();
+  const userInitial = (profile.fullName || profile.email || 'U').charAt(0).toUpperCase();
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
       
-      {/* Header */}
+      {/* Page Header */}
       <div className="section-header" style={{ marginBottom: '24px' }}>
         <span className="section-eyebrow">ACCOUNT ADMINISTRATION &bull; VERIFIED OPERATOR</span>
         <h1 className="section-title">Account &amp; Operator Profile</h1>
@@ -183,7 +129,7 @@ export function AccountSettingsView() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
-                  {fullName || session.name || 'Store Operator'}
+                  {profile.fullName || 'Store Operator'}
                 </h2>
                 <span
                   style={{
@@ -199,86 +145,79 @@ export function AccountSettingsView() {
                     border: '1px solid var(--color-primary-border)',
                   }}
                 >
-                  <CheckCircle2 size={13} /> Email Verified
-                </span>
-                <span
-                  style={{
-                    padding: '3px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    background: 'var(--color-surface-raised)',
-                    color: 'var(--color-ink-muted)',
-                    border: '1px solid var(--color-border)',
-                  }}
-                >
-                  {session.role || 'Owner'}
+                  <ShieldCheck size={13} /> Verified Operator
                 </span>
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
-                {session.email}
-              </div>
+              <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', marginTop: '4px' }}>
+                {profile.email} &bull; Joined {new Date(profile.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+              </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              className="btn-secondary"
-              onClick={handleCopyUserId}
-              style={{ fontSize: '12.5px', padding: '6px 12px' }}
-              title="Copy Account User ID"
-            >
-              <Copy size={13} /> {copiedId ? 'Copied ID' : 'Copy ID'}
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => router.push('/app/billing')}
-              style={{ fontSize: '12.5px', padding: '6px 14px' }}
-            >
-              <CreditCard size={13} /> Manage Subscription
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ fontSize: '12.5px', padding: '6px 12px' }}
+            onClick={handleCopyUserId}
+            title="Copy unique account UUID"
+          >
+            <Copy size={13} /> {copiedId ? 'Copied ID' : 'Copy Account ID'}
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '28px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
         
-        {/* Left Column: Profile & Storefront Ownership */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+        {/* Left Column: Profile & Communication Preferences */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Operator Profile Form */}
           <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
               <User size={18} color="var(--color-primary)" />
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Operator Profile</h3>
-                <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>Personal details for workspace ownership and reports</span>
-              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                Operator Identity
+              </h3>
             </div>
 
-            <form onSubmit={handleSaveProfile}>
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label className="form-label">Full Name</label>
+            <form action={profileFormAction} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label className="form-label" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
+                  Full Name / Operator Name
+                </label>
                 <input
                   type="text"
+                  name="fullName"
                   className="form-input"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your full name"
+                  defaultValue={profile.fullName}
+                  required
+                  disabled={isSavingProfile}
+                  placeholder="e.g. Ramesh Kumar"
+                  style={{ width: '100%' }}
                 />
+                {profileState?.errors?.fullName && (
+                  <p style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '4px' }}>
+                    {profileState.errors.fullName[0]}
+                  </p>
+                )}
               </div>
 
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label className="form-label">Account Email (Verified)</label>
+              <div>
+                <label className="form-label" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
+                  Login Email Address
+                </label>
                 <div style={{ position: 'relative' }}>
                   <input
                     type="email"
+                    value={profile.email}
                     disabled
+                    style={{
+                      width: '100%',
+                      background: 'var(--color-surface-raised)',
+                      borderColor: 'var(--color-border)',
+                      color: 'var(--color-ink-muted)',
+                      cursor: 'not-allowed',
+                    }}
                     className="form-input"
-                    value={session.email || ''}
-                    style={{ opacity: 0.8, background: 'var(--color-surface-raised)', paddingRight: '90px' }}
                   />
                   <span
                     style={{
@@ -286,263 +225,286 @@ export function AccountSettingsView() {
                       right: '10px',
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: '11px',
-                      color: 'var(--color-primary)',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
+                      fontSize: '10.5px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--color-ink-muted)',
+                      background: 'var(--color-surface)',
+                      padding: '2px 6px',
+                      borderRadius: 'var(--radius-xs)',
+                      border: '1px solid var(--color-border)',
                     }}
                   >
-                    <CheckCircle2 size={12} /> Confirmed
+                    Auth Identity
                   </span>
                 </div>
-                <span style={{ fontSize: '11.5px', color: 'var(--color-ink-muted)', marginTop: '4px', display: 'block' }}>
-                  Email confirmation is strictly enforced for account security and profile creation.
-                </span>
+                <small style={{ fontSize: '11px', color: 'var(--color-ink-muted)', marginTop: '4px', display: 'block' }}>
+                  Email authentication credentials are managed strictly by Supabase Auth.
+                </small>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '20px' }}>
-                <label className="form-label">Operator Mobile / WhatsApp Direct</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="tel"
-                    className="form-input"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
-                <span style={{ fontSize: '11.5px', color: 'var(--color-ink-muted)', marginTop: '4px', display: 'block' }}>
-                  Your private account number. (Customer-facing store WhatsApp is configured separately under Store Preferences).
-                </span>
+              <div>
+                <label className="form-label" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
+                  Phone / WhatsApp Contact (Optional)
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  className="form-input"
+                  defaultValue={profile.phone || ''}
+                  disabled={isSavingProfile}
+                  placeholder="+91 98765 43210"
+                  style={{ width: '100%' }}
+                />
+                {profileState?.errors?.phone && (
+                  <p style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '4px' }}>
+                    {profileState.errors.phone[0]}
+                  </p>
+                )}
               </div>
 
-              <div style={{ marginBottom: '24px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+              {/* Notification Preferences Sub-Section */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px', marginTop: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Bell size={15} color="var(--color-ink-muted)" />
-                  <span className="section-eyebrow" style={{ margin: 0 }}>COMMUNICATION &amp; DIGESTS</span>
+                  <Bell size={16} color="var(--color-accent)" />
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                    Notification Preferences
+                  </h4>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <label className="auth-checkbox-label" style={{ fontSize: '13px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--color-ink)', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
-                      checked={emailNotifs}
-                      onChange={(e) => setEmailNotifs(e.target.checked)}
-                      className="auth-checkbox-input"
+                      name="emailNotifs"
+                      defaultChecked={profile.notificationPreferences.email}
+                      disabled={isSavingProfile}
                     />
-                    <span>Email campaign summaries, quota receipts, and drop confirmations</span>
+                    <span>Email updates for generated campaign packs</span>
                   </label>
-                  <label className="auth-checkbox-label" style={{ fontSize: '13px' }}>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--color-ink)', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
-                      checked={whatsappNotifs}
-                      onChange={(e) => setWhatsappNotifs(e.target.checked)}
-                      className="auth-checkbox-input"
+                      name="whatsappNotifs"
+                      defaultChecked={profile.notificationPreferences.whatsapp}
+                      disabled={isSavingProfile}
                     />
-                    <span>WhatsApp triggers for 48-hour festival marketing opportunities</span>
+                    <span>WhatsApp alerts for weekend and festival radar opportunities</span>
                   </label>
-                  <label className="auth-checkbox-label" style={{ fontSize: '13px' }}>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--color-ink)', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
-                      checked={weeklyDigest}
-                      onChange={(e) => setWeeklyDigest(e.target.checked)}
-                      className="auth-checkbox-input"
+                      name="weeklyDigest"
+                      defaultChecked={profile.notificationPreferences.weeklyDigest}
+                      disabled={isSavingProfile}
                     />
-                    <span>Weekly local storefront growth and footfall insights</span>
+                    <span>Weekly marketing performance summary</span>
                   </label>
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary" disabled={isSavingProfile} style={{ width: '100%', justifyContent: 'center' }}>
-                <Save size={14} /> {isSavingProfile ? 'Saving...' : 'Save Profile Changes'}
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ fontSize: '13px', padding: '7px 18px' }}
+                  disabled={isSavingProfile}
+                >
+                  <Save size={14} /> {isSavingProfile ? 'Saving...' : 'Save Profile & Preferences'}
+                </button>
+              </div>
             </form>
           </div>
 
-          {/* Connected Storefronts Card */}
+        </div>
+
+        {/* Right Column: Storefront Access, Security, Session */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* Authorized Storefronts & Commercial Limits */}
           <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Store size={18} color="var(--color-primary)" />
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Managed Storefronts</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                  Authorized Storefronts
+                </h3>
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>
-                {(businesses || []).length} of {accountLimit} used
+
+              <span
+                style={{
+                  fontSize: '11.5px',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--color-ink-muted)',
+                  background: 'var(--color-surface-raised)',
+                  padding: '3px 8px',
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                {entitlement.isAvailable
+                  ? `${businesses.length} / ${entitlement.businessLimit ?? '∞'} Storefronts`
+                  : 'Entitlement Unavailable'}
               </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              {(businesses || []).map((biz) => {
-                const isActive = biz.id === session.activeBusinessId;
-                return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {businesses.length === 0 ? (
+                <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)' }}>
+                  No active businesses found. Complete setup to create your first store.
+                </p>
+              ) : (
+                businesses.map((biz) => (
                   <div
                     key={biz.id}
                     style={{
+                      padding: '12px 14px',
+                      background: 'var(--color-surface-raised)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-xs)',
                       display: 'flex',
-                      alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      background: isActive ? 'var(--color-primary-subtle)' : 'var(--color-surface-raised)',
-                      border: `1px solid ${isActive ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
-                      borderRadius: 'var(--radius-sm)',
+                      alignItems: 'center',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Store size={15} color={isActive ? 'var(--color-primary)' : 'var(--color-ink-muted)'} />
-                      <strong style={{ fontSize: '13.5px', color: 'var(--color-ink)' }}>{biz.name}</strong>
-                      {isActive && (
-                        <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-primary)', background: 'var(--color-surface)', padding: '1px 6px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-primary-border)' }}>
-                          Active
-                        </span>
-                      )}
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                        {biz.name}
+                      </div>
+                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
+                        Role: {biz.role.toUpperCase()}
+                      </span>
                     </div>
 
-                    {!isActive && (
-                      <button
-                        className="btn-ghost"
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
-                        onClick={() => switchBusiness(biz.id)}
-                      >
-                        Switch
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      style={{ fontSize: '12px', padding: '4px 10px' }}
+                      onClick={() => router.push(`/app/business?biz=${biz.id}`)}
+                    >
+                      Store Profile
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                className="btn-secondary"
-                style={{ flex: 1, justifyContent: 'center', fontSize: '12.5px' }}
-                onClick={() => router.push('/app/business')}
-              >
-                Configure Store Context
-              </button>
-              {(businesses || []).length < accountLimit && (
-                <button
-                  className="btn-secondary"
-                  style={{ flex: 1, justifyContent: 'center', fontSize: '12.5px' }}
-                  onClick={() => router.push('/setup')}
-                >
-                  Add Storefront
-                </button>
+                ))
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Right Column: Security, Passwords & Session Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          
-          {/* Change Password Card */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
-              <KeyRound size={18} color="var(--color-primary)" />
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Update Password</h3>
-                <span style={{ fontSize: '12px', color: 'var(--color-ink-muted)' }}>Secure your operator login credentials</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleUpdatePassword}>
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label className="form-label">New Password</label>
-                <input
-                  type="password"
-                  required
-                  className="form-input"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: '18px' }}>
-                <label className="form-label">Confirm New Password</label>
-                <input
-                  type="password"
-                  required
-                  className="form-input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                />
+            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CreditCard size={14} color="var(--color-ink-muted)" />
+                <span style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)' }}>
+                  Plan: <strong>{entitlement.planName || 'Standard'}</strong>
+                </span>
               </div>
 
               <button
-                type="submit"
-                className="btn-secondary"
-                style={{ width: '100%', justifyContent: 'center' }}
-                disabled={updatingPassword || !newPassword}
+                type="button"
+                className="btn-ghost"
+                style={{ fontSize: '12.5px', padding: 0, color: 'var(--color-primary)' }}
+                onClick={() => router.push('/app/billing')}
               >
-                {updatingPassword ? 'Updating Password...' : 'Save New Password'}
+                Manage Billing &rarr;
               </button>
+            </div>
+          </div>
+
+          {/* Security & Password Form */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <KeyRound size={18} color="var(--color-primary)" />
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                Security &amp; Password
+              </h3>
+            </div>
+
+            <form action={passwordFormAction} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label className="form-label" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  className="form-input"
+                  required
+                  minLength={8}
+                  maxLength={128}
+                  disabled={isUpdatingPassword}
+                  placeholder="Minimum 8 characters"
+                  style={{ width: '100%' }}
+                />
+                {passwordState?.errors?.newPassword && (
+                  <p style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '4px' }}>
+                    {passwordState.errors.newPassword[0]}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="form-label" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-ink)', display: 'block', marginBottom: '6px' }}>
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  className="form-input"
+                  required
+                  minLength={8}
+                  maxLength={128}
+                  disabled={isUpdatingPassword}
+                  placeholder="Repeat new password"
+                  style={{ width: '100%' }}
+                />
+                {passwordState?.errors?.confirmPassword && (
+                  <p style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '4px' }}>
+                    {passwordState.errors.confirmPassword[0]}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                <button
+                  type="submit"
+                  className="btn-secondary"
+                  style={{ fontSize: '13px', padding: '7px 16px' }}
+                  disabled={isUpdatingPassword}
+                >
+                  {isUpdatingPassword ? 'Updating Password...' : 'Update Password'}
+                </button>
+              </div>
             </form>
           </div>
 
-          {/* Security Highlights & Tenant Isolation */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <ShieldCheck size={18} color="var(--color-primary)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Security &amp; Isolation</h3>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
-                <CheckCircle2 size={16} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>PostgreSQL Row-Level Security</strong>
-                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                    All campaign vaults and business profiles are strictly tenant-isolated at the database layer.
-                  </div>
-                </div>
+          {/* Session & Sign Out */}
+          <div className="card" style={{ padding: '24px', border: '1px solid var(--color-danger-subtle)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)' }}>
+                  Active Operator Session
+                </h3>
+                <p style={{ fontSize: '12.5px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
+                  Sign out from your current browser session.
+                </p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', background: 'var(--color-surface-raised)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
-                <CheckCircle2 size={16} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>Verified Email Gating Active</strong>
-                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', marginTop: '2px' }}>
-                    Unconfirmed accounts are rejected by database triggers and purged automatically.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Session Management */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <LogOut size={18} color="var(--color-accent)" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Session Controls</h3>
-            </div>
-
-            <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', lineHeight: '1.5', marginBottom: '16px' }}>
-              Control your active logins. You can sign out of this browser or invalidate all active sessions across devices.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                className="btn-secondary"
-                style={{ width: '100%', justifyContent: 'center', color: 'var(--color-accent)' }}
-                onClick={async () => {
-                  await signOut();
-                  router.push('/login');
-                }}
-              >
-                <LogOut size={14} /> Sign Out of This Device
-              </button>
-
-              <button
-                className="btn-ghost"
-                style={{ width: '100%', justifyContent: 'center', color: 'var(--color-ink-muted)', fontSize: '12.5px' }}
-                onClick={handleGlobalSignOut}
-              >
-                Sign Out of All Devices
-              </button>
+              <form action="/auth/signout" method="POST">
+                <button
+                  type="submit"
+                  className="btn-ghost"
+                  style={{
+                    fontSize: '12.5px',
+                    padding: '6px 14px',
+                    color: 'var(--color-danger)',
+                    border: '1px solid var(--color-danger-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <LogOut size={14} /> Sign Out
+                </button>
+              </form>
             </div>
           </div>
 
