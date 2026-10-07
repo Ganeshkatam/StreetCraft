@@ -63,26 +63,71 @@ export function OpportunitiesPanel({ businessId, opportunities }: OpportunitiesP
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-primary)', fontWeight: 700 }}>
                     0{idx + 1}
                   </span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--color-accent)',
-                      background: 'var(--color-accent-subtle)',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--radius-xs)',
-                    }}
-                  >
-                    {opp.tag}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--color-accent)',
+                        background: 'var(--color-accent-subtle)',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-xs)',
+                      }}
+                    >
+                      {opp.tag}
+                    </span>
+                    {opp.confidence && (
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontFamily: 'var(--font-mono)',
+                          color: opp.confidence === 'HIGH' ? '#059669' : '#d97706',
+                          background: opp.confidence === 'HIGH' ? '#ecfdf5' : '#fffbeb',
+                          border: `1px solid ${opp.confidence === 'HIGH' ? '#a7f3d0' : '#fde68a'}`,
+                          padding: '1px 6px',
+                          borderRadius: 'var(--radius-xs)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {opp.confidence} CONFIDENCE {opp.score ? `(${opp.score})` : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--color-ink)', marginBottom: '4px' }}>
                   {opp.title}
                 </h3>
-                <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '14px', lineHeight: '1.5' }}>
+                <p style={{ fontSize: '14px', color: 'var(--color-ink-muted)', marginBottom: '12px', lineHeight: '1.5' }}>
                   {opp.description}
                 </p>
+
+                {opp.channelFocus && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                      gap: '8px',
+                      marginBottom: '14px',
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--color-ink-muted)',
+                    }}
+                  >
+                    <div style={{ background: 'var(--color-surface)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+                      <strong style={{ color: 'var(--color-ink)' }}>Google:</strong> {opp.channelFocus.google}
+                    </div>
+                    <div style={{ background: 'var(--color-surface)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+                      <strong style={{ color: 'var(--color-ink)' }}>Instagram:</strong> {opp.channelFocus.instagram}
+                    </div>
+                    <div style={{ background: 'var(--color-surface)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+                      <strong style={{ color: 'var(--color-ink)' }}>WhatsApp:</strong> {opp.channelFocus.whatsapp}
+                    </div>
+                    <div style={{ background: 'var(--color-surface)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border)' }}>
+                      <strong style={{ color: 'var(--color-ink)' }}>In-Store:</strong> {opp.channelFocus.poster}
+                    </div>
+                  </div>
+                )}
 
                 <div
                   style={{

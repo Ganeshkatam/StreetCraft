@@ -2,12 +2,15 @@
 
 import React from 'react';
 import { CampaignType } from '../../../../types/campaign';
-import { ArrowRight, Clock, Sparkles, Flame, Calendar, Star, Zap } from 'lucide-react';
+import { CreateRadarOpportunity } from '../../../../lib/domain/create/createTypes';
+import { ArrowRight, Clock, Sparkles, Flame, Calendar, Star, Zap, Compass } from 'lucide-react';
 
 interface MomentStepProps {
   selectedType: CampaignType;
   onSelectType: (type: CampaignType) => void;
   onNext: () => void;
+  radarOpportunities?: CreateRadarOpportunity[];
+  onApplyOpportunity?: (opp: CreateRadarOpportunity) => void;
 }
 
 const MOMENTS: Array<{
@@ -54,9 +57,103 @@ const MOMENTS: Array<{
   },
 ];
 
-export function MomentStep({ selectedType, onSelectType, onNext }: MomentStepProps) {
+export function MomentStep({
+  selectedType,
+  onSelectType,
+  onNext,
+  radarOpportunities = [],
+  onApplyOpportunity,
+}: MomentStepProps) {
   return (
     <div className="card" style={{ padding: '32px' }}>
+      {radarOpportunities.length > 0 && onApplyOpportunity && (
+        <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--color-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Compass size={18} color="var(--color-primary)" />
+            <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-ink)', margin: 0 }}>
+              Storefront Intelligence Recommendations
+            </h4>
+          </div>
+          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', marginBottom: '16px' }}>
+            Based on your store rhythm, operating hours, and upcoming calendar, our opportunity radar recommends:
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            {radarOpportunities.map((opp) => (
+              <div
+                key={opp.id}
+                onClick={() => onApplyOpportunity(opp)}
+                style={{
+                  background: 'var(--color-surface-raised)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '14px 16px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease, border-color 0.15s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--color-accent)',
+                        background: 'var(--color-accent-subtle)',
+                        padding: '1px 6px',
+                        borderRadius: 'var(--radius-xs)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {opp.badge}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        color: opp.confidence === 'HIGH' ? '#059669' : '#d97706',
+                        background: opp.confidence === 'HIGH' ? '#ecfdf5' : '#fffbeb',
+                        padding: '1px 6px',
+                        borderRadius: 'var(--radius-xs)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {opp.confidence} ({opp.score})
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '4px' }}>
+                    {opp.title}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-ink-muted)', lineHeight: '1.4' }}>
+                    {opp.summary}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: '12px',
+                    paddingTop: '8px',
+                    borderTop: '1px solid var(--color-border-soft)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '11.5px',
+                    color: 'var(--color-primary)',
+                    fontWeight: 600,
+                  }}
+                >
+                  <span>Auto-fill strategy</span>
+                  <ArrowRight size={13} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--color-ink)', marginBottom: '6px' }}>
         What is happening at your store?
       </h3>

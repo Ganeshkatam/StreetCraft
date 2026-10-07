@@ -6,7 +6,8 @@ import { getRecentCampaigns } from '../campaigns/getRecentCampaigns';
 import { getFestivalMoments } from '../opportunities/getFestivalMoments';
 import { TodayViewModel, TodayOpportunitySummary, TodayVaultSummary } from '../../domain/today/todayTypes';
 import { getGreetingForHour, formatCurrentDate, mapFestivalsToSummaries } from '../../domain/today/todayBriefing';
-import { generateDynamicBriefing } from '../../../engine/briefing/opportunityEngine';
+import { resolveUpcomingFestivals } from '../../../engine/briefing/opportunityEngine';
+import { buildBrainStoreContext, detectBrainOpportunities } from '../../../brain/index';
 
 export async function getTodayWorkspace(businessId: string): Promise<TodayViewModel | null> {
   const claims = await requireAuthenticatedClaims(`/user/business/${businessId}/today`);
@@ -24,33 +25,53 @@ export async function getTodayWorkspace(businessId: string): Promise<TodayViewMo
     getFestivalMoments(),
   ]);
 
-  const mappedProfile = profile
-    ? {
-        name: profile.name,
-        neighborhood: profile.neighborhood,
-        city: profile.city,
-        signatureItems: profile.signature_items,
-      }
-    : null;
+  const upcomingFestivals = resolveUpcomingFestivals(festivals, new Date(), 5);
 
-  const dynamicBriefing = generateDynamicBriefing(
-    mappedProfile as any,
+  const packLimit = usagePeriod?.campaign_limit ?? 3;
+  const packsUsed = usagePeriod?.campaigns_used ?? 0;
+  const planTier = (usagePeriod?.plan || 'FREE').toUpperCase();
+
+  const brainQuota = {
+    planTier,
+    packLimit,
+    packsUsed,
+    packsRemaining: Math.max(0, packLimit - packsUsed),
+  };
+
+  const brainContext = buildBrainStoreContext(
+    profile as any,
     campaigns as any,
-    festivals as any
+    upcomingFestivals,
+    brainQuota,
+    new Date()
   );
 
-  const opportunities: TodayOpportunitySummary[] = dynamicBriefing.opportunities.map((opp) => ({
+  const brainOpportunities = detectBrainOpportunities(brainContext);
+
+  const opportunities: TodayOpportunitySummary[] = brainOpportunities.map((opp) => ({
     id: opp.id,
-    tag: opp.tag,
+    tag: opp.badge,
     title: opp.title,
-    description: opp.description,
-    actionLabel: opp.actionLabel,
+    description: `${opp.summary} ${opp.reasoning}`,
+    actionLabel:
+      opp.type === 'FESTIVAL'
+        ? 'Create festive campaign'
+        : opp.type === 'SLOW_HOUR'
+        ? 'Create weekday offer'
+        : opp.type === 'WEEKEND'
+        ? 'Create weekend campaign'
+        : opp.type === 'WIN_BACK'
+        ? 'Broadcast VIP offer'
+        : 'Spotlight signature menu',
+    confidence: opp.confidence,
+    score: opp.score,
+    channelFocus: opp.channelFocus,
     preset: {
       type: opp.preset.type,
       objective: opp.preset.objective,
       offerTitle: opp.preset.offer?.title || '',
       offerDescription: opp.preset.offer?.description || '',
-      timingLabel: opp.preset.schedule?.timingLabel || 'Active this week',
+      timingLabel: opp.preset.schedule?.timingLabel || opp.targetWindow || 'Active this week',
       customNotes: opp.preset.customNotes,
     },
   }));
@@ -82,6 +103,11 @@ export async function getTodayWorkspace(businessId: string): Promise<TodayViewMo
       }
     : null;
 
+  const subtitle =
+    opportunities.length > 0
+      ? `${opportunities.length} ${opportunities.length === 1 ? 'opportunity' : 'opportunities'} identified by Storefront Intelligence.`
+      : 'All current store periods are covered by active campaigns.';
+
   return {
     storefront: {
       id: business.id,
@@ -94,7 +120,7 @@ export async function getTodayWorkspace(businessId: string): Promise<TodayViewMo
     briefing: {
       greeting: getGreetingForHour(),
       dateString: formatCurrentDate(),
-      subtitle: dynamicBriefing.subtitle || 'Your daily campaign radar and store performance overview.',
+      subtitle,
     },
     opportunities,
     recentVault,

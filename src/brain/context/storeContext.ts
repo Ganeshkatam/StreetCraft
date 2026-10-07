@@ -49,39 +49,40 @@ export function buildBrainStoreContext(
 
   const nowMs = referenceDate.getTime();
   const mappedCampaigns = recentCampaigns.slice(0, 10).map((c) => {
-    const createdMs = new Date(c.createdAt || Date.now()).getTime();
+    const createdMs = new Date(c.createdAt || (c as any).created_at || Date.now()).getTime();
     const daysAgo = Math.max(0, Math.floor((nowMs - createdMs) / (1000 * 60 * 60 * 24)));
     return {
       id: c.id,
       type: c.type || 'CUSTOM_OFFER',
       status: c.status || 'DRAFT',
-      createdAt: c.createdAt || new Date().toISOString(),
+      createdAt: c.createdAt || (c as any).created_at || new Date().toISOString(),
       daysAgo,
     };
   });
 
-  const signatureItems = profile?.signatureItems
-    ? profile.signatureItems
+  const rawSignature = (profile as any)?.signature_items || (profile as any)?.signatureItems || '';
+  const signatureItems = rawSignature
+    ? rawSignature
         .split(/[,;\n]/)
-        .map((s) => s.trim())
+        .map((s: string) => s.trim())
         .filter(Boolean)
     : [];
 
   return {
-    businessId: profile?.businessId || '',
+    businessId: (profile as any)?.business_id || (profile as any)?.businessId || '',
     name: profile?.name || 'My Storefront',
     category: profile?.category || 'RETAIL',
     neighborhood: profile?.neighborhood || '',
     city: profile?.city || '',
     landmarks: profile?.landmarks || null,
     signatureItems,
-    targetCustomer: profile?.targetCustomer || null,
-    defaultOffer: profile?.defaultOffer || null,
-    avgTicketInr: profile?.avgTicketINR || null,
-    peakHours: profile?.peakHours || null,
-    slowHours: profile?.slowHours || null,
-    phoneWhatsapp: profile?.phoneWhatsApp || null,
-    styleVoice: profile?.styleVoice || null,
+    targetCustomer: (profile as any)?.target_customer || (profile as any)?.targetCustomer || null,
+    defaultOffer: (profile as any)?.default_offer || (profile as any)?.defaultOffer || null,
+    avgTicketInr: (profile as any)?.avg_ticket_inr ?? (profile as any)?.avgTicketINR ?? null,
+    peakHours: (profile as any)?.peak_hours || (profile as any)?.peakHours || null,
+    slowHours: (profile as any)?.slow_hours || (profile as any)?.slowHours || null,
+    phoneWhatsapp: (profile as any)?.phone_whatsapp || (profile as any)?.phoneWhatsApp || null,
+    styleVoice: (profile as any)?.style_voice || (profile as any)?.styleVoice || null,
     currentHour,
     currentDayOfWeek,
     isWeekend,

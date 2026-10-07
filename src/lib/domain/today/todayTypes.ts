@@ -21,6 +21,14 @@ export interface TodayOpportunitySummary {
   title: string;
   description: string;
   actionLabel: string;
+  confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+  score?: number;
+  channelFocus?: {
+    google: string;
+    instagram: string;
+    whatsapp: string;
+    poster: string;
+  };
   preset: {
     type: CampaignType;
     objective: CampaignObjective;

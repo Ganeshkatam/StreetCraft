@@ -99,6 +99,18 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
     setOfferDesc(profile.defaultOffer || '');
   };
 
+  const handleApplyOpportunity = (opp: any) => {
+    if (opp.preset.type) setType(opp.preset.type);
+    if (opp.preset.objective) setObjective(opp.preset.objective);
+    if (opp.preset.offerTitle) setOfferTitle(opp.preset.offerTitle);
+    if (opp.preset.offerDescription) setOfferDesc(opp.preset.offerDescription);
+    if (opp.preset.timingLabel) setTimingLabel(opp.preset.timingLabel);
+    if (opp.preset.customNotes) setCustomNotes(opp.preset.customNotes);
+    setStep(3);
+    setMaxAccessibleStep((prev) => Math.max(prev, 3));
+    toast.info(`Applied recommendation: ${opp.title}`);
+  };
+
   return (
     <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '32px var(--space-gutter) 80px' }}>
       <CreateHeader business={business} entitlement={entitlement} step={step} />
@@ -121,6 +133,8 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
           selectedType={type}
           onSelectType={setType}
           onNext={handleNextFromMoment}
+          radarOpportunities={context.radarOpportunities}
+          onApplyOpportunity={handleApplyOpportunity}
         />
       )}
 

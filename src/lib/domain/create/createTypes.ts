@@ -38,10 +38,28 @@ export interface CreateCampaignEntitlementSummary {
   isQuotaExceeded: boolean;
 }
 
+export interface CreateRadarOpportunity {
+  id: string;
+  badge: string;
+  title: string;
+  summary: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  score: number;
+  preset: {
+    type: CampaignType;
+    objective: CampaignObjective;
+    offerTitle: string;
+    offerDescription: string;
+    timingLabel: string;
+    customNotes?: string;
+  };
+}
+
 export interface CreateCampaignViewModel {
   business: CreateCampaignBusinessSummary;
   profile: CreateCampaignProfileSummary | null;
   entitlement: CreateCampaignEntitlementSummary;
   festivals: FestivalMoment[];
   preset: CreatePreset | null;
+  radarOpportunities?: CreateRadarOpportunity[];
 }
