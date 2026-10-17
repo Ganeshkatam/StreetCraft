@@ -30,18 +30,17 @@ export async function requestSubscriptionCancellationAction(
       };
     }
 
-    // Call RPC or update cancel_at_period_end on verified user subscription
-    const { error: updateError } = await supabase
-      .from('subscriptions')
-      .update({
-        cancel_at_period_end: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', parsed.data.subscriptionId)
-      .eq('user_id', claims.userId);
+    // Invoke trusted database RPC to cancel subscription safely
+    const { data: _rpcResult, error: rpcError } = await supabase.rpc('request_subscription_cancellation');
 
-    if (updateError) {
-      console.error('Cancellation request error:', updateError);
+    if (rpcError) {
+      console.error('request_subscription_cancellation RPC error:', rpcError.message);
+      if (rpcError.message.includes('NO_ACTIVE_SUBSCRIPTION')) {
+        return {
+          success: false,
+          message: 'No active paid subscription found to cancel.',
+        };
+      }
       return {
         success: false,
         message: 'Could not process cancellation request. Please contact support.',
@@ -49,6 +48,7 @@ export async function requestSubscriptionCancellationAction(
     }
 
     revalidatePath('/user/account/plan');
+    revalidatePath('/user/myplan');
     return {
       success: true,
       message: 'Your subscription will remain active until the end of the current billing cycle.',

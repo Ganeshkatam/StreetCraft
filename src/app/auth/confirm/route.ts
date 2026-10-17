@@ -1,28 +1,7 @@
 import { createClient } from '../../../lib/supabase/server';
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
-
-function safeInternalDestination(target: string | null, origin: string, fallback = '/setup'): string {
-  if (
-    !target ||
-    !target.startsWith('/') ||
-    target.startsWith('//') ||
-    target.includes('\\') ||
-    /[\u0000-\u001f\u007f]/.test(target)
-  ) {
-    return fallback;
-  }
-
-  try {
-    const parsed = new URL(target, origin);
-    if (parsed.origin !== origin || !['http:', 'https:'].includes(parsed.protocol)) {
-      return fallback;
-    }
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return fallback;
-  }
-}
+import { getSafeRedirectUrl } from '../../../lib/server/auth/safeRedirect';
 
 /** Handles token_hash OTP verification from Supabase confirmation emails. */
 export async function GET(request: NextRequest) {
@@ -62,9 +41,9 @@ export async function GET(request: NextRequest) {
         ? '/user/today'
         : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
 
-      return NextResponse.redirect(
-        new URL(safeInternalDestination(next ?? defaultTarget, requestUrl.origin), requestUrl.origin)
-      );
+      const safeDestination = getSafeRedirectUrl(next, requestUrl.origin, defaultTarget);
+
+      return NextResponse.redirect(new URL(safeDestination, requestUrl.origin));
     }
   }
 
@@ -84,9 +63,9 @@ export async function GET(request: NextRequest) {
         ? '/user/today'
         : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
 
-      return NextResponse.redirect(
-        new URL(safeInternalDestination(next ?? defaultTarget, requestUrl.origin), requestUrl.origin)
-      );
+      const safeDestination = getSafeRedirectUrl(next, requestUrl.origin, defaultTarget);
+
+      return NextResponse.redirect(new URL(safeDestination, requestUrl.origin));
     }
   }
 
