@@ -2,13 +2,32 @@ import { createClient } from '../../../lib/supabase/server';
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 
-/**
- * Auth Confirmation Route Handler (/auth/confirm)
- * Handles token_hash OTP verification from Supabase confirmation emails.
- */
+function safeInternalDestination(target: string | null, origin: string, fallback = '/setup'): string {
+  if (
+    !target ||
+    !target.startsWith('/') ||
+    target.startsWith('//') ||
+    target.includes('\\') ||
+    /[\u0000-\u001f\u007f]/.test(target)
+  ) {
+    return fallback;
+  }
+
+  try {
+    const parsed = new URL(target, origin);
+    if (parsed.origin !== origin || !['http:', 'https:'].includes(parsed.protocol)) {
+      return fallback;
+    }
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Handles token_hash OTP verification from Supabase confirmation emails. */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
-  const token_hash = requestUrl.searchParams.get('token_hash');
+  const tokenHash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type') as EmailOtpType | null;
   const code = requestUrl.searchParams.get('code');
   const claim = requestUrl.searchParams.get('claim');
@@ -23,10 +42,9 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // 1. Verify via token_hash (Supabase standard email template)
-  if (token_hash && type) {
+  if (tokenHash && type) {
     const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      token_hash,
+      token_hash: tokenHash,
       type,
     });
 
@@ -40,21 +58,16 @@ export async function GET(request: NextRequest) {
         .select('business_id')
         .eq('user_id', data.user.id);
 
-      let target = next;
-      if (!target) {
-        target = members && members.length > 0
-          ? '/user/today'
-          : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
-      }
+      const defaultTarget = members && members.length > 0
+        ? '/user/today'
+        : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
 
-      const safeDestination =
-        target.startsWith('/') && !target.startsWith('//') ? target : '/setup';
-
-      return NextResponse.redirect(new URL(safeDestination, requestUrl.origin));
+      return NextResponse.redirect(
+        new URL(safeInternalDestination(next ?? defaultTarget, requestUrl.origin), requestUrl.origin)
+      );
     }
   }
 
-  // 2. Verify via code if forwarded with PKCE code
   if (code) {
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (!exchangeError && data.user) {
@@ -67,21 +80,15 @@ export async function GET(request: NextRequest) {
         .select('business_id')
         .eq('user_id', data.user.id);
 
-      let target = next;
-      if (!target) {
-        target = members && members.length > 0
-          ? '/user/today'
-          : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
-      }
+      const defaultTarget = members && members.length > 0
+        ? '/user/today'
+        : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
 
-      const safeDestination =
-        target.startsWith('/') && !target.startsWith('//') ? target : '/setup';
-
-      return NextResponse.redirect(new URL(safeDestination, requestUrl.origin));
+      return NextResponse.redirect(
+        new URL(safeInternalDestination(next ?? defaultTarget, requestUrl.origin), requestUrl.origin)
+      );
     }
   }
 
-  return NextResponse.redirect(
-    new URL('/login?error=email_confirmation_failed', requestUrl.origin)
-  );
+  return NextResponse.redirect(new URL('/login?error=email_confirmation_failed', requestUrl.origin));
 }
