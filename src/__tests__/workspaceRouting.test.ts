@@ -241,22 +241,36 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
   it('exercises real useUsage hook across store switches while refreshUsage is pending', async () => {
     class HookRunner<TArgs extends any[], TReturn> {
       private hookFn: (...args: TArgs) => TReturn;
+      private currentArgs: TArgs;
       private states: any[] = [];
       private refs: any[] = [];
-      private effects: Array<{ effect: () => (() => void) | void; deps?: any[]; prevDeps?: any[] | null }> = [];
+      private callbacks: Array<{ fn: any; deps?: any[] }> = [];
+      private effects: Array<{ effect: () => (() => void) | void; deps?: any[]; lastExecutedDeps?: any[] | null }> = [];
       private cleanups: Array<(() => void) | null> = [];
       private stateIndex = 0;
       private refIndex = 0;
+      private callbackIndex = 0;
       private effectIndex = 0;
-      public currentResult: TReturn | null = null;
+      private isProcessing = false;
+      private hasPendingUpdate = false;
+      public currentResult!: TReturn;
 
-      constructor(hookFn: (...args: TArgs) => TReturn) {
+      constructor(hookFn: (...args: TArgs) => TReturn, initialArgs: TArgs) {
         this.hookFn = hookFn;
+        this.currentArgs = initialArgs;
+        this.scheduleReRender();
       }
 
-      render(...args: TArgs): TReturn {
+      public updateArgs(...newArgs: TArgs): TReturn {
+        this.currentArgs = newArgs;
+        this.scheduleReRender();
+        return this.currentResult;
+      }
+
+      private render(): TReturn {
         this.stateIndex = 0;
         this.refIndex = 0;
+        this.callbackIndex = 0;
         this.effectIndex = 0;
 
         const internals = (React as any).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
@@ -270,7 +284,11 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
             }
             const setState = (next: any) => {
               const nextVal = typeof next === 'function' ? next(this.states[idx]) : next;
-              this.states[idx] = nextVal;
+              if (!Object.is(this.states[idx], nextVal)) {
+                this.states[idx] = nextVal;
+                // Automatically re-render when state changes, matching React scheduling
+                this.scheduleReRender();
+              }
             };
             return [this.states[idx], setState];
           },
@@ -281,44 +299,94 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
             }
             return this.refs[idx];
           },
-          useCallback: (fn: any) => fn,
-          useEffect: (effect: any, deps: any) => {
+          useCallback: (fn: any, deps?: any[]) => {
+            const idx = this.callbackIndex++;
+            if (idx >= this.callbacks.length) {
+              this.callbacks.push({ fn, deps });
+            } else {
+              const entry = this.callbacks[idx];
+              const hasChanged =
+                !entry.deps ||
+                !deps ||
+                deps.length !== entry.deps.length ||
+                deps.some((d, j) => !Object.is(d, entry.deps![j]));
+              if (hasChanged) {
+                entry.fn = fn;
+                entry.deps = deps;
+              }
+            }
+            return this.callbacks[idx].fn;
+          },
+          useEffect: (effect: any, deps?: any[]) => {
             const idx = this.effectIndex++;
             if (idx >= this.effects.length) {
-              this.effects.push({ effect, deps, prevDeps: null });
+              this.effects.push({ effect, deps, lastExecutedDeps: null });
             } else {
               this.effects[idx].effect = effect;
-              this.effects[idx].prevDeps = this.effects[idx].deps;
               this.effects[idx].deps = deps;
             }
           },
         };
 
         try {
-          this.currentResult = this.hookFn(...args);
+          this.currentResult = this.hookFn(...this.currentArgs);
         } finally {
           internals.H = prevDispatcher;
         }
 
-        for (let i = 0; i < this.effects.length; i++) {
-          const { effect, deps, prevDeps } = this.effects[i];
-          let hasChanged = !prevDeps || !deps || deps.length !== prevDeps.length;
-          if (!hasChanged && deps && prevDeps) {
-            hasChanged = deps.some((d, j) => !Object.is(d, prevDeps[j]));
+        this.runEffects();
+        return this.currentResult;
+      }
+
+      private scheduleReRender() {
+        this.hasPendingUpdate = true;
+        if (this.isProcessing) return;
+
+        this.isProcessing = true;
+        try {
+          let loopCount = 0;
+          while (this.hasPendingUpdate) {
+            loopCount++;
+            if (loopCount > 25) {
+              throw new Error('Too many re-renders. Possible infinite loop in hook effects.');
+            }
+            this.hasPendingUpdate = false;
+            this.render();
           }
-          if (hasChanged) {
+        } finally {
+          this.isProcessing = false;
+        }
+      }
+
+      private runEffects() {
+        for (let i = 0; i < this.effects.length; i++) {
+          const effectEntry = this.effects[i];
+          const { effect, deps, lastExecutedDeps } = effectEntry;
+
+          // Effect executes on mount, if dependencies are omitted,
+          // or if any dependency changed compared to the last effect execution
+          let shouldRun = lastExecutedDeps === null || deps === undefined;
+          if (!shouldRun && deps && lastExecutedDeps) {
+            shouldRun =
+              deps.length !== lastExecutedDeps.length ||
+              deps.some((d, j) => !Object.is(d, lastExecutedDeps[j]));
+          }
+
+          if (shouldRun) {
             if (this.cleanups[i]) {
-              try { this.cleanups[i]!(); } catch {}
+              try {
+                this.cleanups[i]!();
+              } catch {}
               this.cleanups[i] = null;
             }
             const cleanup = effect();
             if (typeof cleanup === 'function') {
               this.cleanups[i] = cleanup;
             }
+            // Retain dependencies from the actual execution of the effect
+            effectEntry.lastExecutedDeps = deps ? [...deps] : undefined;
           }
         }
-
-        return this.currentResult;
       }
 
       unmount() {
@@ -378,28 +446,29 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
     api.getUsageEvents = async () => [];
 
     try {
-      const runner = new HookRunner(useUsage);
-
-      // 1. Initial render on store-a
-      runner.render('store-a');
+      // 1. Mount hook with store-a
+      const runner = new HookRunner(useUsage, ['store-a']);
+      assert.strictEqual(runner.currentResult.loading, true);
+      assert.strictEqual(runner.currentResult.usage, null);
 
       // 2. Trigger manual refreshUsage() on store-a (slow, 60ms)
-      const refreshPromise = runner.currentResult!.refreshUsage();
+      const refreshPromise = runner.currentResult.refreshUsage();
 
       // 3. Switch to store-b while store-a's refresh is still pending
-      runner.render('store-b');
+      runner.updateArgs('store-b');
+      assert.strictEqual(runner.currentResult.loading, true);
+      assert.strictEqual(runner.currentResult.usage, null);
 
       // 4. Wait for both promises to resolve
       await refreshPromise;
       await new Promise((r) => setTimeout(r, 80));
 
-      // 5. Final render to inspect committed hook state
-      const finalResult = runner.render('store-b');
-
-      assert.strictEqual(finalResult.usage?.businessId, 'store-b');
-      assert.strictEqual(finalResult.usage?.remainingPacks, 100);
-      assert.strictEqual(finalResult.loading, false);
-      assert.strictEqual(finalResult.error, null);
+      // 5. Inspect committed hook state: updated automatically without manual re-render
+      const committedUsage = runner.currentResult.usage as any;
+      assert.strictEqual(committedUsage?.businessId, 'store-b');
+      assert.strictEqual(committedUsage?.remainingPacks, 100);
+      assert.strictEqual(runner.currentResult.loading, false);
+      assert.strictEqual(runner.currentResult.error, null);
 
       runner.unmount();
     } finally {
