@@ -561,14 +561,26 @@ export type Database = {
       claim_founder_tier: { Args: { p_billing_cycle: string }; Returns: Json }
       confirm_payment_and_activate_subscription: {
         Args: {
-          p_billing_cycle: string
-          p_order_id: string
-          p_payment_id: string
           p_payment_provider: string
+          p_payment_id: string
+          p_order_id: string
           p_plan_id: string
+          p_billing_cycle: string
+          p_user_id: string
+          p_amount_paise: number
         }
         Returns: Json
       }
+      reconcile_provider_event: {
+        Args: {
+          p_provider: string
+          p_provider_event_id: string
+          p_event_type: string
+          p_payload: Json
+        }
+        Returns: Json
+      }
+
       create_business_atomically: {
         Args: {
           p_category: string

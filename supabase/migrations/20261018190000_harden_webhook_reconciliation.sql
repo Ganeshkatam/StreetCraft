@@ -1,12 +1,22 @@
 -- Migration: 20261018190000_harden_webhook_reconciliation.sql
 -- Description:
 -- 1. Helper function public.get_plan_expected_amount_paise for authoritative plan price lookup in SQL
--- 2. Hardens confirm_payment_and_activate_subscription to enforce billable tiers and validate amount when provided
--- 3. Hardens reconcile_provider_event to enforce strict order metadata, reject conflicting payment notes,
---    enforce INR currency, verify captured status, enforce price matching against plan quote, and downgrade
---    expired subscriptions to Free tier entitlements on provider cancellation
--- 4. Hardens save_campaign_atomically to safely handle concurrent replayed generation_request_id without burning quota
--- 5. Restricts EXECUTE permissions to service_role on privileged RPCs
+-- 2. Hardens confirm_payment_and_activate_subscription:
+--    * Drops legacy 5- and 6-parameter overloads completely to eliminate unvalidated amount paths
+--    * Makes p_amount_paise mandatory, positive, and strictly matching get_plan_expected_amount_paise
+--    * Restricts billable plan to PRO, GROWTH, or FOUNDER
+-- 3. Hardens reconcile_provider_event:
+--    * Strictly requires both payment and order entities fail-closed
+--    * Validates all financial fields (id, order_id, amount, currency, status) fail-closed
+--    * Enforces INR currency on both payment and order entities
+--    * Enforces captured payment status and paid order status
+--    * Requires authoritative order notes (userId, planId, billingCycle) and rejects conflicting payment notes
+--    * Enforces exact price quote matching in paise on both payment and order entities
+--    * Handles retry on previously FAILED events while idempotently returning PROCESSED/PROCESSING events
+--    * Downgrades expired subscriptions to Free tier entitlements (plan = 'FREE', limit = 3) on provider cancellation
+-- 4. Hardens save_campaign_atomically:
+--    * Catches unique_violation on generation_request_id, rolls back quota increment, and returns existing campaign record
+-- 5. Restricts EXECUTE permissions to service_role on privileged activation and reconciliation RPCs
 
 -- 1. Deterministic Plan Price Lookup Function
 CREATE OR REPLACE FUNCTION public.get_plan_expected_amount_paise(
@@ -40,15 +50,19 @@ BEGIN
 END;
 $$;
 
--- 2. Enhanced confirm_payment_and_activate_subscription with billable plan enforcement
+-- 2. Drop legacy overloads to eliminate unvalidated amount bypass paths
+DROP FUNCTION IF EXISTS public.confirm_payment_and_activate_subscription(text, text, text, text, text);
+DROP FUNCTION IF EXISTS public.confirm_payment_and_activate_subscription(text, text, text, text, text, uuid);
+
+-- Single Authoritative confirm_payment_and_activate_subscription with mandatory p_amount_paise
 CREATE OR REPLACE FUNCTION public.confirm_payment_and_activate_subscription(
   p_payment_provider text,
   p_payment_id text,
   p_order_id text,
   p_plan_id text,
   p_billing_cycle text,
-  p_user_id uuid DEFAULT NULL,
-  p_amount_paise bigint DEFAULT NULL
+  p_user_id uuid,
+  p_amount_paise bigint
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -83,8 +97,8 @@ BEGIN
     RAISE EXCEPTION 'INVALID_PAYMENT: Payment reference ID is required.' USING ERRCODE = 'P0001';
   END IF;
 
-  v_normalized_plan := UPPER(TRIM(p_plan_id));
-  v_normalized_cycle := LOWER(TRIM(p_billing_cycle));
+  v_normalized_plan := UPPER(TRIM(COALESCE(p_plan_id, '')));
+  v_normalized_cycle := LOWER(TRIM(COALESCE(p_billing_cycle, '')));
 
   -- Validate billable tier: FREE tier cannot be activated via payment confirmation
   IF v_normalized_plan NOT IN ('PRO', 'GROWTH', 'FOUNDER') THEN
@@ -96,13 +110,15 @@ BEGIN
     RAISE EXCEPTION 'INVALID_CYCLE: Billing cycle must be monthly, quarterly, or annual.' USING ERRCODE = 'P0001';
   END IF;
 
-  -- Validate plan price if amount was provided
-  IF p_amount_paise IS NOT NULL THEN
-    v_expected_amount := public.get_plan_expected_amount_paise(v_normalized_plan, v_normalized_cycle);
-    IF v_expected_amount IS NULL OR p_amount_paise != v_expected_amount THEN
-      RAISE EXCEPTION 'AMOUNT_MISMATCH: Provided payment amount % paise does not match required price % paise for plan % (%).',
-        p_amount_paise, COALESCE(v_expected_amount, 0), v_normalized_plan, v_normalized_cycle USING ERRCODE = 'P0001';
-    END IF;
+  -- Mandatory Amount Validation: p_amount_paise must be non-null, positive, and match plan quote
+  IF p_amount_paise IS NULL OR p_amount_paise <= 0 THEN
+    RAISE EXCEPTION 'INVALID_AMOUNT: Payment amount in paise is mandatory and must be positive.' USING ERRCODE = 'P0001';
+  END IF;
+
+  v_expected_amount := public.get_plan_expected_amount_paise(v_normalized_plan, v_normalized_cycle);
+  IF v_expected_amount IS NULL OR p_amount_paise != v_expected_amount THEN
+    RAISE EXCEPTION 'AMOUNT_MISMATCH: Provided payment amount % paise does not match required price % paise for plan % (%).',
+      p_amount_paise, COALESCE(v_expected_amount, 0), v_normalized_plan, v_normalized_cycle USING ERRCODE = 'P0001';
   END IF;
 
   -- 1. Check if this payment ID was already used by a DIFFERENT account
@@ -261,55 +277,6 @@ BEGIN
 END;
 $$;
 
--- 6-parameter backward compatibility wrapper forwarding to 7-parameter implementation
-CREATE OR REPLACE FUNCTION public.confirm_payment_and_activate_subscription(
-  p_payment_provider text,
-  p_payment_id text,
-  p_order_id text,
-  p_plan_id text,
-  p_billing_cycle text,
-  p_user_id uuid
-)
-RETURNS jsonb
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT public.confirm_payment_and_activate_subscription(
-    p_payment_provider,
-    p_payment_id,
-    p_order_id,
-    p_plan_id,
-    p_billing_cycle,
-    p_user_id,
-    NULL::bigint
-  );
-$$;
-
--- 5-parameter legacy backward compatibility wrapper
-CREATE OR REPLACE FUNCTION public.confirm_payment_and_activate_subscription(
-  p_payment_provider text,
-  p_payment_id text,
-  p_order_id text,
-  p_plan_id text,
-  p_billing_cycle text
-)
-RETURNS jsonb
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT public.confirm_payment_and_activate_subscription(
-    p_payment_provider,
-    p_payment_id,
-    p_order_id,
-    p_plan_id,
-    p_billing_cycle,
-    NULL::uuid,
-    NULL::bigint
-  );
-$$;
-
 -- 3. Hardened reconcile_provider_event
 CREATE OR REPLACE FUNCTION public.reconcile_provider_event(
   p_provider text,
@@ -346,6 +313,7 @@ DECLARE
   v_existing_sub record;
   v_plan_record record;
   v_confirm_res jsonb;
+  v_existing_event_status text;
 BEGIN
   -- 1. Insert or check provider event for idempotency
   INSERT INTO public.provider_events (
@@ -368,18 +336,36 @@ BEGIN
   ON CONFLICT (provider, provider_event_id) DO NOTHING
   RETURNING id INTO v_event_id;
 
-  -- If already processed or in-flight, return idempotent response
+  -- If conflict: handle idempotency and retry semantics
   IF v_event_id IS NULL THEN
-    SELECT id, status, processed_at INTO v_event_id, v_plan_id, v_period_start
+    SELECT id, status INTO v_event_id, v_existing_event_status
     FROM public.provider_events
     WHERE provider = LOWER(TRIM(p_provider)) AND provider_event_id = TRIM(p_provider_event_id);
 
-    RETURN jsonb_build_object(
-      'success', true,
-      'idempotent_replay', true,
-      'provider_event_id', p_provider_event_id,
-      'status', v_plan_id
-    );
+    IF v_existing_event_status = 'PROCESSED' THEN
+      RETURN jsonb_build_object(
+        'success', true,
+        'idempotent_replay', true,
+        'provider_event_id', p_provider_event_id,
+        'status', 'PROCESSED'
+      );
+    ELSIF v_existing_event_status = 'PROCESSING' THEN
+      RETURN jsonb_build_object(
+        'success', true,
+        'in_flight', true,
+        'provider_event_id', p_provider_event_id,
+        'status', 'PROCESSING'
+      );
+    ELSE
+      -- Previously FAILED: allow retry by updating attempt_count and resetting to PROCESSING
+      UPDATE public.provider_events
+      SET 
+        status = 'PROCESSING',
+        attempt_count = attempt_count + 1,
+        error_message = NULL,
+        received_at = now()
+      WHERE id = v_event_id;
+    END IF;
   END IF;
 
   -- Extract subscription reference from payload if subscription event
@@ -402,7 +388,7 @@ BEGIN
 
   -- 2. Process Event Type
   CASE p_event_type
-    -- PAYMENT CAPTURED / ORDER PAID (Strict Reconciliation Flow)
+    -- PAYMENT CAPTURED / ORDER PAID (Strict Fail-Closed Reconciliation Flow)
     WHEN 'payment.captured', 'order.paid' THEN
       v_payment_entity := COALESCE(
         p_payload->'payload'->'payment'->'entity',
@@ -413,131 +399,127 @@ BEGIN
         p_payload->'order'
       );
 
-      v_payment_id := COALESCE(
-        v_payment_entity->>'id',
-        p_payload->>'payment_id'
-      );
-      v_order_id := COALESCE(
-        v_payment_entity->>'order_id',
-        v_order_entity->>'id',
-        p_payload->>'order_id'
-      );
-
-      v_payment_notes := v_payment_entity->'notes';
-      v_order_notes := v_order_entity->'notes';
-
-      -- Strict Authoritative Metadata Extraction
-      IF v_order_entity IS NOT NULL AND v_order_notes IS NOT NULL THEN
-        -- Order notes are authoritative
-        IF v_order_notes->>'userId' IS NULL OR TRIM(v_order_notes->>'userId') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative userId in order notes.' USING ERRCODE = 'P0001';
-        END IF;
-        IF v_order_notes->>'planId' IS NULL OR TRIM(v_order_notes->>'planId') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative planId in order notes.' USING ERRCODE = 'P0001';
-        END IF;
-        IF v_order_notes->>'billingCycle' IS NULL OR TRIM(v_order_notes->>'billingCycle') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative billingCycle in order notes.' USING ERRCODE = 'P0001';
-        END IF;
-
-        v_user_id := (v_order_notes->>'userId')::uuid;
-        v_plan_id := UPPER(TRIM(v_order_notes->>'planId'));
-        v_cycle := LOWER(TRIM(v_order_notes->>'billingCycle'));
-
-        -- Cross-check payment notes if present to prevent conflicting/tampered notes
-        IF v_payment_notes IS NOT NULL THEN
-          IF v_payment_notes->>'userId' IS NOT NULL AND (v_payment_notes->>'userId')::uuid != v_user_id THEN
-            RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting user account.' USING ERRCODE = 'P0001';
-          END IF;
-          IF v_payment_notes->>'planId' IS NOT NULL AND UPPER(TRIM(v_payment_notes->>'planId')) != v_plan_id THEN
-            RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting plan.' USING ERRCODE = 'P0001';
-          END IF;
-          IF v_payment_notes->>'billingCycle' IS NOT NULL AND LOWER(TRIM(v_payment_notes->>'billingCycle')) != v_cycle THEN
-            RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting billing cycle.' USING ERRCODE = 'P0001';
-          END IF;
-        END IF;
-
-      ELSIF v_payment_entity IS NOT NULL AND v_payment_notes IS NOT NULL THEN
-        -- Fallback to payment entity notes only when order entity was omitted from webhook payload
-        IF v_payment_notes->>'userId' IS NULL OR TRIM(v_payment_notes->>'userId') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Missing authoritative userId in payment notes.' USING ERRCODE = 'P0001';
-        END IF;
-        IF v_payment_notes->>'planId' IS NULL OR TRIM(v_payment_notes->>'planId') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Missing authoritative planId in payment notes.' USING ERRCODE = 'P0001';
-        END IF;
-        IF v_payment_notes->>'billingCycle' IS NULL OR TRIM(v_payment_notes->>'billingCycle') = '' THEN
-          RAISE EXCEPTION 'SECURITY_VIOLATION: Missing authoritative billingCycle in payment notes. Cannot default to monthly.' USING ERRCODE = 'P0001';
-        END IF;
-
-        v_user_id := (v_payment_notes->>'userId')::uuid;
-        v_plan_id := UPPER(TRIM(v_payment_notes->>'planId'));
-        v_cycle := LOWER(TRIM(v_payment_notes->>'billingCycle'));
-
-      ELSE
-        RAISE EXCEPTION 'SECURITY_VIOLATION: Webhook event contains no order or payment notes.' USING ERRCODE = 'P0001';
+      -- Both payment and order entities are strictly mandatory for purchase-activation events
+      IF v_payment_entity IS NULL OR v_payment_entity = 'null'::jsonb THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Webhook payload missing mandatory payment entity.' USING ERRCODE = 'P0001';
       END IF;
 
-      -- Validate Currency
-      IF v_payment_entity IS NOT NULL THEN
-        v_currency := v_payment_entity->>'currency';
-        IF v_currency IS NULL OR UPPER(TRIM(v_currency)) != 'INR' THEN
-          RAISE EXCEPTION 'INVALID_CURRENCY: Payment currency must be INR (received %).', v_currency USING ERRCODE = 'P0001';
-        END IF;
+      IF v_order_entity IS NULL OR v_order_entity = 'null'::jsonb THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Webhook payload missing mandatory order entity.' USING ERRCODE = 'P0001';
       END IF;
 
-      IF v_order_entity IS NOT NULL THEN
-        v_currency := v_order_entity->>'currency';
-        IF v_currency IS NULL OR UPPER(TRIM(v_currency)) != 'INR' THEN
-          RAISE EXCEPTION 'INVALID_CURRENCY: Order currency must be INR (received %).', v_currency USING ERRCODE = 'P0001';
-        END IF;
+      -- Mandatory Payment Fields
+      v_payment_id := v_payment_entity->>'id';
+      IF v_payment_id IS NULL OR TRIM(v_payment_id) = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Missing payment ID in payment entity.' USING ERRCODE = 'P0001';
       END IF;
 
-      -- Validate Payment Status
-      IF v_payment_entity IS NOT NULL THEN
-        v_payment_status := LOWER(TRIM(COALESCE(v_payment_entity->>'status', '')));
-        v_payment_captured := COALESCE((v_payment_entity->>'captured')::boolean, false);
-        IF v_payment_status != 'captured' AND NOT v_payment_captured THEN
-          RAISE EXCEPTION 'PAYMENT_NOT_CAPTURED: Payment is in status %, not captured.', v_payment_status USING ERRCODE = 'P0001';
-        END IF;
+      v_order_id := v_payment_entity->>'order_id';
+      IF v_order_id IS NULL OR TRIM(v_order_id) = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Missing order reference on payment entity.' USING ERRCODE = 'P0001';
       END IF;
 
-      IF p_event_type = 'order.paid' AND v_order_entity IS NOT NULL THEN
+      IF v_order_entity->>'id' IS NULL OR TRIM(v_order_entity->>'id') = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Missing order ID in order entity.' USING ERRCODE = 'P0001';
+      END IF;
+
+      IF v_order_id != v_order_entity->>'id' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Payment order_id % does not match order id %.', v_order_id, v_order_entity->>'id' USING ERRCODE = 'P0001';
+      END IF;
+
+      -- Payment Status: Must be captured
+      v_payment_status := LOWER(TRIM(COALESCE(v_payment_entity->>'status', '')));
+      v_payment_captured := COALESCE((v_payment_entity->>'captured')::boolean, false);
+      IF v_payment_status != 'captured' AND NOT v_payment_captured THEN
+        RAISE EXCEPTION 'PAYMENT_NOT_CAPTURED: Payment is in status %, not captured.', v_payment_status USING ERRCODE = 'P0001';
+      END IF;
+
+      -- Order Status: Must be paid on order.paid
+      IF p_event_type = 'order.paid' THEN
         v_order_status := LOWER(TRIM(COALESCE(v_order_entity->>'status', '')));
         IF v_order_status != 'paid' THEN
           RAISE EXCEPTION 'ORDER_NOT_PAID: Order is in status %, not paid.', v_order_status USING ERRCODE = 'P0001';
         END IF;
       END IF;
 
-      -- Validate Amount against Plan Pricing Quote
+      -- Currency: Both payment and order must be present and INR
+      v_currency := v_payment_entity->>'currency';
+      IF v_currency IS NULL OR UPPER(TRIM(v_currency)) != 'INR' THEN
+        RAISE EXCEPTION 'INVALID_CURRENCY: Payment currency must be INR (received %).', v_currency USING ERRCODE = 'P0001';
+      END IF;
+
+      v_currency := v_order_entity->>'currency';
+      IF v_currency IS NULL OR UPPER(TRIM(v_currency)) != 'INR' THEN
+        RAISE EXCEPTION 'INVALID_CURRENCY: Order currency must be INR (received %).', v_currency USING ERRCODE = 'P0001';
+      END IF;
+
+      -- Authoritative Notes from Order Entity
+      v_order_notes := v_order_entity->'notes';
+      IF v_order_notes IS NULL OR v_order_notes = 'null'::jsonb THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative order notes.' USING ERRCODE = 'P0001';
+      END IF;
+
+      IF v_order_notes->>'userId' IS NULL OR TRIM(v_order_notes->>'userId') = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative userId in order notes.' USING ERRCODE = 'P0001';
+      END IF;
+      IF v_order_notes->>'planId' IS NULL OR TRIM(v_order_notes->>'planId') = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative planId in order notes.' USING ERRCODE = 'P0001';
+      END IF;
+      IF v_order_notes->>'billingCycle' IS NULL OR TRIM(v_order_notes->>'billingCycle') = '' THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Order entity is missing authoritative billingCycle in order notes.' USING ERRCODE = 'P0001';
+      END IF;
+
+      v_user_id := (v_order_notes->>'userId')::uuid;
+      v_plan_id := UPPER(TRIM(v_order_notes->>'planId'));
+      v_cycle := LOWER(TRIM(v_order_notes->>'billingCycle'));
+
+      -- Cross-check payment notes if present to prevent conflicting/tampered notes
+      v_payment_notes := v_payment_entity->'notes';
+      IF v_payment_notes IS NOT NULL AND v_payment_notes != 'null'::jsonb THEN
+        IF v_payment_notes->>'userId' IS NOT NULL AND (v_payment_notes->>'userId')::uuid != v_user_id THEN
+          RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting user account.' USING ERRCODE = 'P0001';
+        END IF;
+        IF v_payment_notes->>'planId' IS NOT NULL AND UPPER(TRIM(v_payment_notes->>'planId')) != v_plan_id THEN
+          RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting plan.' USING ERRCODE = 'P0001';
+        END IF;
+        IF v_payment_notes->>'billingCycle' IS NOT NULL AND LOWER(TRIM(v_payment_notes->>'billingCycle')) != v_cycle THEN
+          RAISE EXCEPTION 'SECURITY_VIOLATION: Payment notes indicate conflicting billing cycle.' USING ERRCODE = 'P0001';
+        END IF;
+      END IF;
+
+      -- Validate Amount: Both payment and order amounts must be present, positive, and match plan quote
       v_expected_amount := public.get_plan_expected_amount_paise(v_plan_id, v_cycle);
       IF v_expected_amount IS NULL THEN
         RAISE EXCEPTION 'INVALID_PLAN_OR_CYCLE: Unrecognized plan % or billing cycle %.', v_plan_id, v_cycle USING ERRCODE = 'P0001';
       END IF;
 
-      IF v_payment_entity IS NOT NULL AND v_payment_entity->>'amount' IS NOT NULL THEN
-        v_payment_amount := (v_payment_entity->>'amount')::bigint;
-        IF v_payment_amount != v_expected_amount THEN
-          RAISE EXCEPTION 'AMOUNT_MISMATCH: Payment amount % paise does not match expected % paise for plan % (%).',
-            v_payment_amount, v_expected_amount, v_plan_id, v_cycle USING ERRCODE = 'P0001';
-        END IF;
+      IF v_payment_entity->>'amount' IS NULL THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Missing payment amount in payment entity.' USING ERRCODE = 'P0001';
+      END IF;
+      v_payment_amount := (v_payment_entity->>'amount')::bigint;
+      IF v_payment_amount != v_expected_amount THEN
+        RAISE EXCEPTION 'AMOUNT_MISMATCH: Payment amount % paise does not match expected % paise for plan % (%).',
+          v_payment_amount, v_expected_amount, v_plan_id, v_cycle USING ERRCODE = 'P0001';
       END IF;
 
-      IF v_order_entity IS NOT NULL AND v_order_entity->>'amount' IS NOT NULL THEN
-        v_order_amount := (v_order_entity->>'amount')::bigint;
-        IF v_order_amount != v_expected_amount THEN
-          RAISE EXCEPTION 'AMOUNT_MISMATCH: Order amount % paise does not match expected % paise for plan % (%).',
-            v_order_amount, v_expected_amount, v_plan_id, v_cycle USING ERRCODE = 'P0001';
-        END IF;
+      IF v_order_entity->>'amount' IS NULL THEN
+        RAISE EXCEPTION 'SECURITY_VIOLATION: Missing order amount in order entity.' USING ERRCODE = 'P0001';
+      END IF;
+      v_order_amount := (v_order_entity->>'amount')::bigint;
+      IF v_order_amount != v_expected_amount THEN
+        RAISE EXCEPTION 'AMOUNT_MISMATCH: Order amount % paise does not match expected % paise for plan % (%).',
+          v_order_amount, v_expected_amount, v_plan_id, v_cycle USING ERRCODE = 'P0001';
       END IF;
 
-      -- Invoke privileged activation RPC with strict verified parameters
+      -- Invoke privileged activation RPC with strict verified parameters including mandatory p_amount_paise
       v_confirm_res := public.confirm_payment_and_activate_subscription(
-        p_provider,
-        COALESCE(v_payment_id, v_order_id, p_provider_event_id),
-        v_order_id,
-        v_plan_id,
-        v_cycle,
-        v_user_id,
-        v_expected_amount
+        p_payment_provider := p_provider,
+        p_payment_id := v_payment_id,
+        p_order_id := v_order_id,
+        p_plan_id := v_plan_id,
+        p_billing_cycle := v_cycle,
+        p_user_id := v_user_id,
+        p_amount_paise := v_expected_amount
       );
 
     -- SUBSCRIPTION ACTIVATION / PAYMENT CHARGED
@@ -664,6 +646,8 @@ END;
 $$;
 
 -- 4. Hardened save_campaign_atomically with resilient concurrent idempotency
+DROP FUNCTION IF EXISTS public.save_campaign_atomically(uuid, text, text, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb);
+
 CREATE OR REPLACE FUNCTION public.save_campaign_atomically(
   p_business_id uuid,
   p_campaign_type text,
@@ -847,14 +831,12 @@ $$;
 
 -- 5. Least-privilege permissions enforcement
 REVOKE EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text, uuid, bigint) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text, uuid) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text, uuid, bigint) TO service_role;
-GRANT EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text, uuid) TO service_role;
-GRANT EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text) TO service_role;
 
 REVOKE EXECUTE ON FUNCTION public.reconcile_provider_event(text, text, text, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.reconcile_provider_event(text, text, text, jsonb) TO service_role;
 
 GRANT EXECUTE ON FUNCTION public.save_campaign_atomically(uuid, text, text, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, uuid) TO authenticated;
 REVOKE EXECUTE ON FUNCTION public.save_campaign_atomically(uuid, text, text, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, uuid) FROM PUBLIC, anon;
+
+GRANT EXECUTE ON FUNCTION public.get_plan_expected_amount_paise(text, text) TO authenticated, service_role;

@@ -573,7 +573,7 @@ describe('Payment Lifecycle: Webhook Reconciliation & Metadata Integrity', () =>
     assert.match(result.error || '', /Payment notes indicate conflicting billing cycle/);
   });
 
-  it('rejects standalone payment.captured when billing cycle is missing rather than defaulting', () => {
+  it('rejects purchase activation webhook payload when order entity is missing', () => {
     const payload = {
       event: 'payment.captured',
       payload: {
@@ -587,7 +587,7 @@ describe('Payment Lifecycle: Webhook Reconciliation & Metadata Integrity', () =>
             notes: {
               userId: validUserId,
               planId: 'PRO',
-              // billingCycle deliberately omitted
+              billingCycle: 'monthly',
             },
           },
         },
@@ -600,7 +600,128 @@ describe('Payment Lifecycle: Webhook Reconciliation & Metadata Integrity', () =>
     });
 
     assert.strictEqual(result.valid, false);
-    assert.match(result.error || '', /Missing authoritative billingCycle.*Cannot default to monthly/);
+    assert.match(result.error || '', /missing mandatory order entity/i);
+  });
+
+  it('rejects purchase activation webhook payload when payment entity is missing', () => {
+    const payload = {
+      event: 'order.paid',
+      payload: {
+        order: {
+          entity: {
+            id: 'order_paid_123',
+            amount: 39900,
+            currency: 'INR',
+            status: 'paid',
+            notes: {
+              userId: validUserId,
+              planId: 'PRO',
+              billingCycle: 'monthly',
+            },
+          },
+        },
+      },
+    };
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /missing mandatory payment entity/i);
+  });
+
+  it('rejects order.paid when order entity is missing billingCycle rather than defaulting to monthly', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.order.entity.notes.billingCycle;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order entity is missing authoritative billingCycle/i);
+  });
+
+  it('rejects webhook payload when payment amount is missing or invalid', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.payment.entity.amount;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Missing or invalid payment amount/i);
+  });
+
+  it('rejects webhook payload when order amount is missing or invalid', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.order.entity.amount;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Missing or invalid order amount/i);
+  });
+
+  it('rejects webhook payload when order currency is missing or non-INR', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.order.entity.currency = 'EUR';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /StreetCraft operates in INR/i);
+  });
+
+  it('rejects webhook payload when payment status is not captured', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.status = 'authorized';
+    payload.payload.payment.entity.captured = false;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment is not captured/i);
+  });
+
+  it('rejects order.paid when order status is not paid', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.order.entity.status = 'attempted';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order is not in paid status/i);
+  });
+
+  it('rejects when payment order_id does not match order id', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.order_id = 'order_different_999';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /does not match order id/i);
   });
 
   it('rejects underpayment attack (100 paise payment for 399 INR plan)', () => {
@@ -628,20 +749,6 @@ describe('Payment Lifecycle: Webhook Reconciliation & Metadata Integrity', () =>
     assert.strictEqual(result.valid, false);
     assert.match(result.error || '', /Invalid currency.*StreetCraft operates in INR/);
   });
-
-  it('rejects uncaptured payment status in webhook payload', () => {
-    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
-    payload.payload.payment.entity.status = 'authorized';
-    payload.payload.payment.entity.captured = false;
-
-    const result = reconcileRazorpayWebhookPayload({
-      eventType: 'order.paid',
-      payload,
-    });
-
-    assert.strictEqual(result.valid, false);
-    assert.match(result.error || '', /Payment is not captured/);
-  });
 });
 
 describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
@@ -649,7 +756,7 @@ describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
   process.env.RAZORPAY_WEBHOOK_SECRET = secret;
 
   function makeWebhookRequest(bodyObj: any, customSig?: string | null): any {
-    const rawBody = JSON.stringify(bodyObj);
+    const rawBody = typeof bodyObj === 'string' ? bodyObj : JSON.stringify(bodyObj);
     const signature = customSig !== undefined
       ? customSig
       : crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
@@ -667,6 +774,43 @@ describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
       text: async () => rawBody,
     };
   }
+
+  const validUserId = '00000000-0000-0000-0000-000000000001';
+
+  const validOrderPaidWebhook = {
+    event: 'order.paid',
+    event_id: 'evt_route_test_001',
+    payload: {
+      order: {
+        entity: {
+          id: 'order_route_001',
+          amount: 39900,
+          currency: 'INR',
+          status: 'paid',
+          notes: {
+            userId: validUserId,
+            planId: 'PRO',
+            billingCycle: 'monthly',
+          },
+        },
+      },
+      payment: {
+        entity: {
+          id: 'pay_route_001',
+          order_id: 'order_route_001',
+          amount: 39900,
+          currency: 'INR',
+          status: 'captured',
+          captured: true,
+          notes: {
+            userId: validUserId,
+            planId: 'PRO',
+            billingCycle: 'monthly',
+          },
+        },
+      },
+    },
+  };
 
   it('returns 400 MISSING_SIGNATURE when x-razorpay-signature header is missing', async () => {
     const req = makeWebhookRequest({ event: 'payment.captured' }, null);
@@ -686,38 +830,31 @@ describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
     assert.strictEqual(data.error, 'INVALID_SIGNATURE');
   });
 
-  it('returns 400 RECONCILIATION_FAILED when payment amount is tampered', async () => {
+  it('returns 400 INVALID_JSON_PAYLOAD when body is malformed JSON', async () => {
+    const req = makeWebhookRequest('not-json-at-all');
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'INVALID_JSON_PAYLOAD');
+  });
+
+  it('returns 400 MISSING_EVENT_ID when event_id is absent', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    delete payload.event_id;
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'MISSING_EVENT_ID');
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when order entity is missing from signed webhook', async () => {
     const payload = {
       event: 'order.paid',
-      event_id: 'evt_tampered_amt_001',
+      event_id: 'evt_no_order_001',
       payload: {
-        order: {
-          entity: {
-            id: 'order_123',
-            amount: 39900,
-            currency: 'INR',
-            status: 'paid',
-            notes: {
-              userId: '00000000-0000-0000-0000-000000000001',
-              planId: 'PRO',
-              billingCycle: 'monthly',
-            },
-          },
-        },
-        payment: {
-          entity: {
-            id: 'pay_123',
-            order_id: 'order_123',
-            amount: 100, // Tampered: 1 INR instead of 399 INR
-            currency: 'INR',
-            status: 'captured',
-            notes: {
-              userId: '00000000-0000-0000-0000-000000000001',
-              planId: 'PRO',
-              billingCycle: 'monthly',
-            },
-          },
-        },
+        payment: validOrderPaidWebhook.payload.payment,
       },
     };
 
@@ -726,9 +863,450 @@ describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
     assert.strictEqual(res.status, 400);
     const data = await res.json();
     assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /missing mandatory order entity/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment entity is missing from signed webhook', async () => {
+    const payload = {
+      event: 'order.paid',
+      event_id: 'evt_no_payment_001',
+      payload: {
+        order: validOrderPaidWebhook.payload.order,
+      },
+    };
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /missing mandatory payment entity/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment amount is missing', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    delete payload.payload.payment.entity.amount;
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Missing or invalid payment amount/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when order amount is missing', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    delete payload.payload.order.entity.amount;
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Missing or invalid order amount/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when currency is non-INR (USD)', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.payment.entity.currency = 'USD';
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /StreetCraft operates in INR/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment status is not captured', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.payment.entity.status = 'authorized';
+    payload.payload.payment.entity.captured = false;
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Payment is not captured/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when order status is not paid on order.paid', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.order.entity.status = 'created';
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Order is not in paid status/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment amount is tampered', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.payment.entity.amount = 100; // 1 INR instead of 399 INR
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
     assert.match(data.message, /Payment amount 100 paise does not match/);
   });
+
+  it('returns 400 RECONCILIATION_FAILED when payment order_id does not match order id', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.payment.entity.order_id = 'order_tampered_diff';
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /does not match order id/i);
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment notes conflict with order notes', async () => {
+    const payload = JSON.parse(JSON.stringify(validOrderPaidWebhook));
+    payload.payload.payment.entity.notes.planId = 'GROWTH'; // Conflicts with order PRO
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Payment notes indicate conflicting plan/i);
+  });
 });
+
+describe('Payment Lifecycle: Database Provider Event Deduplication & Retry Recovery', () => {
+  interface ProviderEventRow {
+    id: string;
+    provider: string;
+    provider_event_id: string;
+    event_type: string;
+    status: 'PROCESSING' | 'PROCESSED' | 'FAILED';
+    attempt_count: number;
+    error_message?: string;
+  }
+
+  class MockReconciliationDatabase {
+    public events: ProviderEventRow[] = [];
+
+    public reconcileProviderEvent(params: {
+      provider: string;
+      providerEventId: string;
+      eventType: string;
+      payload: any;
+    }): { success: boolean; idempotent_replay?: boolean; in_flight?: boolean; status: string; attempt_count: number } {
+      const existing = this.events.find(
+        (e) => e.provider === params.provider && e.provider_event_id === params.providerEventId
+      );
+
+      if (existing) {
+        if (existing.status === 'PROCESSED') {
+          return {
+            success: true,
+            idempotent_replay: true,
+            status: 'PROCESSED',
+            attempt_count: existing.attempt_count,
+          };
+        }
+        if (existing.status === 'PROCESSING') {
+          return {
+            success: true,
+            in_flight: true,
+            status: 'PROCESSING',
+            attempt_count: existing.attempt_count,
+          };
+        }
+        // Previously FAILED: allow retry
+        existing.status = 'PROCESSING';
+        existing.attempt_count += 1;
+        existing.error_message = undefined;
+      } else {
+        const newEvent: ProviderEventRow = {
+          id: `evt_row_${Math.random().toString(36).substring(2, 9)}`,
+          provider: params.provider,
+          provider_event_id: params.providerEventId,
+          event_type: params.eventType,
+          status: 'PROCESSING',
+          attempt_count: 1,
+        };
+        this.events.push(newEvent);
+      }
+
+      const activeEvent = this.events.find((e) => e.provider_event_id === params.providerEventId)!;
+
+      // Validate required entities and fields
+      const p = params.payload?.payload;
+      if (!p?.payment?.entity) {
+        activeEvent.status = 'FAILED';
+        activeEvent.error_message = 'SECURITY_VIOLATION: Missing payment entity.';
+        throw new Error(activeEvent.error_message);
+      }
+      if (!p?.order?.entity) {
+        activeEvent.status = 'FAILED';
+        activeEvent.error_message = 'SECURITY_VIOLATION: Missing order entity.';
+        throw new Error(activeEvent.error_message);
+      }
+
+      activeEvent.status = 'PROCESSED';
+      return {
+        success: true,
+        idempotent_replay: false,
+        status: 'PROCESSED',
+        attempt_count: activeEvent.attempt_count,
+      };
+    }
+  }
+
+  it('first event delivery records status as PROCESSING and completes to PROCESSED', () => {
+    const db = new MockReconciliationDatabase();
+    const result = db.reconcileProviderEvent({
+      provider: 'razorpay',
+      providerEventId: 'evt_flow_001',
+      eventType: 'order.paid',
+      payload: {
+        payload: {
+          payment: { entity: { id: 'pay_1', amount: 39900 } },
+          order: { entity: { id: 'ord_1', amount: 39900 } },
+        },
+      },
+    });
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.status, 'PROCESSED');
+    assert.strictEqual(result.attempt_count, 1);
+    assert.strictEqual(result.idempotent_replay, false);
+  });
+
+  it('duplicate delivery of PROCESSED event returns idempotent_replay = true', () => {
+    const db = new MockReconciliationDatabase();
+    db.events.push({
+      id: 'row_01',
+      provider: 'razorpay',
+      provider_event_id: 'evt_flow_002',
+      event_type: 'order.paid',
+      status: 'PROCESSED',
+      attempt_count: 1,
+    });
+
+    const result = db.reconcileProviderEvent({
+      provider: 'razorpay',
+      providerEventId: 'evt_flow_002',
+      eventType: 'order.paid',
+      payload: {},
+    });
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.idempotent_replay, true);
+    assert.strictEqual(result.status, 'PROCESSED');
+    assert.strictEqual(result.attempt_count, 1);
+  });
+
+  it('duplicate delivery of in-flight PROCESSING event returns in_flight = true', () => {
+    const db = new MockReconciliationDatabase();
+    db.events.push({
+      id: 'row_02',
+      provider: 'razorpay',
+      provider_event_id: 'evt_flow_003',
+      event_type: 'order.paid',
+      status: 'PROCESSING',
+      attempt_count: 1,
+    });
+
+    const result = db.reconcileProviderEvent({
+      provider: 'razorpay',
+      providerEventId: 'evt_flow_003',
+      eventType: 'order.paid',
+      payload: {},
+    });
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.in_flight, true);
+    assert.strictEqual(result.status, 'PROCESSING');
+  });
+
+  it('retrying previously FAILED event resets status to PROCESSING, increments attempt_count, and succeeds on valid payload', () => {
+    const db = new MockReconciliationDatabase();
+    db.events.push({
+      id: 'row_03',
+      provider: 'razorpay',
+      provider_event_id: 'evt_flow_004',
+      event_type: 'order.paid',
+      status: 'FAILED',
+      attempt_count: 1,
+      error_message: 'SECURITY_VIOLATION: Missing order entity.',
+    });
+
+    const result = db.reconcileProviderEvent({
+      provider: 'razorpay',
+      providerEventId: 'evt_flow_004',
+      eventType: 'order.paid',
+      payload: {
+        payload: {
+          payment: { entity: { id: 'pay_retry_1', amount: 39900 } },
+          order: { entity: { id: 'ord_retry_1', amount: 39900 } },
+        },
+      },
+    });
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.status, 'PROCESSED');
+    assert.strictEqual(result.attempt_count, 2);
+    assert.strictEqual(result.idempotent_replay, false);
+  });
+});
+
+describe('Payment Lifecycle: Authoritative SQL Activation Amount Enforcement', () => {
+  function getPlanExpectedAmountPaise(planId: string, cycle: string): number | null {
+    const p = planId.toUpperCase();
+    const c = cycle.toLowerCase();
+    if (p === 'PRO') {
+      if (c === 'monthly') return 39900;
+      if (c === 'quarterly') return 109900;
+      if (c === 'annual') return 399000;
+    } else if (p === 'GROWTH') {
+      if (c === 'monthly') return 79900;
+      if (c === 'quarterly') return 219900;
+      if (c === 'annual') return 799000;
+    } else if (p === 'FOUNDER') {
+      if (c === 'quarterly') return 83700;
+      if (c === 'annual') return 279000;
+    }
+    return null;
+  }
+
+  function simulateConfirmPaymentAndActivate(params: {
+    callerRole: 'service_role' | 'authenticated' | 'anon';
+    provider: string;
+    paymentId: string;
+    orderId: string;
+    planId: string;
+    billingCycle: string;
+    userId: string;
+    amountPaise?: number | null;
+    isLegacyOverload?: boolean;
+  }) {
+    if (params.callerRole !== 'service_role') {
+      throw new Error('FORBIDDEN: Only service_role can execute subscription activation RPC.');
+    }
+
+    if (params.isLegacyOverload) {
+      throw new Error('DEPRECATED_RPC: Legacy activation without verified amount is disabled. Use authoritative 7-parameter activation RPC with verified amount.');
+    }
+
+    const normPlan = params.planId.toUpperCase();
+    const normCycle = params.billingCycle.toLowerCase();
+
+    if (!['PRO', 'GROWTH', 'FOUNDER'].includes(normPlan)) {
+      throw new Error(`INVALID_PLAN: Plan ${normPlan} is not a valid billable subscription tier.`);
+    }
+
+    if (params.amountPaise === undefined || params.amountPaise === null || params.amountPaise <= 0) {
+      throw new Error('INVALID_AMOUNT: Payment amount in paise is mandatory and must be positive.');
+    }
+
+    const expectedAmount = getPlanExpectedAmountPaise(normPlan, normCycle);
+    if (expectedAmount === null || params.amountPaise !== expectedAmount) {
+      throw new Error(`AMOUNT_MISMATCH: Provided payment amount ${params.amountPaise} paise does not match required price ${expectedAmount} paise for plan ${normPlan} (${normCycle}).`);
+    }
+
+    return {
+      success: true,
+      status: 'ACTIVE',
+      plan: normPlan,
+      billing_cycle: normCycle,
+      verified_amount_paise: params.amountPaise,
+    };
+  }
+
+  it('rejects call with missing or null p_amount_paise (INVALID_AMOUNT)', () => {
+    assert.throws(
+      () => simulateConfirmPaymentAndActivate({
+        callerRole: 'service_role',
+        provider: 'razorpay',
+        paymentId: 'pay_test',
+        orderId: 'ord_test',
+        planId: 'PRO',
+        billingCycle: 'monthly',
+        userId: '00000000-0000-0000-0000-000000000001',
+        amountPaise: null,
+      }),
+      /INVALID_AMOUNT: Payment amount in paise is mandatory/
+    );
+  });
+
+  it('rejects call with amount mismatch against plan pricing quote (AMOUNT_MISMATCH)', () => {
+    assert.throws(
+      () => simulateConfirmPaymentAndActivate({
+        callerRole: 'service_role',
+        provider: 'razorpay',
+        paymentId: 'pay_test',
+        orderId: 'ord_test',
+        planId: 'PRO',
+        billingCycle: 'monthly',
+        userId: '00000000-0000-0000-0000-000000000001',
+        amountPaise: 100, // 1 INR instead of 399 INR
+      }),
+      /AMOUNT_MISMATCH: Provided payment amount 100 paise does not match required price 39900/
+    );
+  });
+
+  it('rejects legacy overload invocation paths with DEPRECATED_RPC', () => {
+    assert.throws(
+      () => simulateConfirmPaymentAndActivate({
+        callerRole: 'service_role',
+        provider: 'razorpay',
+        paymentId: 'pay_test',
+        orderId: 'ord_test',
+        planId: 'PRO',
+        billingCycle: 'monthly',
+        userId: '00000000-0000-0000-0000-000000000001',
+        isLegacyOverload: true,
+      }),
+      /DEPRECATED_RPC: Legacy activation without verified amount is disabled/
+    );
+  });
+
+  it('rejects non-billable FREE plan activation attempt with INVALID_PLAN', () => {
+    assert.throws(
+      () => simulateConfirmPaymentAndActivate({
+        callerRole: 'service_role',
+        provider: 'razorpay',
+        paymentId: 'pay_test',
+        orderId: 'ord_test',
+        planId: 'FREE',
+        billingCycle: 'monthly',
+        userId: '00000000-0000-0000-0000-000000000001',
+        amountPaise: 0,
+      }),
+      /INVALID_PLAN: Plan FREE is not a valid billable subscription tier/
+    );
+  });
+
+  it('successfully activates subscription when p_amount_paise matches plan quote exactly', () => {
+    const res = simulateConfirmPaymentAndActivate({
+      callerRole: 'service_role',
+      provider: 'razorpay',
+      paymentId: 'pay_test_valid',
+      orderId: 'ord_test_valid',
+      planId: 'GROWTH',
+      billingCycle: 'quarterly',
+      userId: '00000000-0000-0000-0000-000000000001',
+      amountPaise: 219900,
+    });
+
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.status, 'ACTIVE');
+    assert.strictEqual(res.plan, 'GROWTH');
+    assert.strictEqual(res.verified_amount_paise, 219900);
+  });
+});
+
 
 describe('Payment Lifecycle: Database Quota Enforcement & Boundary Concurrency', () => {
   interface UsagePeriodRow {

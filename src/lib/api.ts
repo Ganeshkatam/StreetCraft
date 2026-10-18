@@ -1017,39 +1017,17 @@ class RealtimeApiClient {
   }
 
   public async confirmPaymentAndActivateSubscription(
-    provider: string,
-    paymentId: string,
-    orderId: string,
-    planId: string,
-    billingCycle: string
+    _provider: string,
+    _paymentId: string,
+    _orderId: string,
+    _planId: string,
+    _billingCycle: string
   ): Promise<{ success: boolean; plan: string; billingCycle: string; status: string; business_limit: number; monthly_campaign_limit: number }> {
-    await this.requireActiveSession();
-
-    if (!isSupabaseConfigured) {
-      return {
-        success: true,
-        plan: planId,
-        billingCycle,
-        status: 'ACTIVE',
-        business_limit: planId === 'GROWTH' ? 10 : 5,
-        monthly_campaign_limit: planId === 'GROWTH' ? 300 : 100,
-      };
-    }
-
-    const { data, error } = await (supabase as any).rpc('confirm_payment_and_activate_subscription', {
-      p_payment_provider: provider,
-      p_payment_id: paymentId,
-      p_order_id: orderId,
-      p_plan_id: planId,
-      p_billing_cycle: billingCycle,
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return data;
+    throw new Error(
+      'SECURITY_REVOKED: Direct client-side invocation of confirm_payment_and_activate_subscription is revoked. Use server action verifyRazorpayPaymentAction.'
+    );
   }
 }
+
 
 export const api = new RealtimeApiClient();

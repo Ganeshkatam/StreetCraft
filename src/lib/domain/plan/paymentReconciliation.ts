@@ -250,106 +250,117 @@ export function reconcileRazorpayWebhookPayload(
     | undefined
     || (payload.order as RazorpayOrderEntity | undefined);
 
-  if (!paymentEntity && !orderEntity) {
+  // Both payment and order entities are strictly required for purchase-activation events
+  if (!paymentEntity) {
     return {
       valid: false,
-      error: 'Security violation: Webhook payload missing payment and order entities.',
+      error: 'Security violation: Webhook payload missing mandatory payment entity.',
     };
   }
 
-  // 1. Authoritative notes extraction and cross-check
-  let verifiedUserId: string | undefined;
-  let rawPlan: string | undefined;
-  let rawCycle: string | undefined;
-  let verifiedBusinessId: string | undefined;
-
-  const orderNotes = orderEntity?.notes as Record<string, unknown> | undefined;
-  const paymentNotes = paymentEntity?.notes as Record<string, unknown> | undefined;
-
-  if (orderEntity && orderNotes) {
-    const orderUserId = orderNotes.userId as string | undefined;
-    if (!orderUserId || typeof orderUserId !== 'string' || orderUserId.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Order entity is missing authoritative userId in order notes.',
-      };
-    }
-    const orderPlan = orderNotes.planId as string | undefined;
-    if (!orderPlan || typeof orderPlan !== 'string' || orderPlan.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Order entity is missing authoritative planId in order notes.',
-      };
-    }
-    const orderCycle = orderNotes.billingCycle as string | undefined;
-    if (!orderCycle || typeof orderCycle !== 'string' || orderCycle.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Order entity is missing authoritative billingCycle in order notes.',
-      };
-    }
-
-    verifiedUserId = orderUserId;
-    rawPlan = orderPlan;
-    rawCycle = orderCycle;
-    verifiedBusinessId = orderNotes.businessId as string | undefined;
-
-    // Cross-check payment notes if present
-    if (paymentNotes) {
-      if (paymentNotes.userId && paymentNotes.userId !== verifiedUserId) {
-        return {
-          valid: false,
-          error: 'Security violation: Payment notes indicate conflicting user account.',
-        };
-      }
-      if (paymentNotes.planId && String(paymentNotes.planId).toUpperCase() !== rawPlan.toUpperCase()) {
-        return {
-          valid: false,
-          error: 'Security violation: Payment notes indicate conflicting plan.',
-        };
-      }
-      if (paymentNotes.billingCycle && String(paymentNotes.billingCycle).toLowerCase() !== rawCycle.toLowerCase()) {
-        return {
-          valid: false,
-          error: 'Security violation: Payment notes indicate conflicting billing cycle.',
-        };
-      }
-    }
-  } else if (paymentEntity && paymentNotes) {
-    const payUserId = paymentNotes.userId as string | undefined;
-    if (!payUserId || typeof payUserId !== 'string' || payUserId.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Missing authoritative userId in payment notes.',
-      };
-    }
-    const payPlan = paymentNotes.planId as string | undefined;
-    if (!payPlan || typeof payPlan !== 'string' || payPlan.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Missing authoritative planId in payment notes.',
-      };
-    }
-    const payCycle = paymentNotes.billingCycle as string | undefined;
-    if (!payCycle || typeof payCycle !== 'string' || payCycle.trim() === '') {
-      return {
-        valid: false,
-        error: 'Security violation: Missing authoritative billingCycle in payment notes. Cannot default to monthly.',
-      };
-    }
-
-    verifiedUserId = payUserId;
-    rawPlan = payPlan;
-    rawCycle = payCycle;
-    verifiedBusinessId = paymentNotes.businessId as string | undefined;
-  } else {
+  if (!orderEntity) {
     return {
       valid: false,
-      error: 'Security violation: Webhook event contains no order or payment notes.',
+      error: 'Security violation: Webhook payload missing mandatory order entity.',
     };
   }
 
-  // 2. Plan and cycle normalization and validation
+  // Mandatory Payment Entity Fields
+  if (!paymentEntity.id || typeof paymentEntity.id !== 'string' || paymentEntity.id.trim() === '') {
+    return { valid: false, error: 'Security violation: Missing payment ID in payment entity.' };
+  }
+  if (!paymentEntity.order_id || typeof paymentEntity.order_id !== 'string' || paymentEntity.order_id.trim() === '') {
+    return { valid: false, error: 'Security violation: Missing order reference on payment entity.' };
+  }
+  if (typeof paymentEntity.amount !== 'number' || paymentEntity.amount <= 0) {
+    return { valid: false, error: 'Security violation: Missing or invalid payment amount.' };
+  }
+  if (!paymentEntity.currency || typeof paymentEntity.currency !== 'string') {
+    return { valid: false, error: 'Security violation: Missing payment currency.' };
+  }
+  if (!paymentEntity.status || typeof paymentEntity.status !== 'string') {
+    return { valid: false, error: 'Security violation: Missing payment status.' };
+  }
+
+  // Mandatory Order Entity Fields
+  if (!orderEntity.id || typeof orderEntity.id !== 'string' || orderEntity.id.trim() === '') {
+    return { valid: false, error: 'Security violation: Missing order ID in order entity.' };
+  }
+  if (typeof orderEntity.amount !== 'number' || orderEntity.amount <= 0) {
+    return { valid: false, error: 'Security violation: Missing or invalid order amount.' };
+  }
+  if (!orderEntity.currency || typeof orderEntity.currency !== 'string') {
+    return { valid: false, error: 'Security violation: Missing order currency.' };
+  }
+
+  // Cross-reference IDs
+  if (paymentEntity.order_id !== orderEntity.id) {
+    return {
+      valid: false,
+      error: `Security violation: Payment order_id ${paymentEntity.order_id} does not match order id ${orderEntity.id}.`,
+    };
+  }
+
+  // Authoritative Order Notes
+  const orderNotes = orderEntity.notes as Record<string, unknown> | undefined;
+  if (!orderNotes || typeof orderNotes !== 'object') {
+    return {
+      valid: false,
+      error: 'Security violation: Order entity is missing authoritative order notes.',
+    };
+  }
+
+  const orderUserId = orderNotes.userId as string | undefined;
+  if (!orderUserId || typeof orderUserId !== 'string' || orderUserId.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Order entity is missing authoritative userId in order notes.',
+    };
+  }
+  const orderPlan = orderNotes.planId as string | undefined;
+  if (!orderPlan || typeof orderPlan !== 'string' || orderPlan.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Order entity is missing authoritative planId in order notes.',
+    };
+  }
+  const orderCycle = orderNotes.billingCycle as string | undefined;
+  if (!orderCycle || typeof orderCycle !== 'string' || orderCycle.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Order entity is missing authoritative billingCycle in order notes.',
+    };
+  }
+
+  const verifiedUserId = orderUserId;
+  const rawPlan = orderPlan;
+  const rawCycle = orderCycle;
+  const verifiedBusinessId = orderNotes.businessId as string | undefined;
+
+  // Cross-check payment notes if present
+  const paymentNotes = paymentEntity.notes as Record<string, unknown> | undefined;
+  if (paymentNotes && typeof paymentNotes === 'object') {
+    if (paymentNotes.userId && paymentNotes.userId !== verifiedUserId) {
+      return {
+        valid: false,
+        error: 'Security violation: Payment notes indicate conflicting user account.',
+      };
+    }
+    if (paymentNotes.planId && String(paymentNotes.planId).toUpperCase() !== rawPlan.toUpperCase()) {
+      return {
+        valid: false,
+        error: 'Security violation: Payment notes indicate conflicting plan.',
+      };
+    }
+    if (paymentNotes.billingCycle && String(paymentNotes.billingCycle).toLowerCase() !== rawCycle.toLowerCase()) {
+      return {
+        valid: false,
+        error: 'Security violation: Payment notes indicate conflicting billing cycle.',
+      };
+    }
+  }
+
+  // Plan and cycle normalization and validation
   const normalizedPlan = rawPlan.toUpperCase();
   if (!['PRO', 'GROWTH', 'FOUNDER'].includes(normalizedPlan)) {
     return {
@@ -369,32 +380,25 @@ export function reconcileRazorpayWebhookPayload(
   const verifiedPlanId = normalizedPlan as BillablePlanId;
   const verifiedBillingCycle = normalizedCycle as BillingCycle;
 
-  // 3. Currency validation (strict INR)
-  if (paymentEntity && paymentEntity.currency !== 'INR') {
+  // Currency validation (strict INR for both payment and order)
+  if (paymentEntity.currency !== 'INR' || orderEntity.currency !== 'INR') {
     return {
       valid: false,
-      error: `Invalid currency: payment=${paymentEntity.currency}. StreetCraft operates in INR.`,
-    };
-  }
-  if (orderEntity && orderEntity.currency !== 'INR') {
-    return {
-      valid: false,
-      error: `Invalid currency: order=${orderEntity.currency}. StreetCraft operates in INR.`,
+      error: `Invalid currency: payment=${paymentEntity.currency}, order=${orderEntity.currency}. StreetCraft operates in INR.`,
     };
   }
 
-  // 4. Payment status validation
-  if (paymentEntity) {
-    const isCaptured = paymentEntity.status === 'captured' || paymentEntity.captured === true;
-    if (!isCaptured) {
-      return {
-        valid: false,
-        error: `Payment is not captured. Current status: '${paymentEntity.status}'.`,
-      };
-    }
+  // Payment status validation
+  const isCaptured = paymentEntity.status === 'captured' || paymentEntity.captured === true;
+  if (!isCaptured) {
+    return {
+      valid: false,
+      error: `Payment is not captured. Current status: '${paymentEntity.status}'.`,
+    };
   }
 
-  if (eventType === 'order.paid' && orderEntity) {
+  // Order status validation (on order.paid)
+  if (eventType === 'order.paid') {
     if (orderEntity.status !== 'paid') {
       return {
         valid: false,
@@ -403,7 +407,7 @@ export function reconcileRazorpayWebhookPayload(
     }
   }
 
-  // 5. Amount validation against authoritative plan pricing quote
+  // Amount validation against authoritative plan pricing quote
   let expectedQuote;
   try {
     expectedQuote = getPlanPricingQuote(verifiedPlanId, verifiedBillingCycle);
@@ -414,14 +418,14 @@ export function reconcileRazorpayWebhookPayload(
     };
   }
 
-  if (paymentEntity && paymentEntity.amount !== expectedQuote.amountPaise) {
+  if (paymentEntity.amount !== expectedQuote.amountPaise) {
     return {
       valid: false,
       error: `Payment amount ${paymentEntity.amount} paise does not match expected amount ${expectedQuote.amountPaise} paise for plan ${verifiedPlanId} (${verifiedBillingCycle}).`,
     };
   }
 
-  if (orderEntity && orderEntity.amount !== expectedQuote.amountPaise) {
+  if (orderEntity.amount !== expectedQuote.amountPaise) {
     return {
       valid: false,
       error: `Order amount ${orderEntity.amount} paise does not match expected amount ${expectedQuote.amountPaise} paise for plan ${verifiedPlanId} (${verifiedBillingCycle}).`,
@@ -435,8 +439,9 @@ export function reconcileRazorpayWebhookPayload(
     verifiedBillingCycle,
     verifiedBusinessId,
     verifiedAmountPaise: expectedQuote.amountPaise,
-    paymentId: paymentEntity?.id,
-    orderId: orderEntity?.id || paymentEntity?.order_id,
+    paymentId: paymentEntity.id,
+    orderId: orderEntity.id,
   };
 }
+
 

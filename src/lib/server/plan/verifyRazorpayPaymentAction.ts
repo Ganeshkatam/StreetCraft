@@ -136,7 +136,9 @@ export async function verifyRazorpayPaymentAction(input: {
       p_plan_id: verifiedPlanId,
       p_billing_cycle: verifiedCycle,
       p_user_id: claims.userId,
+      p_amount_paise: reconciliation.verifiedAmountPaise,
     });
+
 
     if (rpcError) {
       console.error('[Razorpay Verify] confirm_payment_and_activate_subscription error:', rpcError);
