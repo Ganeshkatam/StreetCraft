@@ -136,47 +136,67 @@ async function runIntegrationSuite() {
   const totalSuites = 6;
 
   // ------------------------------------------------------------------------
-  // Step 1: Pre-run Deep Value Baseline Snapshot
-  // Captures exact IDs and complete field values of all existing non-test records.
+  // Step 1: Pre-run Full Table Baseline Snapshot (100% of Columns via select('*'))
+  // Captures exact IDs and complete field values across all protected merchant
+  // domain tables: businesses, subscriptions, usage_periods, business_members,
+  // profiles, and business_profiles.
   // ------------------------------------------------------------------------
-  console.log('\n[Baseline] Snapshotting existing non-test merchant records (IDs and deep field values)...');
+  console.log('\n[Baseline] Snapshotting all existing merchant records (100% of columns via select(*))...');
   
   const { data: baselineBusinesses, error: bzSnapErr } = await adminClient
     .from('businesses')
-    .select('id, name, category, timezone, created_at')
+    .select('*')
     .not('name', 'ilike', 'test_p4_%')
     .order('id', { ascending: true });
   assert.ifError(bzSnapErr);
 
   const { data: baselineSubscriptions, error: subSnapErr } = await adminClient
     .from('subscriptions')
-    .select('id, user_id, plan_id, status, billing_cycle, current_period_start, current_period_end, cancel_at_period_end')
+    .select('*')
     .order('id', { ascending: true });
   assert.ifError(subSnapErr);
 
   const { data: baselineUsagePeriods, error: periodSnapErr } = await adminClient
     .from('usage_periods')
-    .select('id, business_id, period_start, period_end, plan, campaign_limit, campaigns_used')
+    .select('*')
     .order('id', { ascending: true });
   assert.ifError(periodSnapErr);
 
   const { data: baselineMembers, error: memberSnapErr } = await adminClient
     .from('business_members')
-    .select('id, business_id, user_id, role')
+    .select('*')
     .order('id', { ascending: true });
   assert.ifError(memberSnapErr);
+
+  const { data: baselineProfiles, error: profileSnapErr } = await adminClient
+    .from('profiles')
+    .select('*')
+    .not('full_name', 'ilike', 'Merchant Test%')
+    .order('id', { ascending: true });
+  assert.ifError(profileSnapErr);
+
+  const { data: baselineBizProfiles, error: bpSnapErr } = await adminClient
+    .from('business_profiles')
+    .select('*')
+    .not('name', 'ilike', 'test_p4_%')
+    .order('business_id', { ascending: true });
+  assert.ifError(bpSnapErr);
 
   const baselineSnapshot = {
     businesses: JSON.stringify(baselineBusinesses ?? []),
     subscriptions: JSON.stringify(baselineSubscriptions ?? []),
     usagePeriods: JSON.stringify(baselineUsagePeriods ?? []),
     businessMembers: JSON.stringify(baselineMembers ?? []),
+    profiles: JSON.stringify(baselineProfiles ?? []),
+    businessProfiles: JSON.stringify(baselineBizProfiles ?? []),
   };
 
   console.log(`  Existing merchant stores: ${baselineBusinesses?.length ?? 0}`);
   console.log(`  Existing merchant subscriptions: ${baselineSubscriptions?.length ?? 0}`);
   console.log(`  Existing merchant usage periods: ${baselineUsagePeriods?.length ?? 0}`);
   console.log(`  Existing merchant business memberships: ${baselineMembers?.length ?? 0}`);
+  console.log(`  Existing merchant user profiles: ${baselineProfiles?.length ?? 0}`);
+  console.log(`  Existing merchant business profiles: ${baselineBizProfiles?.length ?? 0}`);
 
   try {
     // ------------------------------------------------------------------------
@@ -954,35 +974,49 @@ async function runIntegrationSuite() {
     }
 
     // ------------------------------------------------------------------------
-    // Step 6: Post-run Verification of Deep Merchant Record Preservation
-    // Re-queries every non-test table and performs strict deep value comparisons
-    // against the pre-run baseline to prove zero records were deleted or altered.
+    // Step 6: Post-run Verification of 100% Column Preservation across all Merchant Tables
+    // Re-queries every merchant table with select('*') and asserts deep serialized
+    // equality against the pre-run baseline to prove zero records were deleted or altered.
     // ------------------------------------------------------------------------
     try {
       const { data: postBusinesses, error: postBzErr } = await adminClient
         .from('businesses')
-        .select('id, name, category, timezone, created_at')
+        .select('*')
         .not('name', 'ilike', 'test_p4_%')
         .order('id', { ascending: true });
       assert.ifError(postBzErr);
 
       const { data: postSubscriptions, error: postSubErr } = await adminClient
         .from('subscriptions')
-        .select('id, user_id, plan_id, status, billing_cycle, current_period_start, current_period_end, cancel_at_period_end')
+        .select('*')
         .order('id', { ascending: true });
       assert.ifError(postSubErr);
 
       const { data: postUsagePeriods, error: postPeriodErr } = await adminClient
         .from('usage_periods')
-        .select('id, business_id, period_start, period_end, plan, campaign_limit, campaigns_used')
+        .select('*')
         .order('id', { ascending: true });
       assert.ifError(postPeriodErr);
 
       const { data: postMembers, error: postMemberErr } = await adminClient
         .from('business_members')
-        .select('id, business_id, user_id, role')
+        .select('*')
         .order('id', { ascending: true });
       assert.ifError(postMemberErr);
+
+      const { data: postProfiles, error: postProfileErr } = await adminClient
+        .from('profiles')
+        .select('*')
+        .not('full_name', 'ilike', 'Merchant Test%')
+        .order('id', { ascending: true });
+      assert.ifError(postProfileErr);
+
+      const { data: postBizProfiles, error: postBpErr } = await adminClient
+        .from('business_profiles')
+        .select('*')
+        .not('name', 'ilike', 'test_p4_%')
+        .order('business_id', { ascending: true });
+      assert.ifError(postBpErr);
 
       // 1. Verify IDs and counts match identically
       assert.strictEqual(
@@ -1005,30 +1039,50 @@ async function runIntegrationSuite() {
         baselineMembers?.length ?? 0,
         'Merchant business members count must not change'
       );
+      assert.strictEqual(
+        postProfiles?.length ?? 0,
+        baselineProfiles?.length ?? 0,
+        'Merchant user profiles count must not change'
+      );
+      assert.strictEqual(
+        postBizProfiles?.length ?? 0,
+        baselineBizProfiles?.length ?? 0,
+        'Merchant business profiles count must not change'
+      );
 
-      // 2. Verify deep field-by-field equality of all pre-existing records
+      // 2. Verify deep field-by-field equality of all pre-existing records (all columns)
       assert.strictEqual(
         JSON.stringify(postBusinesses ?? []),
         baselineSnapshot.businesses,
-        'Merchant businesses deep values must remain strictly unchanged'
+        'Merchant businesses (all columns) must remain 100% identical'
       );
       assert.strictEqual(
         JSON.stringify(postSubscriptions ?? []),
         baselineSnapshot.subscriptions,
-        'Merchant subscriptions deep values must remain strictly unchanged'
+        'Merchant subscriptions (all columns) must remain 100% identical'
       );
       assert.strictEqual(
         JSON.stringify(postUsagePeriods ?? []),
         baselineSnapshot.usagePeriods,
-        'Merchant usage periods deep values must remain strictly unchanged'
+        'Merchant usage periods (all columns) must remain 100% identical'
       );
       assert.strictEqual(
         JSON.stringify(postMembers ?? []),
         baselineSnapshot.businessMembers,
-        'Merchant business members deep values must remain strictly unchanged'
+        'Merchant business members (all columns) must remain 100% identical'
+      );
+      assert.strictEqual(
+        JSON.stringify(postProfiles ?? []),
+        baselineSnapshot.profiles,
+        'Merchant user profiles (all columns) must remain 100% identical'
+      );
+      assert.strictEqual(
+        JSON.stringify(postBizProfiles ?? []),
+        baselineSnapshot.businessProfiles,
+        'Merchant business profiles (all columns) must remain 100% identical'
       );
 
-      console.log('  PASS: Real merchant baseline data verified 100% untouched and unchanged (IDs & deep values)');
+      console.log('  PASS: Real merchant baseline data verified 100% untouched across ALL columns (select *)');
     } catch (snapErr) {
       cleanupErrors.push(`Merchant data integrity check error: ${snapErr.message}`);
     }
