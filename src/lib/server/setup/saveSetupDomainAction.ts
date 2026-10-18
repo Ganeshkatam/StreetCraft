@@ -186,9 +186,11 @@ export async function saveSetupDomainAction(
     revalidatePath(`/user/business/${business.id}/today`);
     revalidatePath(`/user/business/${business.id}/create`);
     revalidatePath(`/user/business/${business.id}/settings`);
+    revalidatePath(`/user/business/${business.id}/campaigns`);
     revalidatePath('/user/business');
     revalidatePath('/user/today');
     revalidatePath('/user/create');
+    revalidatePath('/user/campaigns');
     revalidatePath('/user/account');
 
     return {

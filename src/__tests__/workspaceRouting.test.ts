@@ -181,4 +181,57 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
     assert.strictEqual(resolution.activeBizId, null);
     assert.strictEqual(resolution.activeBizName, 'Unauthorized Storefront');
   });
+
+  it('prevents manual refreshUsage for Store A from overwriting Store B when Store A finishes last', async () => {
+    // Model the unified activeRequestIdRef semantics used in useUsage
+    interface QuotaData {
+      businessId: string;
+      remainingPacks: number;
+    }
+
+    let activeBusinessId: string | null = 'store-a';
+    let activeRequestId = 0;
+    const usageState: { currentUsage: QuotaData | null } = {
+      currentUsage: null,
+    };
+
+    const executeFetch = async (targetBizId: string, delayMs: number, quota: number) => {
+      activeRequestId++;
+      const currentRequestId = activeRequestId;
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+      // Guard matches useUsage: discard response if newer request generation has occurred
+      if (currentRequestId === activeRequestId) {
+        usageState.currentUsage = { businessId: targetBizId, remainingPacks: quota };
+      }
+    };
+
+    const refreshUsage = async (delayMs: number, quota: number) => {
+      return executeFetch(activeBusinessId!, delayMs, quota);
+    };
+
+    // 1. Initial fetch for Store A completes
+    await executeFetch('store-a', 5, 20);
+    assert.strictEqual(usageState.currentUsage?.businessId, 'store-a');
+    assert.strictEqual(usageState.currentUsage?.remainingPacks, 20);
+
+    // 2. User invokes manual refreshUsage for Store A (slow, 60ms)
+    const storeARefreshPromise = refreshUsage(60, 25);
+
+    // 3. User switches to Store B while Store A refresh is in flight (10ms)
+    activeRequestId++; // Business change invalidates in-flight requests immediately
+    activeBusinessId = 'store-b';
+    usageState.currentUsage = null;
+    const storeBFetchPromise = executeFetch('store-b', 10, 100);
+
+    // 4. Wait for both promises to resolve
+    await Promise.all([storeARefreshPromise, storeBFetchPromise]);
+
+    // Store A's delayed manual refresh must NOT overwrite Store B
+    const finalState = usageState.currentUsage as QuotaData | null;
+    assert.strictEqual(activeBusinessId, 'store-b');
+    assert.strictEqual(finalState?.businessId, 'store-b');
+    assert.strictEqual(finalState?.remainingPacks, 100);
+  });
 });
