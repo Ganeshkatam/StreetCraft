@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { DatabasePlan } from '../types/billing';
 import { api } from '../lib/api';
-import { X, Check, Loader2, ExternalLink, Table, Layers } from 'lucide-react';
-import { getUserFacingErrorMessage } from '../lib/userFacingError';
-import { createRazorpayOrderAction } from '../lib/server/plan/createRazorpayOrderAction';
-import { verifyRazorpayPaymentAction } from '../lib/server/plan/verifyRazorpayPaymentAction';
-import { loadRazorpayScript } from '../lib/client/loadRazorpayScript';
+import { X, Check, ExternalLink, Table, Layers } from 'lucide-react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface UpgradeModalProps {
@@ -21,16 +18,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
   currentPlanId,
-  onPlanUpdated,
-  onSuccess,
   businessId,
 }) => {
   useBodyScrollLock(isOpen);
+  const router = useRouter();
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [successNotice, setSuccessNotice] = useState<string | null>(null);
-  const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
@@ -87,8 +79,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      setErrorNotice(null);
-      setSuccessNotice(null);
       api.getPlans().then((data) => {
         setPlans(data);
         setLoading(false);
@@ -98,96 +88,22 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleUpgrade = async (plan: DatabasePlan) => {
+  const handleUpgrade = (plan: DatabasePlan) => {
     if (plan.id.toUpperCase() === normalizedCurrentPlanId) return;
-    setIsProcessing(true);
-    setProcessingPlanId(plan.id);
-    setErrorNotice(null);
-
-    try {
-      // Founder tier requires quarterly or annual billing
-      const effectiveBillingCycle: 'monthly' | 'quarterly' | 'annual' =
-        plan.id === 'FOUNDER' && billingCycle === 'monthly' ? 'quarterly' : billingCycle;
-
-      // 1. Create order on the server
-      const orderRes = await createRazorpayOrderAction({
-        targetPlanId: plan.id,
-        billingCycle: effectiveBillingCycle,
-        businessId,
-      });
-
-      if (!orderRes.success || !orderRes.orderId || !orderRes.keyId) {
-        throw new Error(orderRes.message || 'Failed to initiate payment order.');
-      }
-
-      // 2. Load Razorpay Checkout SDK
-      const isLoaded = await loadRazorpayScript();
-      if (!isLoaded || !(window as any).Razorpay) {
-        throw new Error('Unable to load Razorpay Checkout script. Please check your internet connection.');
-      }
-
-      // 3. Open Razorpay Checkout modal
-      const options = {
-        key: orderRes.keyId,
-        amount: orderRes.amount,
-        currency: orderRes.currency || 'INR',
-        name: 'StreetCraft',
-        description: `${orderRes.planName || plan.name} (${effectiveBillingCycle.toUpperCase()})`,
-        order_id: orderRes.orderId,
-        theme: {
-          color: '#166534',
-        },
-        handler: async function (response: {
-          razorpay_payment_id: string;
-          razorpay_order_id: string;
-          razorpay_signature: string;
-        }) {
-          setIsProcessing(true);
-          try {
-            const verifyRes = await verifyRazorpayPaymentAction({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-              targetPlanId: plan.id,
-              billingCycle: effectiveBillingCycle,
-              businessId,
-            });
-
-            if (!verifyRes.success) {
-              throw new Error(verifyRes.message || 'Payment signature verification failed.');
-            }
-
-            const limit = plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 100;
-            setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${limit} monthly campaigns.`);
-            if (onPlanUpdated) onPlanUpdated();
-            if (onSuccess) onSuccess();
-
-            setTimeout(() => {
-              setSuccessNotice(null);
-              onClose();
-            }, 1800);
-          } catch (verifyErr: any) {
-            setErrorNotice(getUserFacingErrorMessage(verifyErr, 'Payment verification failed. If your account was charged, please contact support.'));
-          } finally {
-            setIsProcessing(false);
-            setProcessingPlanId(null);
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-            setProcessingPlanId(null);
-          },
-        },
-      };
-
-      const rzpInstance = new (window as any).Razorpay(options);
-      rzpInstance.open();
-    } catch (err: any) {
-      setErrorNotice(getUserFacingErrorMessage(err, 'Failed to open payment gateway. Please check your credentials.'));
-      setIsProcessing(false);
-      setProcessingPlanId(null);
+    if (plan.monthly_inr === 0) {
+      handleClose();
+      router.push('/free-tool');
+      return;
     }
+
+    const effectiveBillingCycle: 'monthly' | 'quarterly' | 'annual' =
+      plan.id === 'FOUNDER' && billingCycle === 'monthly' ? 'quarterly' : billingCycle;
+
+    handleClose();
+    const bizQuery = businessId ? `&businessId=${encodeURIComponent(businessId)}` : '';
+    router.push(
+      `/checkout?plan=${encodeURIComponent(plan.id)}&cycle=${encodeURIComponent(effectiveBillingCycle)}${bizQuery}`
+    );
   };
 
   const getPlanRateDisplay = (plan: DatabasePlan) => {
@@ -233,7 +149,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       monthlyBreakdown: `₹${plan.monthly_inr}/mo · Billed monthly`,
     };
   };
-
 
   const featureMatrixRows = [
     {
@@ -326,344 +241,299 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <span>See All Plans</span>
               <ExternalLink size={13} />
             </a>
-            <button className="btn-ghost" onClick={handleClose} aria-label="Close modal">
+            <button type="button" className="btn-ghost" onClick={handleClose} aria-label="Close modal">
               <X size={18} />
             </button>
           </div>
         </div>
 
-        {errorNotice && (
-          <div style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: 'var(--radius-xs)', margin: '16px 0 8px', color: '#b91c1c', fontSize: '13.5px' }}>
-            {errorNotice}
-          </div>
-        )}
-
-        {successNotice ? (
-          <div style={{ padding: '32px', textAlign: 'center', background: 'var(--color-primary-subtle)', border: '1px solid var(--color-primary)', borderRadius: 'var(--radius-xs)', margin: '20px 0' }}>
-            <h4 style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-display)', fontSize: '20px', marginBottom: '8px' }}>
-              Subscription Activated
-            </h4>
-            <p style={{ color: 'var(--color-ink)', fontSize: '14px' }}>{successNotice}</p>
-          </div>
-        ) : (
-          <>
-            {/* Top Toolbar: Billing Switcher & View Mode Toggle */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '12px',
-                margin: '18px 0 16px',
-                padding: '10px 14px',
-                background: 'var(--color-surface-raised)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-xs)',
-              }}
-            >
-              {/* Billing Cycle Selector */}
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--color-surface)', padding: '3px', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
-                {(['monthly', 'quarterly', 'annual'] as const).map((cycle) => (
-                  <button
-                    key={cycle}
-                    type="button"
-                    onClick={() => setBillingCycle(cycle)}
+        {/* Top Toolbar: Billing Switcher & View Mode Toggle */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            margin: '18px 0 16px',
+            padding: '10px 14px',
+            background: 'var(--color-surface-raised)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-xs)',
+          }}
+        >
+          {/* Billing Cycle Selector */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--color-surface)', padding: '3px', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
+            {(['monthly', 'quarterly', 'annual'] as const).map((cycle) => (
+              <button
+                key={cycle}
+                type="button"
+                onClick={() => setBillingCycle(cycle)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: billingCycle === cycle ? 'var(--color-ink)' : 'transparent',
+                  color: billingCycle === cycle ? '#FFFFFF' : 'var(--color-ink-muted)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
+                <span>{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</span>
+                {cycle === 'annual' && (
+                  <span
                     style={{
-                      padding: '5px 14px',
-                      borderRadius: '20px',
-                      border: 'none',
-                      background: billingCycle === cycle ? 'var(--color-ink)' : 'transparent',
-                      color: billingCycle === cycle ? '#FFFFFF' : 'var(--color-ink-muted)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
+                      fontSize: '10px',
+                      background: 'var(--color-primary-subtle)',
+                      color: 'var(--color-primary)',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontWeight: 700,
                     }}
                   >
-                    <span>{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</span>
-                    {cycle === 'annual' && (
-                      <span
+                    2 MO FREE
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* View Mode Toggle: Cards vs Comparison Table */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              className={viewMode === 'cards' ? 'btn-primary' : 'btn-ghost'}
+              style={{
+                fontSize: '12px',
+                padding: '6px 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+              onClick={() => setViewMode('cards')}
+            >
+              <Layers size={13} />
+              <span>Plan Cards</span>
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'table' ? 'btn-primary' : 'btn-ghost'}
+              style={{
+                fontSize: '12px',
+                padding: '6px 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+              onClick={() => setViewMode('table')}
+            >
+              <Table size={13} />
+              <span>Feature Comparison</span>
+            </button>
+          </div>
+        </div>
+
+        {/* View Mode 1: Cards Grid */}
+        {viewMode === 'cards' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px', margin: '20px 0' }}>
+            {loading ? (
+              <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: 'var(--color-ink-muted)' }}>Loading plans...</div>
+            ) : (
+              plans.map((plan) => {
+                const isCurrent = plan.id.toUpperCase() === normalizedCurrentPlanId;
+                const isPro = plan.id === 'PRO' && !isCurrent;
+                const rateDisplay = getPlanRateDisplay(plan);
+
+                return (
+                  <div
+                    key={plan.id}
+                    style={{
+                      background: isCurrent ? 'var(--color-surface)' : isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                      border: isCurrent ? '2px solid #9CA3AF' : isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-sm, 10px)',
+                      padding: '20px 18px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: isPro ? '0 8px 24px rgba(22, 101, 52, 0.12)' : 'none',
+                      position: 'relative',
+                      opacity: isCurrent ? 0.92 : 1,
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '26px' }}>
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'var(--color-ink)', lineHeight: 1.2 }}>{plan.name}</span>
+                        {isCurrent ? (
+                          <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#374151', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '2px 6px', borderRadius: '4px' }}>CURRENT PLAN</span>
+                        ) : isPro ? (
+                          <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>POPULAR</span>
+                        ) : null}
+                      </div>
+                      <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '10px 0 2px', color: 'var(--color-ink)', fontWeight: 700, display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span>{rateDisplay.largePrice}</span>
+                        <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>{rateDisplay.period}</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', minHeight: '16px', marginBottom: '8px', fontWeight: 500 }}>
+                        {rateDisplay.monthlyBreakdown}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px', fontWeight: 600 }}>
+                        {plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 3} campaigns / month
+                      </div>
+                      <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--color-ink-soft)', padding: 0, margin: 0 }}>
+                        {plan.features.slice(0, 3).map((f, i) => (
+                          <li key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.35 }}>
+                            <Check size={13} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {isCurrent ? (
+                      <button
+                        type="button"
+                        disabled
                         style={{
-                          fontSize: '10px',
-                          background: 'var(--color-primary-subtle)',
-                          color: 'var(--color-primary)',
-                          padding: '1px 6px',
-                          borderRadius: '10px',
-                          fontWeight: 700,
+                          marginTop: '20px',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12.5px',
+                          padding: '9px 12px',
+                          cursor: 'not-allowed',
+                          background: '#F3F4F6',
+                          border: '1px solid #E5E7EB',
+                          color: '#6B7280',
+                          fontWeight: 600,
+                          borderRadius: 'var(--radius-sm, 8px)',
                         }}
                       >
-                        2 MO FREE
-                      </span>
+                        Current Plan
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={isPro ? 'btn-primary' : 'btn-secondary'}
+                        style={{ marginTop: '20px', width: '100%', justifyContent: 'center', fontSize: '12.5px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        onClick={() => handleUpgrade(plan)}
+                      >
+                        Select {plan.name}
+                      </button>
                     )}
-                  </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          /* View Mode 2: Detailed Feature Comparison Matrix */
+          <div style={{ margin: '20px 0', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', overflowX: 'auto', background: 'var(--color-surface)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px', minWidth: '700px' }}>
+              <thead>
+                <tr style={{ background: 'var(--color-surface-raised)', borderBottom: '1px solid var(--color-border)' }}>
+                  <th style={{ padding: '12px 16px', color: 'var(--color-ink-muted)', fontWeight: 600, width: '28%' }}>Capability</th>
+                  <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Starter (Free / lifetime)</th>
+                  <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
+                    {(() => {
+                      const p = plans.find((x) => x.id === 'FOUNDER');
+                      if (!p) return 'Early Adopter';
+                      const r = getPlanRateDisplay(p);
+                      return `Early Adopter (${r.largePrice}${r.period})`;
+                    })()}
+                  </th>
+                  <th style={{ padding: '12px 14px', color: 'var(--color-primary)', fontWeight: 700, width: '18%' }}>
+                    {(() => {
+                      const p = plans.find((x) => x.id === 'PRO');
+                      if (!p) return 'High-Street Pro';
+                      const r = getPlanRateDisplay(p);
+                      return `High-Street Pro (${r.largePrice}${r.period})`;
+                    })()}
+                  </th>
+                  <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
+                    {(() => {
+                      const p = plans.find((x) => x.id === 'GROWTH');
+                      if (!p) return 'Growth';
+                      const r = getPlanRateDisplay(p);
+                      return `Growth (${r.largePrice}${r.period})`;
+                    })()}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {featureMatrixRows.map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: '10px 16px', color: 'var(--color-ink)', fontWeight: 500 }}>{row.feature}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-ink-muted)' }}>{row.starter}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-ink-soft)' }}>{row.founder}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-primary)', fontWeight: 600 }}>{row.pro}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-ink)' }}>{row.growth}</td>
+                  </tr>
                 ))}
-              </div>
+                {/* Action Row */}
+                <tr style={{ background: 'var(--color-surface-raised)' }}>
+                  <td style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--color-ink)' }}>Action</td>
+                  {['FREE', 'FOUNDER', 'PRO', 'GROWTH'].map((pid) => {
+                    const plan = plans.find((p) => p.id === pid);
+                    const isCurrent = pid === normalizedCurrentPlanId;
 
-              {/* View Mode Toggle: Cards vs Comparison Table */}
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <button
-                  type="button"
-                  className={viewMode === 'cards' ? 'btn-primary' : 'btn-ghost'}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
-                  onClick={() => setViewMode('cards')}
-                >
-                  <Layers size={13} />
-                  <span>Plan Cards</span>
-                </button>
-                <button
-                  type="button"
-                  className={viewMode === 'table' ? 'btn-primary' : 'btn-ghost'}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
-                  onClick={() => setViewMode('table')}
-                >
-                  <Table size={13} />
-                  <span>Feature Comparison</span>
-                </button>
-              </div>
-            </div>
-
-            {/* View Mode 1: Cards Grid */}
-            {viewMode === 'cards' ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px', margin: '20px 0' }}>
-                {loading ? (
-                  <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: 'var(--color-ink-muted)' }}>Loading plans...</div>
-                ) : (
-                  plans.map((plan) => {
-                    const isCurrent = plan.id.toUpperCase() === normalizedCurrentPlanId;
-                    const isPro = plan.id === 'PRO' && !isCurrent;
-                    const isCardProcessing = isProcessing && processingPlanId === plan.id;
-                    const rateDisplay = getPlanRateDisplay(plan);
+                    if (!plan) return <td key={pid} style={{ padding: '12px 14px' }}>-</td>;
 
                     return (
-                      <div
-                        key={plan.id}
-                        style={{
-                          background: isCurrent ? 'var(--color-surface)' : isPro ? 'var(--color-surface-raised)' : 'var(--color-surface)',
-                          border: isCurrent ? '2px solid #9CA3AF' : isPro ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
-                          borderRadius: 'var(--radius-sm, 10px)',
-                          padding: '20px 18px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          boxShadow: isPro ? '0 8px 24px rgba(22, 101, 52, 0.12)' : 'none',
-                          position: 'relative',
-                          opacity: isCurrent ? 0.92 : 1,
-                        }}
-                      >
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '26px' }}>
-                            <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'var(--color-ink)', lineHeight: 1.2 }}>{plan.name}</span>
-                            {isCurrent ? (
-                              <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#374151', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '2px 6px', borderRadius: '4px' }}>CURRENT PLAN</span>
-                            ) : isPro ? (
-                              <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>POPULAR</span>
-                            ) : null}
-                          </div>
-                          <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '10px 0 2px', color: 'var(--color-ink)', fontWeight: 700, display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                            <span>{rateDisplay.largePrice}</span>
-                            <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>{rateDisplay.period}</span>
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', minHeight: '16px', marginBottom: '8px', fontWeight: 500 }}>
-                            {rateDisplay.monthlyBreakdown}
-                          </div>
-                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px', fontWeight: 600 }}>
-                            {plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 3} campaigns / month
-                          </div>
-                          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--color-ink-soft)', padding: 0, margin: 0 }}>
-                            {plan.features.slice(0, 3).map((f, i) => (
-                              <li key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', lineHeight: 1.35 }}>
-                                <Check size={13} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                                <span>{f}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
+                      <td key={pid} style={{ padding: '12px 14px' }}>
                         {isCurrent ? (
-                          <button
-                            type="button"
-                            disabled
-                            style={{
-                              marginTop: '20px',
-                              width: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '12.5px',
-                              padding: '9px 12px',
-                              cursor: 'not-allowed',
-                              background: '#F3F4F6',
-                              border: '1px solid #E5E7EB',
-                              color: '#6B7280',
-                              fontWeight: 600,
-                              borderRadius: 'var(--radius-sm, 8px)',
-                            }}
-                          >
+                          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-ink-muted)' }}>
                             Current Plan
-                          </button>
+                          </span>
                         ) : (
                           <button
-                            className={isPro ? 'btn-primary' : 'btn-secondary'}
-                            style={{ marginTop: '20px', width: '100%', justifyContent: 'center', fontSize: '12.5px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                            disabled={isProcessing}
+                            type="button"
+                            className={pid === 'PRO' ? 'btn-primary' : 'btn-secondary'}
+                            style={{ fontSize: '11.5px', padding: '6px 10px', width: '100%', justifyContent: 'center' }}
                             onClick={() => handleUpgrade(plan)}
                           >
-                            {isCardProcessing ? (
-                              <>
-                                <Loader2 size={13} className="spin" />
-                                <span>Connecting Gateway...</span>
-                              </>
-                            ) : (
-                              `Select ${plan.name}`
-                            )}
+                            Select {plan.id}
                           </button>
                         )}
-                      </div>
+                      </td>
                     );
-                  })
-                )}
-              </div>
-            ) : (
-              /* View Mode 2: Detailed Feature Comparison Matrix */
-              <div style={{ margin: '20px 0', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xs)', overflowX: 'auto', background: 'var(--color-surface)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px', minWidth: '700px' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--color-surface-raised)', borderBottom: '1px solid var(--color-border)' }}>
-                      <th style={{ padding: '12px 16px', color: 'var(--color-ink-muted)', fontWeight: 600, width: '28%' }}>Capability</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Starter (Free / lifetime)</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
-                        {(() => {
-                          const p = plans.find((x) => x.id === 'FOUNDER');
-                          if (!p) return 'Early Adopter';
-                          const r = getPlanRateDisplay(p);
-                          return `Early Adopter (${r.largePrice}${r.period})`;
-                        })()}
-                      </th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-primary)', fontWeight: 700, width: '18%' }}>
-                        {(() => {
-                          const p = plans.find((x) => x.id === 'PRO');
-                          if (!p) return 'High-Street Pro';
-                          const r = getPlanRateDisplay(p);
-                          return `High-Street Pro (${r.largePrice}${r.period})`;
-                        })()}
-                      </th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
-                        {(() => {
-                          const p = plans.find((x) => x.id === 'GROWTH');
-                          if (!p) return 'Growth';
-                          const r = getPlanRateDisplay(p);
-                          return `Growth (${r.largePrice}${r.period})`;
-                        })()}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {featureMatrixRows.map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                        <td style={{ padding: '10px 16px', color: 'var(--color-ink)', fontWeight: 500 }}>{row.feature}</td>
-                        <td style={{ padding: '10px 14px', color: 'var(--color-ink-muted)' }}>{row.starter}</td>
-                        <td style={{ padding: '10px 14px', color: 'var(--color-ink-soft)' }}>{row.founder}</td>
-                        <td style={{ padding: '10px 14px', color: 'var(--color-primary)', fontWeight: 600 }}>{row.pro}</td>
-                        <td style={{ padding: '10px 14px', color: 'var(--color-ink)' }}>{row.growth}</td>
-                      </tr>
-                    ))}
-                    {/* Action Row */}
-                    <tr style={{ background: 'var(--color-surface-raised)' }}>
-                      <td style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--color-ink)' }}>Action</td>
-                      {['FREE', 'FOUNDER', 'PRO', 'GROWTH'].map((pid) => {
-                        const plan = plans.find((p) => p.id === pid);
-                        const isCurrent = pid === normalizedCurrentPlanId;
-                        const isCardProcessing = isProcessing && processingPlanId === pid;
-
-                        if (!plan) return <td key={pid} style={{ padding: '12px 14px' }}>-</td>;
-
-                        return (
-                          <td key={pid} style={{ padding: '12px 14px' }}>
-                            {isCurrent ? (
-                              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-ink-muted)' }}>
-                                Current Plan
-                              </span>
-                            ) : (
-                              <button
-                                className={pid === 'PRO' ? 'btn-primary' : 'btn-secondary'}
-                                style={{ fontSize: '11.5px', padding: '6px 10px', width: '100%', justifyContent: 'center' }}
-                                disabled={isProcessing}
-                                onClick={() => handleUpgrade(plan)}
-                              >
-                                {isCardProcessing ? (
-                                  <Loader2 size={12} className="spin" />
-                                ) : (
-                                  `Select ${plan.id}`
-                                )}
-                              </button>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Footer with See All Plans link and Close */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '12px' }}>
-                <a
-                  href="/pricing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: '12.5px',
-                    color: 'var(--color-ink-muted)',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
-                >
-                  <span>Compare Plans Matrix</span>
-                  <ExternalLink size={13} />
-                </a>
-                <span style={{ color: 'var(--color-border)' }}>&bull;</span>
-                <a
-                  href={`/checkout?cycle=${encodeURIComponent(billingCycle)}${businessId ? `&businessId=${encodeURIComponent(businessId)}` : ''}`}
-                  style={{
-                    fontSize: '12.5px',
-                    color: 'var(--color-primary)',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    fontWeight: 600,
-                  }}
-                >
-                  <span>Open Dedicated Checkout Page</span>
-                  <ExternalLink size={13} />
-                </a>
-              <button className="btn-secondary" onClick={onClose} disabled={isProcessing}>
-                Close
-              </button>
-            </div>
-          </>
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
+
+        {/* Footer with Compare Plans Matrix and Close */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '12px' }}>
+          <a
+            href="/pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: '12.5px',
+              color: 'var(--color-ink-muted)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+            }}
+          >
+            <span>Compare Plans Matrix</span>
+            <ExternalLink size={13} />
+          </a>
+          <button type="button" className="btn-secondary" onClick={handleClose}>
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
 };
+
 

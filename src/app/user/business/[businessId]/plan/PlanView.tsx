@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { StorePlanViewModel } from '../../../../../lib/domain/plan/planTypes';
 import { requestSubscriptionCancellationAction, CancellationActionState } from '../../../../../lib/server/plan/requestSubscriptionCancellationAction';
 import { useRouteModal } from '../../../../../hooks/useRouteModal';
-import { Sparkles, AlertTriangle, ArrowLeft, ExternalLink, CreditCard } from 'lucide-react';
+import { Sparkles, AlertTriangle, ArrowLeft, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBodyScrollLock } from '../../../../../hooks/useBodyScrollLock';
 
@@ -79,14 +79,6 @@ export function PlanView({ planData }: PlanViewProps) {
             <span>Compare Plans</span>
             <ExternalLink size={13} />
           </a>
-          <Link
-            href={`/user/business/${encodeURIComponent(businessId)}/checkout`}
-            className="btn-secondary"
-            style={{ fontSize: '13px', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
-          >
-            <CreditCard size={14} />
-            <span>Dedicated Checkout</span>
-          </Link>
           <button
             type="button"
             className="btn-primary"
