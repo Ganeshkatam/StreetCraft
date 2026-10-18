@@ -7,8 +7,13 @@ import crypto from 'node:crypto';
  *
  * Safe Execution Guarantee:
  * Strictly disallows running integration mutations against the production project (iodwiyfjwzdvqtrczttb).
- * Requires an explicitly configured isolated database target via SUPABASE_INTEGRATION_URL
- * and SUPABASE_INTEGRATION_SERVICE_KEY.
+ * Requires an explicitly configured and confirmed isolated database target via:
+ *   - SUPABASE_INTEGRATION_URL
+ *   - SUPABASE_INTEGRATION_SERVICE_KEY
+ *   - SUPABASE_INTEGRATION_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
+ *   - CONFIRM_ISOLATED_TEST_DATABASE=true (or matching SUPABASE_INTEGRATION_PROJECT_REF)
+ *
+ * Exits with code 2 on missing credentials or unverified target to prevent false-green reporting in CI.
  *
  * Verifies real PostgreSQL transactional and concurrency behaviors:
  * 1. Authorization boundaries on privileged RPCs (service_role vs anon/authenticated).
@@ -19,7 +24,7 @@ import crypto from 'node:crypto';
  * 4. Multi-store entitlement propagation and audit events across persisted rows.
  * 5. Subscription cancellation scheduling via request_subscription_cancellation RPC.
  * 6. Fail-closed webhook ingestion, error tracking, and expired subscription downgrades matching SQL contracts.
- * 7. Guaranteed synthetic fixture teardown with fail-fast cleanup error propagation.
+ * 7. Guaranteed synthetic fixture teardown with early campaign registration and post-run residual sweep.
  */
 
 const PRODUCTION_PROJECT_REF = 'iodwiyfjwzdvqtrczttb';
@@ -30,27 +35,71 @@ const anonKey = process.env.SUPABASE_INTEGRATION_ANON_KEY || process.env.NEXT_PU
 
 console.log('--- StreetCraft Phase 4 Database Integration Runner ---');
 
-// 1. Strict Target Validation
+// 1. Strict Target & Credential Validation
 if (!targetUrl || !serviceKey) {
-  console.log('\n[Target Validation] SUPABASE_INTEGRATION_URL or SUPABASE_INTEGRATION_SERVICE_KEY not set.');
-  console.log('The live production database (ref: ' + PRODUCTION_PROJECT_REF + ') is strictly protected.');
-  console.log('Integration mutations will not be run against production.');
-  console.log('\nTo execute Phase 4 integration tests safely:');
-  console.log('1. Provision a dedicated Supabase staging project, development branch, or local database.');
-  console.log('2. Set SUPABASE_INTEGRATION_URL and SUPABASE_INTEGRATION_SERVICE_KEY in your environment.');
-  console.log('3. Run: npm run test:integration\n');
-  process.exit(0);
+  console.error('\n[Configuration Error] SUPABASE_INTEGRATION_URL and SUPABASE_INTEGRATION_SERVICE_KEY are required.');
+  console.error('The live production database (ref: ' + PRODUCTION_PROJECT_REF + ') is strictly protected.');
+  console.error('Integration mutations will not be executed against production.');
+  console.error('\nTo execute Phase 4 integration tests safely:');
+  console.error('1. Provision a dedicated Supabase staging project, development branch, or local database.');
+  console.error('2. Set SUPABASE_INTEGRATION_URL, SUPABASE_INTEGRATION_SERVICE_KEY, and SUPABASE_INTEGRATION_ANON_KEY.');
+  console.error('3. Confirm the disposable target by setting CONFIRM_ISOLATED_TEST_DATABASE=true.');
+  console.error('4. Run: npm run test:integration\n');
+  console.error('Exiting with code 2 (CONFIGURATION_REQUIRED). Refusing to report false-green when tests did not run.\n');
+  process.exit(2);
 }
 
-if (targetUrl.includes(PRODUCTION_PROJECT_REF)) {
+// 2. Anonymous Key Validation (required for testing unprivileged and authenticated user contexts)
+if (!anonKey) {
+  console.error('\n[Configuration Error] SUPABASE_INTEGRATION_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is required.');
+  console.error('An anonymous key is required to test unprivileged RPC boundaries and authenticated user sessions.');
+  console.error('Exiting with code 2 (CONFIGURATION_REQUIRED).\n');
+  process.exit(2);
+}
+
+function extractProjectRef(url) {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname;
+    if (hostname.endsWith('.supabase.co')) {
+      return hostname.split('.')[0];
+    }
+    return hostname;
+  } catch {
+    return 'unknown';
+  }
+}
+
+const targetRef = extractProjectRef(targetUrl);
+
+// Strict Production Project Disallowance
+if (targetUrl.includes(PRODUCTION_PROJECT_REF) || targetRef === PRODUCTION_PROJECT_REF) {
   console.error('\nSAFETY VIOLATION: Target URL matches production project ref (' + PRODUCTION_PROJECT_REF + ').');
   console.error('Integration tests must never execute against the live production database.');
   console.error('Please configure SUPABASE_INTEGRATION_URL pointing to an isolated staging or dev database.\n');
   process.exit(1);
 }
 
+// 3. Isolated Target Identity Confirmation
+const isConfirmedIsolated =
+  process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true' ||
+  process.env.SUPABASE_INTEGRATION_TARGET_CONFIRMED === 'true' ||
+  (process.env.SUPABASE_INTEGRATION_PROJECT_REF && process.env.SUPABASE_INTEGRATION_PROJECT_REF === targetRef) ||
+  targetUrl.includes('localhost') ||
+  targetUrl.includes('127.0.0.1');
+
+if (!isConfirmedIsolated) {
+  console.error(`\n[Target Validation] Target project ref '${targetRef}' is not verified as an isolated disposable target.`);
+  console.error('To prevent accidental execution against shared or unverified environments, confirm the target by setting:');
+  console.error('  CONFIRM_ISOLATED_TEST_DATABASE=true');
+  console.error(`  or SUPABASE_INTEGRATION_PROJECT_REF=${targetRef}\n`);
+  console.error('Exiting with code 2 (TARGET_UNCONFIRMED).\n');
+  process.exit(2);
+}
+
 console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
-console.log('Target status: VERIFIED ISOLATED TARGET');
+console.log('Target project ref:', targetRef);
+console.log('Target classification: CONFIRMED DISPOSABLE INTEGRATION TARGET');
 
 // Privileged admin client with service_role key
 const adminClient = createClient(targetUrl, serviceKey, {
@@ -102,61 +151,59 @@ async function runIntegrationSuite() {
     // Suite 1: Privileged RPC Authorization Boundaries
     // ------------------------------------------------------------------------
     console.log('\n[Suite 1/6] Verifying RPC Authorization Boundaries in PostgreSQL...');
-    if (anonKey) {
-      const unprivilegedAnonClient = createClient(targetUrl, anonKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
+    const unprivilegedAnonClient = createClient(targetUrl, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-      // 1a. confirm_payment_and_activate_subscription must reject unprivileged anon callers
-      const { error: anonPayError } = await unprivilegedAnonClient.rpc('confirm_payment_and_activate_subscription', {
-        p_payment_provider: 'razorpay',
-        p_payment_id: `${FIXTURE_PREFIX}_pay_anon`,
-        p_order_id: `${FIXTURE_PREFIX}_order_anon`,
-        p_plan_id: 'PRO',
-        p_billing_cycle: 'monthly',
-        p_user_id: crypto.randomUUID(),
-        p_amount_paise: 39900,
-      });
-      assert.ok(anonPayError, 'confirm_payment_and_activate_subscription MUST reject anon callers');
-      assert.match(
-        anonPayError.message.toLowerCase(),
-        /permission denied|function public\.confirm_payment_and_activate_subscription/i,
-        'Error must be permission denied'
-      );
-      console.log('  PASS: confirm_payment_and_activate_subscription rejected unprivileged caller');
+    // 1a. confirm_payment_and_activate_subscription must reject unprivileged anon callers
+    const { error: anonPayError } = await unprivilegedAnonClient.rpc('confirm_payment_and_activate_subscription', {
+      p_payment_provider: 'razorpay',
+      p_payment_id: `${FIXTURE_PREFIX}_pay_anon`,
+      p_order_id: `${FIXTURE_PREFIX}_order_anon`,
+      p_plan_id: 'PRO',
+      p_billing_cycle: 'monthly',
+      p_user_id: crypto.randomUUID(),
+      p_amount_paise: 39900,
+    });
+    assert.ok(anonPayError, 'confirm_payment_and_activate_subscription MUST reject anon callers');
+    assert.match(
+      anonPayError.message.toLowerCase(),
+      /permission denied|function public\.confirm_payment_and_activate_subscription/i,
+      'Error must be permission denied'
+    );
+    console.log('  PASS: confirm_payment_and_activate_subscription rejected unprivileged caller');
 
-      // 1b. reconcile_provider_event must reject unprivileged anon callers
-      const { error: anonReconError } = await unprivilegedAnonClient.rpc('reconcile_provider_event', {
-        p_provider: 'razorpay',
-        p_provider_event_id: `${FIXTURE_PREFIX}_evt_anon`,
-        p_event_type: 'order.paid',
-        p_payload: {},
-      });
-      assert.ok(anonReconError, 'reconcile_provider_event MUST reject anon callers');
-      assert.match(
-        anonReconError.message.toLowerCase(),
-        /permission denied|function public\.reconcile_provider_event/i,
-        'Error must be permission denied'
-      );
-      console.log('  PASS: reconcile_provider_event rejected unprivileged caller');
+    // 1b. reconcile_provider_event must reject unprivileged anon callers
+    const { error: anonReconError } = await unprivilegedAnonClient.rpc('reconcile_provider_event', {
+      p_provider: 'razorpay',
+      p_provider_event_id: `${FIXTURE_PREFIX}_evt_anon`,
+      p_event_type: 'order.paid',
+      p_payload: {},
+    });
+    assert.ok(anonReconError, 'reconcile_provider_event MUST reject anon callers');
+    assert.match(
+      anonReconError.message.toLowerCase(),
+      /permission denied|function public\.reconcile_provider_event/i,
+      'Error must be permission denied'
+    );
+    console.log('  PASS: reconcile_provider_event rejected unprivileged caller');
 
-      // 1c. save_campaign_atomically must reject unauthenticated callers
-      const { error: anonSaveError } = await unprivilegedAnonClient.rpc('save_campaign_atomically', {
-        p_business_id: crypto.randomUUID(),
-        p_campaign_type: 'FESTIVAL',
-        p_objective: 'AWARENESS',
-        p_audience: 'Local',
-        p_offer: {},
-        p_schedule: {},
-        p_google_content: { text: 'test' },
-        p_instagram_content: { text: 'test' },
-        p_whatsapp_content: { text: 'test' },
-        p_poster_content: { text: 'test' },
-      });
-      assert.ok(anonSaveError, 'save_campaign_atomically MUST reject unauthenticated callers');
-      assert.match(anonSaveError.message, /UNAUTHORIZED|permission denied/i);
-      console.log('  PASS: save_campaign_atomically rejected unauthenticated caller');
-    }
+    // 1c. save_campaign_atomically must reject unauthenticated callers
+    const { error: anonSaveError } = await unprivilegedAnonClient.rpc('save_campaign_atomically', {
+      p_business_id: crypto.randomUUID(),
+      p_campaign_type: 'FESTIVAL',
+      p_objective: 'AWARENESS',
+      p_audience: 'Local',
+      p_offer: {},
+      p_schedule: {},
+      p_google_content: { text: 'test' },
+      p_instagram_content: { text: 'test' },
+      p_whatsapp_content: { text: 'test' },
+      p_poster_content: { text: 'test' },
+    });
+    assert.ok(anonSaveError, 'save_campaign_atomically MUST reject unauthenticated callers');
+    assert.match(anonSaveError.message, /UNAUTHORIZED|permission denied/i);
+    console.log('  PASS: save_campaign_atomically rejected unauthenticated caller');
     passedSuites++;
 
     // ------------------------------------------------------------------------
@@ -424,13 +471,20 @@ async function runIntegrationSuite() {
       }),
     ]);
 
+    // Immediately register returned campaign IDs before any assertion that may throw
+    if (res1?.data?.campaign_id && !cleanupState.campaignIds.includes(res1.data.campaign_id)) {
+      cleanupState.campaignIds.push(res1.data.campaign_id);
+    }
+    if (res2?.data?.campaign_id && !cleanupState.campaignIds.includes(res2.data.campaign_id)) {
+      cleanupState.campaignIds.push(res2.data.campaign_id);
+    }
+
     assert.ifError(res1.error);
     assert.ifError(res2.error);
 
     const campaignId1 = res1.data.campaign_id;
     const campaignId2 = res2.data.campaign_id;
     assert.strictEqual(campaignId1, campaignId2, 'Both concurrent calls must return the identical campaign ID');
-    cleanupState.campaignIds.push(campaignId1);
 
     const hasReplay = res1.data.idempotent_replay === true || res2.data.idempotent_replay === true;
     assert.ok(hasReplay, 'At least one concurrent branch must acknowledge idempotent replay');
@@ -503,6 +557,14 @@ async function runIntegrationSuite() {
     const resAValue = raceA.status === 'fulfilled' ? raceA.value : null;
     const resBValue = raceB.status === 'fulfilled' ? raceB.value : null;
 
+    // Register any created campaign IDs immediately before assertions that might throw
+    if (resAValue?.data?.campaign_id && !cleanupState.campaignIds.includes(resAValue.data.campaign_id)) {
+      cleanupState.campaignIds.push(resAValue.data.campaign_id);
+    }
+    if (resBValue?.data?.campaign_id && !cleanupState.campaignIds.includes(resBValue.data.campaign_id)) {
+      cleanupState.campaignIds.push(resBValue.data.campaign_id);
+    }
+
     const aSucceeded = !resAValue?.error && resAValue?.data?.campaign_id;
     const bSucceeded = !resBValue?.error && resBValue?.data?.campaign_id;
 
@@ -512,7 +574,7 @@ async function runIntegrationSuite() {
     );
 
     const winningCampaignId = aSucceeded ? resAValue.data.campaign_id : resBValue.data.campaign_id;
-    cleanupState.campaignIds.push(winningCampaignId);
+    assert.ok(winningCampaignId);
 
     const losingError = aSucceeded ? resBValue.error : resAValue.error;
     assert.match(
@@ -743,6 +805,41 @@ async function runIntegrationSuite() {
       if (peErr) cleanupErrors.push(`provider_events deletion error: ${peErr.message}`);
     }
 
+    // 5. Post-run residual fixture sweep
+    try {
+      if (cleanupState.campaignIds.length > 0) {
+        const { data: remainingCampaigns } = await adminClient
+          .from('campaigns')
+          .select('id')
+          .in('id', cleanupState.campaignIds);
+        if (remainingCampaigns && remainingCampaigns.length > 0) {
+          cleanupErrors.push(`Residual fixture check: ${remainingCampaigns.length} campaigns still present`);
+        }
+      }
+
+      if (cleanupState.businessIds.length > 0) {
+        const { data: remainingBusinesses } = await adminClient
+          .from('businesses')
+          .select('id')
+          .in('id', cleanupState.businessIds);
+        if (remainingBusinesses && remainingBusinesses.length > 0) {
+          cleanupErrors.push(`Residual fixture check: ${remainingBusinesses.length} businesses still present`);
+        }
+      }
+
+      if (cleanupState.providerEventIds.length > 0) {
+        const { data: remainingEvents } = await adminClient
+          .from('provider_events')
+          .select('id')
+          .in('provider_event_id', cleanupState.providerEventIds);
+        if (remainingEvents && remainingEvents.length > 0) {
+          cleanupErrors.push(`Residual fixture check: ${remainingEvents.length} provider events still present`);
+        }
+      }
+    } catch (sweepErr) {
+      cleanupErrors.push(`Residual fixture sweep check failed: ${sweepErr.message}`);
+    }
+
     if (cleanupErrors.length > 0) {
       console.error('  FAIL: Teardown errors encountered:');
       for (const err of cleanupErrors) {
@@ -751,7 +848,7 @@ async function runIntegrationSuite() {
       throw new Error(`Integration fixture teardown failed with ${cleanupErrors.length} errors.`);
     }
 
-    console.log('  PASS: All synthetic fixtures cleanly deleted from PostgreSQL database');
+    console.log('  PASS: All synthetic fixtures cleanly deleted from PostgreSQL database; zero residual records verified');
   }
 }
 
