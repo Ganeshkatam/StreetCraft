@@ -87,9 +87,14 @@ export function OfferTimingStep({
 
       <div className="workspace-grid-2col" style={{ marginBottom: '20px' }}>
         <div className="form-group">
-          <label className="form-label" htmlFor="offerTitle">
-            Offer Headline / Special Name <span style={{ color: 'var(--color-danger)' }}>*</span>
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <label className="form-label" htmlFor="offerTitle">
+              Offer Headline / Special Name <span style={{ color: 'var(--color-danger)' }}>*</span>
+            </label>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
+              {offerTitle.length}/100
+            </span>
+          </div>
           <input
             id="offerTitle"
             name="offerTitle"
@@ -100,6 +105,7 @@ export function OfferTimingStep({
             onChange={(e) => setOfferTitle(e.target.value)}
             maxLength={100}
             required
+            disabled={isSubmitting}
           />
         </div>
 
@@ -116,14 +122,20 @@ export function OfferTimingStep({
             value={offerValue}
             onChange={(e) => setOfferValue(e.target.value)}
             maxLength={100}
+            disabled={isSubmitting}
           />
         </div>
       </div>
 
       <div className="form-group" style={{ marginBottom: '20px' }}>
-        <label className="form-label" htmlFor="offerDesc">
-          Offer Description &amp; Details <span style={{ color: 'var(--color-danger)' }}>*</span>
-        </label>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <label className="form-label" htmlFor="offerDesc">
+            Offer Description &amp; Details <span style={{ color: 'var(--color-danger)' }}>*</span>
+          </label>
+          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
+            {offerDesc.length}/300
+          </span>
+        </div>
         <textarea
           id="offerDesc"
           name="offerDesc"
@@ -134,6 +146,7 @@ export function OfferTimingStep({
           onChange={(e) => setOfferDesc(e.target.value)}
           maxLength={300}
           required
+          disabled={isSubmitting}
         />
       </div>
 
@@ -151,6 +164,7 @@ export function OfferTimingStep({
             value={timingLabel}
             onChange={(e) => setTimingLabel(e.target.value)}
             maxLength={80}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -167,6 +181,7 @@ export function OfferTimingStep({
             value={offerTerms}
             onChange={(e) => setOfferTerms(e.target.value)}
             maxLength={200}
+            disabled={isSubmitting}
           />
         </div>
       </div>
@@ -184,6 +199,7 @@ export function OfferTimingStep({
           value={customNotes}
           onChange={(e) => setCustomNotes(e.target.value)}
           maxLength={500}
+          disabled={isSubmitting}
         />
       </div>
 

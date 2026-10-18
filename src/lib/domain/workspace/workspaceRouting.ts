@@ -27,17 +27,51 @@ export function resolveActiveBusiness(
   activeBiz: BusinessSummary | null;
   activeBizId: string | null;
   activeBizName: string;
+  isAuthorized: boolean;
 } {
   const safeBusinesses = Array.isArray(businesses) ? businesses : [];
-  const effectiveBizId = routeBizId || sessionBizId || (safeBusinesses[0]?.id ?? null);
-  const activeBiz = safeBusinesses.find((b) => b && b.id === effectiveBizId) || (safeBusinesses.length > 0 ? safeBusinesses[0] : null);
-  const activeBizId = activeBiz ? activeBiz.id : routeBizId;
-  const activeBizName = activeBiz ? activeBiz.name : (routeBizId ? 'Loading Storefront...' : 'No Store Selected');
+
+  // When a specific storefront is requested via URL route parameter:
+  if (routeBizId) {
+    const matched = safeBusinesses.find((b) => b && b.id === routeBizId);
+    if (matched) {
+      return {
+        activeBiz: matched,
+        activeBizId: matched.id,
+        activeBizName: matched.name,
+        isAuthorized: true,
+      };
+    }
+
+    // If businesses have been provided and the candidate is NOT in the list,
+    // do NOT fall back to another storefront. Never mask unauthorized access.
+    if (safeBusinesses.length > 0) {
+      return {
+        activeBiz: null,
+        activeBizId: null,
+        activeBizName: 'Unauthorized Storefront',
+        isAuthorized: false,
+      };
+    }
+
+    // Initial state before businesses have populated
+    return {
+      activeBiz: null,
+      activeBizId: routeBizId,
+      activeBizName: 'Loading Storefront...',
+      isAuthorized: false,
+    };
+  }
+
+  // Not on a route-scoped business path; resolve from session or primary authorized store
+  const fallbackId = sessionBizId || (safeBusinesses[0]?.id ?? null);
+  const matched = safeBusinesses.find((b) => b && b.id === fallbackId) || (safeBusinesses.length > 0 ? safeBusinesses[0] : null);
 
   return {
-    activeBiz,
-    activeBizId,
-    activeBizName,
+    activeBiz: matched,
+    activeBizId: matched ? matched.id : null,
+    activeBizName: matched ? matched.name : 'No Store Selected',
+    isAuthorized: matched !== null,
   };
 }
 

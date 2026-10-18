@@ -6,9 +6,10 @@ interface CreateStepIndicatorProps {
   currentStep: number;
   onSelectStep?: (step: number) => void;
   maxAccessibleStep: number;
+  disabled?: boolean;
 }
 
-export function CreateStepIndicator({ currentStep, onSelectStep, maxAccessibleStep }: CreateStepIndicatorProps) {
+export function CreateStepIndicator({ currentStep, onSelectStep, maxAccessibleStep, disabled }: CreateStepIndicatorProps) {
   const steps = [
     { num: 1, title: '01 Store Moment' },
     { num: 2, title: '02 Primary Goal' },
@@ -21,13 +22,14 @@ export function CreateStepIndicator({ currentStep, onSelectStep, maxAccessibleSt
       {steps.map((s) => {
         const isActive = currentStep === s.num;
         const isPast = currentStep > s.num;
-        const isClickable = s.num <= maxAccessibleStep && onSelectStep && !isActive;
+        const isClickable = !disabled && s.num <= maxAccessibleStep && onSelectStep && !isActive;
 
         return (
           <button
             key={s.num}
             type="button"
             disabled={!isClickable}
+            aria-current={isActive ? 'step' : undefined}
             onClick={() => isClickable && onSelectStep(s.num)}
             style={{
               fontFamily: 'var(--font-mono)',

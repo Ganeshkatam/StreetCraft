@@ -70,6 +70,14 @@ describe('Workspace Routing: Active Business Resolution', () => {
     assert.strictEqual(res.activeBizName, 'Loading Storefront...');
   });
 
+  it('does NOT fall back to another store when routeBizId is unauthorized', () => {
+    const res = resolveActiveBusiness('biz-unauthorized-999', 'biz-1', sampleBusinesses);
+    assert.strictEqual(res.isAuthorized, false);
+    assert.strictEqual(res.activeBiz, null);
+    assert.strictEqual(res.activeBizId, null);
+    assert.strictEqual(res.activeBizName, 'Unauthorized Storefront');
+  });
+
   it('handles completely empty state with No Store Selected', () => {
     const res = resolveActiveBusiness(null, null, []);
     assert.strictEqual(res.activeBizId, null);

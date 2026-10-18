@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChannelCard } from '../../../../components/ChannelCard';
-import { ArrowRight, CheckCircle2, FileText, Code, Printer } from 'lucide-react';
+import { ArrowRight, CheckCircle2, FileText, Code, Printer, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   downloadFullCampaignPackTxt,
   downloadFullCampaignPackMarkdown,
@@ -28,11 +29,47 @@ export function ProofsReviewStep({
   outputs,
   onReset,
 }: ProofsReviewStepProps) {
+  const [copiedAll, setCopiedAll] = React.useState(false);
   const bizQuery = `?biz=${encodeURIComponent(businessId)}`;
   const pack = {
     campaign,
     outputs,
     validationStatus: 'VALID' as const,
+  };
+
+  const handleCopyAll = () => {
+    const sections: string[] = [
+      `=== ${storeName.toUpperCase()} — COORDINATED CAMPAIGN PACK ===`,
+      `Offer: ${campaign?.offer?.title || 'Special Promotion'}`,
+      `Validity: ${campaign?.schedule?.timingLabel || 'Limited Time'}`,
+      '',
+      '--- 1. GOOGLE BUSINESS PROFILE ---',
+      outputs?.googleBusiness?.headline || '',
+      outputs?.googleBusiness?.body || '',
+      outputs?.googleBusiness?.ctaType ? `CTA: ${outputs.googleBusiness.ctaType}` : '',
+      '',
+      '--- 2. INSTAGRAM CAPTION & HASHTAGS ---',
+      outputs?.instagram?.hook || '',
+      outputs?.instagram?.caption || '',
+      Array.isArray(outputs?.instagram?.hashtags) ? outputs.instagram.hashtags.join(' ') : (outputs?.instagram?.hashtags || ''),
+      '',
+      '--- 3. WHATSAPP BROADCAST ---',
+      outputs?.whatsapp?.greeting || '',
+      outputs?.whatsapp?.message || '',
+      outputs?.whatsapp?.callToAction || '',
+      '',
+      '--- 4. IN-STORE COUNTER POSTER ---',
+      outputs?.poster?.headline || '',
+      outputs?.poster?.subheadline || '',
+      outputs?.poster?.perk || '',
+      outputs?.poster?.terms || '',
+    ];
+
+    const fullText = sections.filter(Boolean).join('\n');
+    navigator.clipboard.writeText(fullText);
+    setCopiedAll(true);
+    toast.success('All 4 channel proofs copied to clipboard!');
+    setTimeout(() => setCopiedAll(false), 2200);
   };
 
   return (
@@ -76,7 +113,17 @@ export function ProofsReviewStep({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ fontSize: '12.5px', padding: '7px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            onClick={handleCopyAll}
+          >
+            {copiedAll ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+            <span>{copiedAll ? 'Copied All Channels!' : 'Copy All Proofs'}</span>
+          </button>
+
           <button
             type="button"
             className="btn-secondary"

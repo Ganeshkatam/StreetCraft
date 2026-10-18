@@ -22,6 +22,13 @@ interface CreateCampaignViewProps {
 
 const initialState: CreateCampaignActionState = { success: false, message: '' };
 
+import {
+  saveCampaignDraftToStorage,
+  loadCampaignDraftFromStorage,
+  clearCampaignDraftFromStorage,
+} from '../../../lib/domain/create/draftPersistence';
+import { RotateCcw, Sparkles } from 'lucide-react';
+
 export function CreateCampaignView({ context }: CreateCampaignViewProps) {
   const { business, profile, entitlement, preset } = context;
 
@@ -40,20 +47,72 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
   const [offerTerms, setOfferTerms] = useState<string>(preset?.offerTerms || '');
   const [timingLabel, setTimingLabel] = useState<string>(preset?.timingLabel || profile?.slowHours || '');
   const [customNotes, setCustomNotes] = useState<string>(preset?.customNotes || '');
+  const [hasRestoredDraft, setHasRestoredDraft] = useState<boolean>(false);
   const { open: openUpgradeModal } = useRouteModal('upgrade', { legacyParam: 'upgrade' });
 
   // Server Action Hook
   const [actionState, formAction, isPending] = useActionState(createCampaignAction, initialState);
   const [generatedPack, setGeneratedPack] = useState<any>(null);
 
+  // Restore draft on mount if no preset was explicitly passed
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasPreset = Boolean(preset?.offerTitle || preset?.offerDescription || preset?.type);
+    if (hasPreset) return;
+
+    const draft = loadCampaignDraftFromStorage(window.localStorage, business.id);
+    if (draft && (draft.offerTitle || draft.offerDesc || draft.step > 1)) {
+      setStep(draft.step);
+      setMaxAccessibleStep(Math.max(draft.step, 1));
+      setType(draft.type);
+      setObjective(draft.objective);
+      if (draft.offerTitle) setOfferTitle(draft.offerTitle);
+      if (draft.offerDesc) setOfferDesc(draft.offerDesc);
+      if (draft.offerValue) setOfferValue(draft.offerValue);
+      if (draft.offerTerms) setOfferTerms(draft.offerTerms);
+      if (draft.timingLabel) setTimingLabel(draft.timingLabel);
+      if (draft.audience) setAudience(draft.audience);
+      if (draft.customNotes) setCustomNotes(draft.customNotes);
+      setHasRestoredDraft(true);
+    }
+  }, [business.id, preset]);
+
+  // Debounced auto-save draft to local storage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (step === 4) return; // Do not save on review step
+
+    const timer = setTimeout(() => {
+      saveCampaignDraftToStorage(window.localStorage, business.id, {
+        step,
+        type,
+        objective,
+        offerTitle,
+        offerDesc,
+        offerValue,
+        offerTerms,
+        timingLabel,
+        audience,
+        customNotes,
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [business.id, step, type, objective, offerTitle, offerDesc, offerValue, offerTerms, timingLabel, audience, customNotes]);
+
+  // Clear draft on successful generation
   useEffect(() => {
     if (actionState.success && actionState.data && !isPending) {
+      if (typeof window !== 'undefined') {
+        clearCampaignDraftFromStorage(window.localStorage, business.id);
+      }
+      setHasRestoredDraft(false);
       setGeneratedPack(actionState.data);
       setStep(4);
       setMaxAccessibleStep(4);
       toast.success(actionState.message);
     }
-  }, [actionState, isPending]);
+  }, [actionState, isPending, business.id]);
 
   if (!profile) {
     return (
@@ -92,11 +151,23 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
   };
 
   const handleReset = () => {
+    if (typeof window !== 'undefined') {
+      clearCampaignDraftFromStorage(window.localStorage, business.id);
+    }
+    setHasRestoredDraft(false);
     setStep(1);
     setMaxAccessibleStep(1);
     setGeneratedPack(null);
     setOfferTitle('');
     setOfferDesc(profile.defaultOffer || '');
+    setOfferValue('');
+    setOfferTerms('');
+    setCustomNotes('');
+  };
+
+  const handleDiscardDraft = () => {
+    handleReset();
+    toast.info('Draft discarded.');
   };
 
   const handleApplyOpportunity = (opp: any) => {
@@ -118,8 +189,40 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
       <CreateStepIndicator
         currentStep={step}
         maxAccessibleStep={maxAccessibleStep}
-        onSelectStep={(s) => setStep(s)}
+        onSelectStep={(s) => !isPending && setStep(s)}
+        disabled={isPending}
       />
+
+      {hasRestoredDraft && step < 4 && (
+        <div
+          role="status"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--color-primary-subtle)',
+            border: '1px solid var(--color-primary-border)',
+            borderRadius: 'var(--radius-xs)',
+            padding: '10px 16px',
+            marginBottom: '20px',
+            fontSize: '13px',
+            color: 'var(--color-ink)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RotateCcw size={14} color="var(--color-primary)" />
+            <span>Restored your in-progress campaign draft for this storefront.</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleDiscardDraft}
+            className="btn-ghost"
+            style={{ fontSize: '12px', padding: '4px 8px', color: 'var(--color-danger)' }}
+          >
+            Discard Draft
+          </button>
+        </div>
+      )}
 
       {!actionState.success && actionState.message && (
         <CreateErrorState
@@ -128,7 +231,41 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
         />
       )}
 
-      {step === 1 && (
+      {isPending && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="card"
+          style={{
+            padding: '36px 24px',
+            textAlign: 'center',
+            marginBottom: '24px',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-primary-border)',
+          }}
+        >
+          <div
+            className="spin-animate"
+            style={{
+              display: 'inline-block',
+              width: '32px',
+              height: '32px',
+              border: '3px solid var(--color-border)',
+              borderTopColor: 'var(--color-primary)',
+              borderRadius: '50%',
+              marginBottom: '16px',
+            }}
+          />
+          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '8px' }}>
+            Generating 4-Channel Coordinated Proofs
+          </h3>
+          <p style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)', maxWidth: '520px', margin: '0 auto', lineHeight: '1.5' }}>
+            Crafting tailored copy for Google Business Profile, Instagram, WhatsApp Broadcast, and Counter Poster aligned with your storefront identity.
+          </p>
+        </div>
+      )}
+
+      {step === 1 && !isPending && (
         <MomentStep
           selectedType={type}
           onSelectType={setType}
@@ -138,7 +275,7 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
         />
       )}
 
-      {step === 2 && (
+      {step === 2 && !isPending && (
         <GoalStep
           selectedObjective={objective}
           onSelectObjective={setObjective}
