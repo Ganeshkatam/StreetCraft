@@ -137,6 +137,66 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
     assert.match(result.error || '', /Payment amount 10000 paise does not match expected amount 39900 paise/);
   });
 
+  it('rejects when order notes are missing userId (fail-closed user ownership)', () => {
+    const orderWithoutUserId = {
+      ...baseOrder,
+      notes: { planId: 'PRO', billingCycle: 'monthly' },
+    };
+    const paymentWithoutUserId = {
+      ...basePayment,
+      notes: { planId: 'PRO', billingCycle: 'monthly' },
+    };
+
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      order: orderWithoutUserId,
+      payment: paymentWithoutUserId,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /missing authoritative user ownership metadata/);
+  });
+
+  it('rejects when order notes are missing planId (fail-closed plan specification)', () => {
+    const orderWithoutPlan = {
+      ...baseOrder,
+      notes: { userId: validUserId, billingCycle: 'monthly' },
+    };
+    const paymentWithoutPlan = {
+      ...basePayment,
+      notes: { userId: validUserId, billingCycle: 'monthly' },
+    };
+
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      clientTargetPlanId: 'PRO',
+      order: orderWithoutPlan,
+      payment: paymentWithoutPlan,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /missing authoritative plan metadata in order notes/);
+  });
+
+  it('rejects when client attempts to activate a different billing cycle than ordered', () => {
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      clientTargetPlanId: 'PRO',
+      clientBillingCycle: 'annual', // Ordered monthly, client asks annual
+      order: baseOrder,
+      payment: basePayment,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Billing cycle mismatch/);
+  });
+
   it('rejects non-INR currency payments', () => {
     const usdPayment = { ...basePayment, currency: 'USD' };
     const result = reconcileRazorpayPurchase({

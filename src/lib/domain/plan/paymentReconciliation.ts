@@ -95,54 +95,66 @@ export function reconcileRazorpayPurchase(
     };
   }
 
-  // 4. Verify user ownership
+  // 4. Verify user ownership (fail-closed: require authoritative userId in order notes)
   const orderUserId = (order.notes?.userId || payment.notes?.userId) as string | undefined;
-  if (orderUserId && orderUserId !== authenticatedUserId) {
+  if (!orderUserId || typeof orderUserId !== 'string' || orderUserId.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Purchase record is missing authoritative user ownership metadata in order notes.',
+    };
+  }
+
+  if (orderUserId !== authenticatedUserId) {
     return {
       valid: false,
       error: 'Security violation: Order was created for a different account.',
     };
   }
 
-  // 5. Derive verified Plan and Billing Cycle from trusted server-signed order notes
+  // 5. Authoritatively derive Plan and Billing Cycle from server-created order notes (fail-closed)
   const notePlan = (order.notes?.planId || payment.notes?.planId) as string | undefined;
+  if (!notePlan || typeof notePlan !== 'string' || notePlan.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Purchase record is missing authoritative plan metadata in order notes.',
+    };
+  }
+
+  const authoritativePlan = notePlan.toUpperCase();
+  if (!['PRO', 'GROWTH', 'FOUNDER'].includes(authoritativePlan)) {
+    return {
+      valid: false,
+      error: `Invalid plan specification in purchase record: ${authoritativePlan}`,
+    };
+  }
+
   const noteCycle = (order.notes?.billingCycle || payment.notes?.billingCycle) as string | undefined;
-
-  const candidatePlan = (notePlan || clientTargetPlanId || '').toUpperCase();
-  const candidateCycle = (noteCycle || clientBillingCycle || 'monthly').toLowerCase();
-
-  if (!['PRO', 'GROWTH', 'FOUNDER'].includes(candidatePlan)) {
+  const authoritativeCycle = (noteCycle || 'monthly').toLowerCase();
+  if (!['monthly', 'quarterly', 'annual'].includes(authoritativeCycle)) {
     return {
       valid: false,
-      error: `Invalid or missing plan specification in purchase record: ${candidatePlan}`,
+      error: `Invalid billing cycle specification in purchase record: ${authoritativeCycle}`,
     };
   }
 
-  if (!['monthly', 'quarterly', 'annual'].includes(candidateCycle)) {
+  // If client provided target plan, verify strict agreement with authoritative order
+  if (clientTargetPlanId && clientTargetPlanId.toUpperCase() !== authoritativePlan) {
     return {
       valid: false,
-      error: `Invalid billing cycle specification in purchase record: ${candidateCycle}`,
+      error: `Plan mismatch: order was created for ${authoritativePlan}, but activation requested ${clientTargetPlanId.toUpperCase()}.`,
     };
   }
 
-  // If order notes contain the authoritative plan, enforce client agreement
-  if (notePlan && clientTargetPlanId && notePlan.toUpperCase() !== clientTargetPlanId.toUpperCase()) {
+  // If client provided billing cycle, verify strict agreement with authoritative order
+  if (clientBillingCycle && clientBillingCycle.toLowerCase() !== authoritativeCycle) {
     return {
       valid: false,
-      error: `Plan mismatch: order was created for ${notePlan.toUpperCase()}, but activation requested ${clientTargetPlanId.toUpperCase()}.`,
+      error: `Billing cycle mismatch: order was created for ${authoritativeCycle}, but activation requested ${clientBillingCycle.toLowerCase()}.`,
     };
   }
 
-  // If order notes contain the authoritative cycle, enforce client agreement
-  if (noteCycle && clientBillingCycle && noteCycle.toLowerCase() !== clientBillingCycle.toLowerCase()) {
-    return {
-      valid: false,
-      error: `Billing cycle mismatch: order was created for ${noteCycle.toLowerCase()}, but activation requested ${clientBillingCycle.toLowerCase()}.`,
-    };
-  }
-
-  const verifiedPlanId = candidatePlan as BillablePlanId;
-  const verifiedBillingCycle = candidateCycle as BillingCycle;
+  const verifiedPlanId = authoritativePlan as BillablePlanId;
+  const verifiedBillingCycle = authoritativeCycle as BillingCycle;
 
   // 6. Enforce price calculation match
   let expectedQuote;

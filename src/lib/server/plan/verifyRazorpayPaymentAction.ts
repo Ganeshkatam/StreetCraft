@@ -45,11 +45,13 @@ export async function verifyRazorpayPaymentAction(input: {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, targetPlanId, billingCycle, businessId } = parsed.data;
 
     const secret = process.env.RAZORPAY_KEY_SECRET;
-    if (!secret) {
-      console.error('[Razorpay Verify] RAZORPAY_KEY_SECRET is not configured.');
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
+
+    if (!secret || !keyId) {
+      console.error('[Razorpay Verify] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is not configured on the server.');
       return {
         success: false,
-        message: 'Payment verification service is not properly configured.',
+        message: 'Payment verification service is not properly configured. Cannot securely verify purchase.',
       };
     }
 
@@ -71,55 +73,49 @@ export async function verifyRazorpayPaymentAction(input: {
       };
     }
 
-    // 2. Authoritative gateway purchase reconciliation
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
-    let verifiedPlanId = targetPlanId;
-    let verifiedCycle = billingCycle;
+    // 2. Mandatory gateway purchase reconciliation (fail-closed)
+    const authHeader = 'Basic ' + Buffer.from(`${keyId}:${secret}`).toString('base64');
+    const [orderRes, payRes] = await Promise.all([
+      fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(razorpayOrderId)}`, {
+        headers: { 'Authorization': authHeader },
+      }),
+      fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(razorpayPaymentId)}`, {
+        headers: { 'Authorization': authHeader },
+      }),
+    ]);
 
-    if (keyId && secret) {
-      const authHeader = 'Basic ' + Buffer.from(`${keyId}:${secret}`).toString('base64');
-      const [orderRes, payRes] = await Promise.all([
-        fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(razorpayOrderId)}`, {
-          headers: { 'Authorization': authHeader },
-        }),
-        fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(razorpayPaymentId)}`, {
-          headers: { 'Authorization': authHeader },
-        }),
-      ]);
-
-      if (!orderRes.ok || !payRes.ok) {
-        console.error('[Razorpay Verify] Gateway lookup failed:', orderRes.status, payRes.status);
-        return {
-          success: false,
-          message: 'Unable to reconcile payment with payment gateway records.',
-        };
-      }
-
-      const orderData = await orderRes.json();
-      const paymentData = await payRes.json();
-
-      const { reconcileRazorpayPurchase } = await import('../../domain/plan/paymentReconciliation');
-      const reconciliation = reconcileRazorpayPurchase({
-        authenticatedUserId: claims.userId,
-        expectedOrderId: razorpayOrderId,
-        expectedPaymentId: razorpayPaymentId,
-        clientTargetPlanId: targetPlanId,
-        clientBillingCycle: billingCycle,
-        order: orderData,
-        payment: paymentData,
-      });
-
-      if (!reconciliation.valid) {
-        console.error('[Razorpay Verify] Purchase reconciliation rejected:', reconciliation.error);
-        return {
-          success: false,
-          message: reconciliation.error || 'Payment reconciliation failed.',
-        };
-      }
-
-      if (reconciliation.verifiedPlanId) verifiedPlanId = reconciliation.verifiedPlanId;
-      if (reconciliation.verifiedBillingCycle) verifiedCycle = reconciliation.verifiedBillingCycle;
+    if (!orderRes.ok || !payRes.ok) {
+      console.error('[Razorpay Verify] Gateway lookup failed:', orderRes.status, payRes.status);
+      return {
+        success: false,
+        message: 'Unable to reconcile payment with payment gateway records.',
+      };
     }
+
+    const orderData = await orderRes.json();
+    const paymentData = await payRes.json();
+
+    const { reconcileRazorpayPurchase } = await import('../../domain/plan/paymentReconciliation');
+    const reconciliation = reconcileRazorpayPurchase({
+      authenticatedUserId: claims.userId,
+      expectedOrderId: razorpayOrderId,
+      expectedPaymentId: razorpayPaymentId,
+      clientTargetPlanId: targetPlanId,
+      clientBillingCycle: billingCycle,
+      order: orderData,
+      payment: paymentData,
+    });
+
+    if (!reconciliation.valid || !reconciliation.verifiedPlanId || !reconciliation.verifiedBillingCycle) {
+      console.error('[Razorpay Verify] Purchase reconciliation rejected:', reconciliation.error);
+      return {
+        success: false,
+        message: reconciliation.error || 'Payment reconciliation failed.',
+      };
+    }
+
+    const verifiedPlanId = reconciliation.verifiedPlanId;
+    const verifiedCycle = reconciliation.verifiedBillingCycle;
 
     // 3. Connect to Supabase using privileged service role to safely activate verified payment
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
