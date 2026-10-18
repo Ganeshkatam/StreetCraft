@@ -41,6 +41,7 @@ REVOKE EXECUTE ON FUNCTION public.claim_founder_tier(text) FROM PUBLIC, anon, au
 REVOKE EXECUTE ON FUNCTION public.cleanup_unconfirmed_users() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.sync_business_name_and_category() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.delete_business_atomically(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.is_business_admin(uuid) FROM PUBLIC, anon;
 
 -- Ensure authenticated role can call authorized store deletion and cancellation
 GRANT EXECUTE ON FUNCTION public.delete_business_atomically(uuid) TO authenticated;
