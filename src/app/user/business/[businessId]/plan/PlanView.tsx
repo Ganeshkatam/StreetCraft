@@ -349,6 +349,7 @@ export function PlanView({ planData }: PlanViewProps) {
         <UpgradeModal
           isOpen={showUpgradeModal}
           currentPlanId={subscription.planId}
+          businessId={businessId}
           onClose={() => setShowUpgradeModal(false)}
         />
       )}

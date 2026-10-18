@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DatabasePlan } from '../types/billing';
 import { api } from '../lib/api';
-import { X, Check } from 'lucide-react';
+import { X, Check, Loader2 } from 'lucide-react';
 import { getUserFacingErrorMessage } from '../lib/userFacingError';
+import { createRazorpayOrderAction } from '../lib/server/plan/createRazorpayOrderAction';
+import { verifyRazorpayPaymentAction } from '../lib/server/plan/verifyRazorpayPaymentAction';
+import { loadRazorpayScript } from '../lib/client/loadRazorpayScript';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -10,6 +13,7 @@ interface UpgradeModalProps {
   currentPlanId?: string;
   onPlanUpdated?: () => void;
   onSuccess?: () => void;
+  businessId?: string;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({
@@ -18,8 +22,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   currentPlanId,
   onPlanUpdated,
   onSuccess,
+  businessId,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [plans, setPlans] = useState<DatabasePlan[]>([]);
@@ -44,26 +50,90 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const handleUpgrade = async (plan: DatabasePlan) => {
     if (plan.id.toUpperCase() === normalizedCurrentPlanId) return;
     setIsProcessing(true);
+    setProcessingPlanId(plan.id);
     setErrorNotice(null);
+
     try {
-      const paymentRef = 'pay_' + Math.random().toString(36).substring(2, 11);
-      const orderRef = 'order_' + Math.random().toString(36).substring(2, 11);
       const billingCycle: 'monthly' | 'quarterly' | 'annual' = plan.id === 'FOUNDER' ? 'quarterly' : 'monthly';
 
-      await api.confirmPaymentAndActivateSubscription('razorpay', paymentRef, orderRef, plan.id, billingCycle);
+      // 1. Create order on the server
+      const orderRes = await createRazorpayOrderAction({
+        targetPlanId: plan.id,
+        billingCycle,
+        businessId,
+      });
 
-      const limit = plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 100;
-      setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${limit} monthly campaigns.`);
-      if (onPlanUpdated) onPlanUpdated();
-      if (onSuccess) onSuccess();
-      setTimeout(() => {
-        setSuccessNotice(null);
-        onClose();
-      }, 1400);
+      if (!orderRes.success || !orderRes.orderId || !orderRes.keyId) {
+        throw new Error(orderRes.message || 'Failed to initiate payment order.');
+      }
+
+      // 2. Load Razorpay Checkout SDK
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !(window as any).Razorpay) {
+        throw new Error('Unable to load Razorpay Checkout script. Please check your internet connection.');
+      }
+
+      // 3. Open Razorpay Checkout modal
+      const options = {
+        key: orderRes.keyId,
+        amount: orderRes.amount,
+        currency: orderRes.currency || 'INR',
+        name: 'StreetCraft',
+        description: `${orderRes.planName || plan.name} Subscription`,
+        order_id: orderRes.orderId,
+        theme: {
+          color: '#166534',
+        },
+        handler: async function (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) {
+          setIsProcessing(true);
+          try {
+            const verifyRes = await verifyRazorpayPaymentAction({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              targetPlanId: plan.id,
+              billingCycle,
+              businessId,
+            });
+
+            if (!verifyRes.success) {
+              throw new Error(verifyRes.message || 'Payment signature verification failed.');
+            }
+
+            const limit = plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 100;
+            setSuccessNotice(`Upgraded to ${plan.name}. Quota updated to ${limit} monthly campaigns.`);
+            if (onPlanUpdated) onPlanUpdated();
+            if (onSuccess) onSuccess();
+
+            setTimeout(() => {
+              setSuccessNotice(null);
+              onClose();
+            }, 1800);
+          } catch (verifyErr: any) {
+            setErrorNotice(getUserFacingErrorMessage(verifyErr, 'Payment verification failed. If your account was charged, please contact support.'));
+          } finally {
+            setIsProcessing(false);
+            setProcessingPlanId(null);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            setProcessingPlanId(null);
+          },
+        },
+      };
+
+      const rzpInstance = new (window as any).Razorpay(options);
+      rzpInstance.open();
     } catch (err: any) {
-      setErrorNotice(getUserFacingErrorMessage(err, 'Payment confirmation failed. Please verify your details or try again.'));
-    } finally {
+      setErrorNotice(getUserFacingErrorMessage(err, 'Failed to open payment gateway. Please check your credentials.'));
       setIsProcessing(false);
+      setProcessingPlanId(null);
     }
   };
 
@@ -102,6 +172,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 plans.map((plan) => {
                   const isCurrent = plan.id.toUpperCase() === normalizedCurrentPlanId;
                   const isPro = plan.id === 'PRO' && !isCurrent;
+                  const isCardProcessing = isProcessing && processingPlanId === plan.id;
+
                   return (
                     <div
                       key={plan.id}
@@ -169,11 +241,18 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                       ) : (
                         <button
                           className={isPro ? 'btn-primary' : 'btn-secondary'}
-                          style={{ marginTop: '20px', width: '100%', justifyContent: 'center', fontSize: '12.5px', padding: '9px 12px' }}
+                          style={{ marginTop: '20px', width: '100%', justifyContent: 'center', fontSize: '12.5px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                           disabled={isProcessing}
                           onClick={() => handleUpgrade(plan)}
                         >
-                          {isProcessing ? 'Updating...' : `Select ${plan.name}`}
+                          {isCardProcessing ? (
+                            <>
+                              <Loader2 size={13} className="spin" />
+                              <span>Connecting Gateway...</span>
+                            </>
+                          ) : (
+                            `Select ${plan.name}`
+                          )}
                         </button>
                       )}
                     </div>
@@ -183,7 +262,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-              <button className="btn-secondary" onClick={onClose}>
+              <button className="btn-secondary" onClick={onClose} disabled={isProcessing}>
                 Close
               </button>
             </div>
