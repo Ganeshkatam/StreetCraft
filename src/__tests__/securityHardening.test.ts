@@ -214,3 +214,37 @@ describe('Security Hardening: Subscription Cancellation Lifecycle & Entitlement 
   });
 });
 
+describe('Security Hardening: Least-Privilege Entitlement Activation RPC Permissions', () => {
+  it('enforces that latest migration revokes execute from public, anon, and authenticated', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+
+    const migrationPath = path.resolve('supabase/migrations/20261018180000_revoke_client_subscription_activation.sql');
+    assert.ok(fs.existsSync(migrationPath), 'Migration 20261018180000_revoke_client_subscription_activation.sql must exist');
+
+    const migrationContent = fs.readFileSync(migrationPath, 'utf8');
+
+    // Must revoke from PUBLIC, anon, authenticated for 6-arg overload
+    assert.match(
+      migrationContent,
+      /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription\(text,\s*text,\s*text,\s*text,\s*text,\s*uuid\)\s+FROM\s+PUBLIC,\s*anon,\s*authenticated;/i
+    );
+
+    // Must revoke from PUBLIC, anon, authenticated for 5-arg overload
+    assert.match(
+      migrationContent,
+      /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription\(text,\s*text,\s*text,\s*text,\s*text\)\s+FROM\s+PUBLIC,\s*anon,\s*authenticated;/i
+    );
+
+    // Must grant execute strictly to service_role
+    assert.match(
+      migrationContent,
+      /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription\(text,\s*text,\s*text,\s*text,\s*text,\s*uuid\)\s+TO\s+service_role;/i
+    );
+    assert.match(
+      migrationContent,
+      /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription\(text,\s*text,\s*text,\s*text,\s*text\)\s+TO\s+service_role;/i
+    );
+  });
+});
+
