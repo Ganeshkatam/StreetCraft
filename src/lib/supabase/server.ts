@@ -1,13 +1,25 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+type SupabaseServerClient = ReturnType<typeof createServerClient>;
+type SupabaseServerClientFactory = () => Promise<any> | any;
+let clientOverride: SupabaseServerClientFactory | null = null;
+
+export function setServerClientOverride(factory: SupabaseServerClientFactory | null) {
+  clientOverride = factory;
+}
+
 /**
  * Creates a request-safe Supabase server client for Server Components,
  * Server Actions, and Route Handlers in Next.js App Router.
  *
  * Note: Middleware/proxy and cookie mutation guards will be established in Phase 3.
  */
-export async function createClient() {
+export async function createClient(): Promise<SupabaseServerClient> {
+  if (clientOverride) {
+    return clientOverride() as SupabaseServerClient;
+  }
+
   const cookieStore = await cookies();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';

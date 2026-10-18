@@ -29,6 +29,9 @@ function compileFile(srcPath, outPath) {
     }
     return match;
   });
+
+  // Rewrite Next.js subpath imports to append .js for native Node ESM resolution
+  jsCode = jsCode.replace(/(from\s+['"])next\/(cache|navigation|headers)(['"])/g, '$1next/$2.js$3');
   
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, jsCode);

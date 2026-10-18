@@ -94,12 +94,12 @@ export async function getCampaignDetail(campaignId: string): Promise<CampaignDet
     generationRevision: typeof data.generation_revision === 'number' ? data.generation_revision : 0,
   };
 
-  const rawOutputs = Array.isArray(data.campaign_outputs) ? data.campaign_outputs : [];
+  const rawOutputs = (Array.isArray(data.campaign_outputs) ? data.campaign_outputs : []) as Array<{ channel: string; content: Record<string, unknown>; status: string }>;
 
-  const googleBusiness = rawOutputs.find(o => o.channel === 'GOOGLE_BUSINESS') as CampaignDetailOutput | undefined;
-  const instagram = rawOutputs.find(o => o.channel === 'INSTAGRAM') as CampaignDetailOutput | undefined;
-  const whatsapp = rawOutputs.find(o => o.channel === 'WHATSAPP') as CampaignDetailOutput | undefined;
-  const poster = rawOutputs.find(o => o.channel === 'IN_STORE_POSTER') as CampaignDetailOutput | undefined;
+  const googleBusiness = rawOutputs.find((o) => o.channel === 'GOOGLE_BUSINESS') as CampaignDetailOutput | undefined;
+  const instagram = rawOutputs.find((o) => o.channel === 'INSTAGRAM') as CampaignDetailOutput | undefined;
+  const whatsapp = rawOutputs.find((o) => o.channel === 'WHATSAPP') as CampaignDetailOutput | undefined;
+  const poster = rawOutputs.find((o) => o.channel === 'IN_STORE_POSTER') as CampaignDetailOutput | undefined;
 
   const outputs = {
     googleBusiness: googleBusiness || null,
