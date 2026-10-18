@@ -600,9 +600,17 @@ export function CheckoutView({
                               )}
                             </div>
 
-                            <div style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)', margin: '8px 0 2px' }}>
-                              ₹{planQuote.monthlyEffectiveINR}
-                              <span style={{ fontSize: '11px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>/mo</span>
+                            <div style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)', margin: '8px 0 2px', display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                              <span>₹{planQuote.amountINR.toLocaleString('en-IN')}</span>
+                              <span style={{ fontSize: '11px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>
+                                /{planQuote.billingCycle === 'annual' ? 'year' : planQuote.billingCycle === 'quarterly' ? 'quarter' : 'month'}
+                              </span>
+                            </div>
+
+                            <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', marginBottom: '8px', fontWeight: 500 }}>
+                              {planQuote.billingCycle === 'monthly'
+                                ? `₹${planQuote.monthlyEffectiveINR}/mo · Billed monthly`
+                                : `That's ₹${planQuote.monthlyEffectiveINR}/mo breakdown`}
                             </div>
 
                             <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '10px' }}>

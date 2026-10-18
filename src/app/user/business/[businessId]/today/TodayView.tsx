@@ -9,7 +9,7 @@ import { CampaignVaultSnippet } from './components/CampaignVaultSnippet';
 import { StorefrontContextPanel } from './components/StorefrontContextPanel';
 import { StoreQuotaPanel } from './components/StoreQuotaPanel';
 import { UpcomingFestivalsPanel } from './components/UpcomingFestivalsPanel';
-import { UpgradeModal } from '../../../../../components/UpgradeModal';
+import { useRouteModal } from '../../../../../hooks/useRouteModal';
 
 interface TodayViewProps {
   data: TodayViewModel;
@@ -17,7 +17,7 @@ interface TodayViewProps {
 
 export function TodayView({ data }: TodayViewProps) {
   const router = useRouter();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { open: openUpgradeModal } = useRouteModal('upgrade', { legacyParam: 'upgrade' });
   const { storefront, briefing, opportunities, recentVault, quota, festivals } = data;
 
   return (
@@ -50,7 +50,7 @@ export function TodayView({ data }: TodayViewProps) {
           <StoreQuotaPanel
             businessId={storefront.id}
             quota={quota}
-            onUpgradeClick={() => setShowUpgradeModal(true)}
+            onUpgradeClick={openUpgradeModal}
           />
 
           <UpcomingFestivalsPanel
@@ -59,15 +59,6 @@ export function TodayView({ data }: TodayViewProps) {
           />
         </div>
       </div>
-
-      {showUpgradeModal && (
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          currentPlanId={quota?.planName || 'FREE'}
-          onClose={() => setShowUpgradeModal(false)}
-          onPlanUpdated={() => router.refresh()}
-        />
-      )}
     </div>
   );
 }

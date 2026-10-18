@@ -11,7 +11,7 @@ import { MomentStep } from './components/MomentStep';
 import { GoalStep } from './components/GoalStep';
 import { OfferTimingStep } from './components/OfferTimingStep';
 import { ProofsReviewStep } from './components/ProofsReviewStep';
-import { UpgradeModal } from '../../../components/UpgradeModal';
+import { useRouteModal } from '../../../hooks/useRouteModal';
 import { toast } from 'sonner';
 import { Store, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -40,7 +40,7 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
   const [offerTerms, setOfferTerms] = useState<string>(preset?.offerTerms || '');
   const [timingLabel, setTimingLabel] = useState<string>(preset?.timingLabel || profile?.slowHours || '');
   const [customNotes, setCustomNotes] = useState<string>(preset?.customNotes || '');
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { open: openUpgradeModal } = useRouteModal('upgrade', { legacyParam: 'upgrade' });
 
   // Server Action Hook
   const [actionState, formAction, isPending] = useActionState(createCampaignAction, initialState);
@@ -171,7 +171,7 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
             setCustomNotes={setCustomNotes}
             onBack={() => setStep(2)}
             isSubmitting={isPending}
-            onUpgradeClick={() => setShowUpgradeModal(true)}
+            onUpgradeClick={openUpgradeModal}
           />
         </form>
       )}
@@ -184,15 +184,6 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
           campaign={generatedPack.campaign}
           outputs={generatedPack.outputs}
           onReset={handleReset}
-        />
-      )}
-
-      {showUpgradeModal && (
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          currentPlanId={entitlement?.planId || 'FREE'}
-          businessId={business?.id}
-          onClose={() => setShowUpgradeModal(false)}
         />
       )}
     </div>

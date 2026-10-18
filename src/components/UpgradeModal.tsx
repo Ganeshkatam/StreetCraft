@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DatabasePlan } from '../types/billing';
 import { api } from '../lib/api';
 import { X, Check, Loader2, ExternalLink, Table, Layers } from 'lucide-react';
@@ -37,6 +37,52 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const normalizedCurrentPlanId = (currentPlanId || 'FREE').toUpperCase();
+
+  const handleClose = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      let changed = false;
+      if (url.searchParams.has('modal') && url.searchParams.get('modal') === 'upgrade') {
+        url.searchParams.delete('modal');
+        changed = true;
+      }
+      if (url.searchParams.has('upgrade')) {
+        url.searchParams.delete('upgrade');
+        changed = true;
+      }
+      if (changed) {
+        window.history.replaceState({}, '', url.toString());
+        window.dispatchEvent(new Event('streetcraft:modal-change'));
+      }
+    }
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const urlCycle = url.searchParams.get('cycle');
+      if (urlCycle === 'quarterly' || urlCycle === 'annual' || urlCycle === 'monthly') {
+        setBillingCycle(urlCycle);
+      }
+      if (url.searchParams.get('modal') !== 'upgrade' && url.searchParams.get('upgrade') !== 'true') {
+        url.searchParams.set('modal', 'upgrade');
+        window.history.replaceState({}, '', url.toString());
+        window.dispatchEvent(new Event('streetcraft:modal-change'));
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -249,7 +295,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   ];
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
+    <div className="modal-overlay" onClick={handleClose} style={{ overscrollBehavior: 'contain' }}>
       <div
         className="modal-card"
         style={{ maxWidth: '1100px', width: '95vw', maxHeight: '92vh', overflowY: 'auto', overscrollBehavior: 'contain' }}
@@ -280,7 +326,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <span>See All Plans</span>
               <ExternalLink size={13} />
             </a>
-            <button className="btn-ghost" onClick={onClose} aria-label="Close modal">
+            <button className="btn-ghost" onClick={handleClose} aria-label="Close modal">
               <X size={18} />
             </button>
           </div>

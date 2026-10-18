@@ -7,6 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUsage } from '../../../hooks/useUsage';
 import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
+import { useRouteModal } from '../../../hooks/useRouteModal';
 import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ExternalLink } from 'lucide-react';
 
 export const WorkspaceNavigation: React.FC = () => {
@@ -19,7 +20,11 @@ export const WorkspaceNavigation: React.FC = () => {
   const [accountLimit, setAccountLimit] = useState(2);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const {
+    isOpen: showUpgradeModal,
+    open: openUpgradeModal,
+    close: closeUpgradeModal,
+  } = useRouteModal('upgrade', { legacyParam: 'upgrade' });
   const [liveAvatarUrl, setLiveAvatarUrl] = useState<string | null>(null);
   const [liveName, setLiveName] = useState<string | null>(null);
   const switcherRef = useRef<HTMLDivElement>(null);
@@ -158,7 +163,7 @@ export const WorkspaceNavigation: React.FC = () => {
                         className="btn-ghost"
                         onClick={() => {
                           setShowSwitcher(false);
-                          setShowUpgradeModal(true);
+                          openUpgradeModal();
                         }}
                       >
                         <span>Upgrade to add more</span>
@@ -209,7 +214,7 @@ export const WorkspaceNavigation: React.FC = () => {
             {usage && (
               <button
                 className="usage-pill"
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={openUpgradeModal}
                 title="View quota and subscription"
               >
                 <span><strong>{usage.remainingPacks}</strong> remaining</span>
@@ -318,7 +323,8 @@ export const WorkspaceNavigation: React.FC = () => {
         <UpgradeModal
           isOpen={showUpgradeModal}
           currentPlanId={usage?.plan || 'FREE'}
-          onClose={() => setShowUpgradeModal(false)}
+          businessId={activeBizId || undefined}
+          onClose={closeUpgradeModal}
           onPlanUpdated={() => router.refresh()}
         />
       )}

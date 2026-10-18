@@ -4,7 +4,7 @@ import React, { useState, useActionState, useEffect } from 'react';
 import Link from 'next/link';
 import { StorePlanViewModel } from '../../../../../lib/domain/plan/planTypes';
 import { requestSubscriptionCancellationAction, CancellationActionState } from '../../../../../lib/server/plan/requestSubscriptionCancellationAction';
-import { UpgradeModal } from '../../../../../components/UpgradeModal';
+import { useRouteModal } from '../../../../../hooks/useRouteModal';
 import { Sparkles, AlertTriangle, ArrowLeft, ExternalLink, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBodyScrollLock } from '../../../../../hooks/useBodyScrollLock';
@@ -17,8 +17,12 @@ const initialCancelState: CancellationActionState = { success: false };
 
 export function PlanView({ planData }: PlanViewProps) {
   const { businessId, businessName, connectedStorefrontsCount, subscription, quota, activityLedger } = planData;
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { open: openUpgradeModal } = useRouteModal('upgrade', { legacyParam: 'upgrade' });
+  const {
+    isOpen: showCancelDialog,
+    open: openCancelDialog,
+    close: closeCancelDialog,
+  } = useRouteModal('cancel-plan');
 
   useBodyScrollLock(showCancelDialog);
 
@@ -31,12 +35,12 @@ export function PlanView({ planData }: PlanViewProps) {
     if (cancelState) {
       if (cancelState.success) {
         toast.success('Subscription cancellation requested.');
-        setShowCancelDialog(false);
+        closeCancelDialog();
       } else if (cancelState.message) {
         toast.error(cancelState.message);
       }
     }
-  }, [cancelState]);
+  }, [cancelState, closeCancelDialog]);
 
   const isPaid = subscription.planId !== 'FREE';
   const renewalDateStr = new Date(subscription.currentPeriodEnd).toLocaleDateString('en-IN', {
@@ -87,7 +91,7 @@ export function PlanView({ planData }: PlanViewProps) {
             type="button"
             className="btn-primary"
             style={{ fontSize: '13px', padding: '8px 18px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            onClick={() => setShowUpgradeModal(true)}
+            onClick={openUpgradeModal}
           >
             <Sparkles size={14} />
             <span>{isPaid ? 'Change Plan' : 'Quick Upgrade'}</span>
@@ -312,7 +316,7 @@ export function PlanView({ planData }: PlanViewProps) {
             type="button"
             className="btn-ghost"
             style={{ fontSize: '12.5px', color: 'var(--color-danger)' }}
-            onClick={() => setShowCancelDialog(true)}
+            onClick={openCancelDialog}
           >
             Cancel Subscription
           </button>
@@ -332,8 +336,13 @@ export function PlanView({ planData }: PlanViewProps) {
             zIndex: 1000,
             padding: '20px',
           }}
+          onClick={closeCancelDialog}
         >
-          <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '28px' }}>
+          <div
+            className="card"
+            style={{ maxWidth: '480px', width: '100%', padding: '28px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 style={{ fontSize: '18px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', marginBottom: '8px' }}>
               Cancel Subscription?
             </h3>
@@ -347,7 +356,7 @@ export function PlanView({ planData }: PlanViewProps) {
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => setShowCancelDialog(false)}
+                  onClick={closeCancelDialog}
                   disabled={isCancelling}
                 >
                   Keep Subscription
@@ -364,15 +373,6 @@ export function PlanView({ planData }: PlanViewProps) {
             </form>
           </div>
         </div>
-      )}
-
-      {showUpgradeModal && (
-        <UpgradeModal
-          isOpen={showUpgradeModal}
-          currentPlanId={subscription.planId}
-          businessId={businessId}
-          onClose={() => setShowUpgradeModal(false)}
-        />
       )}
     </div>
   );

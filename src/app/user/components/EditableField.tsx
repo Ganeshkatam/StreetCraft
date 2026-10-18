@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { EditFieldModal, EditFieldOption } from './EditFieldModal';
+import { useRouteModal } from '../../../hooks/useRouteModal';
 import { Edit2, ChevronDown, Check, Search, Loader2 } from 'lucide-react';
 
 export interface EditableFieldProps {
@@ -29,7 +30,12 @@ export function EditableField({
   suffix,
   prefix,
 }: EditableFieldProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const fieldKey = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const {
+    isOpen: isModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useRouteModal('edit', { fieldParam: fieldKey });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -313,9 +319,7 @@ export function EditableField({
           <button
             type="button"
             className="account-field-edit-action"
-            onClick={() => {
-              setIsModalOpen(true);
-            }}
+            onClick={openEditModal}
           >
             <Edit2 size={13} strokeWidth={2} />
             <span>Edit</span>
@@ -326,7 +330,7 @@ export function EditableField({
       {!isDirectSelect && isModalOpen && onSave && (
         <EditFieldModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeEditModal}
           title={`Edit ${label}`}
           label={label}
           initialValue={value !== null && value !== undefined ? String(value) : ''}
@@ -338,7 +342,7 @@ export function EditableField({
             if (res && !res.success) {
               return res;
             }
-            setIsModalOpen(false);
+            closeEditModal();
             return { success: true };
           }}
         />
