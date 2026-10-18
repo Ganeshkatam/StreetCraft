@@ -855,80 +855,116 @@ async function runIntegrationSuite() {
     console.log('\n[Teardown] Cleaning up isolated synthetic test fixtures...');
     const cleanupErrors = [];
 
+    async function safeRetry(fn, maxRetries = 3, delayMs = 1000) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const res = await fn();
+          if (res?.error && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, delayMs * attempt));
+            continue;
+          }
+          return res;
+        } catch (err) {
+          if (attempt >= maxRetries) throw err;
+          await new Promise((r) => setTimeout(r, delayMs * attempt));
+        }
+      }
+    }
+
     // 1. Delete campaign outputs and campaigns (strictly scoped to tracked test IDs)
     if (cleanupState.campaignIds.length > 0) {
-      const { error: outErr } = await adminClient
-        .from('campaign_outputs')
-        .delete()
-        .in('campaign_id', cleanupState.campaignIds);
+      const { error: outErr } = await safeRetry(() =>
+        adminClient
+          .from('campaign_outputs')
+          .delete()
+          .in('campaign_id', cleanupState.campaignIds)
+      );
       if (outErr) cleanupErrors.push(`campaign_outputs deletion error: ${outErr.message}`);
 
-      const { error: cmpErr } = await adminClient
-        .from('campaigns')
-        .delete()
-        .in('id', cleanupState.campaignIds);
+      const { error: cmpErr } = await safeRetry(() =>
+        adminClient
+          .from('campaigns')
+          .delete()
+          .in('id', cleanupState.campaignIds)
+      );
       if (cmpErr) cleanupErrors.push(`campaigns deletion error: ${cmpErr.message}`);
     }
 
     // 2. Delete usage events, periods, members, profiles, businesses (strictly scoped to tracked test IDs)
     if (cleanupState.businessIds.length > 0) {
-      const { error: evErr } = await adminClient
-        .from('usage_events')
-        .delete()
-        .in('business_id', cleanupState.businessIds);
+      const { error: evErr } = await safeRetry(() =>
+        adminClient
+          .from('usage_events')
+          .delete()
+          .in('business_id', cleanupState.businessIds)
+      );
       if (evErr) cleanupErrors.push(`usage_events deletion error: ${evErr.message}`);
 
-      const { error: upErr } = await adminClient
-        .from('usage_periods')
-        .delete()
-        .in('business_id', cleanupState.businessIds);
+      const { error: upErr } = await safeRetry(() =>
+        adminClient
+          .from('usage_periods')
+          .delete()
+          .in('business_id', cleanupState.businessIds)
+      );
       if (upErr) cleanupErrors.push(`usage_periods deletion error: ${upErr.message}`);
 
-      const { error: bmErr } = await adminClient
-        .from('business_members')
-        .delete()
-        .in('business_id', cleanupState.businessIds);
+      const { error: bmErr } = await safeRetry(() =>
+        adminClient
+          .from('business_members')
+          .delete()
+          .in('business_id', cleanupState.businessIds)
+      );
       if (bmErr) cleanupErrors.push(`business_members deletion error: ${bmErr.message}`);
 
-      const { error: bpErr } = await adminClient
-        .from('business_profiles')
-        .delete()
-        .in('business_id', cleanupState.businessIds);
+      const { error: bpErr } = await safeRetry(() =>
+        adminClient
+          .from('business_profiles')
+          .delete()
+          .in('business_id', cleanupState.businessIds)
+      );
       if (bpErr) cleanupErrors.push(`business_profiles deletion error: ${bpErr.message}`);
 
-      const { error: bzErr } = await adminClient
-        .from('businesses')
-        .delete()
-        .in('id', cleanupState.businessIds);
+      const { error: bzErr } = await safeRetry(() =>
+        adminClient
+          .from('businesses')
+          .delete()
+          .in('id', cleanupState.businessIds)
+      );
       if (bzErr) cleanupErrors.push(`businesses deletion error: ${bzErr.message}`);
     }
 
     // 3. Delete subscriptions, profiles, and auth users (strictly scoped to tracked test IDs)
     if (cleanupState.userIds.length > 0) {
-      const { error: subErr } = await adminClient
-        .from('subscriptions')
-        .delete()
-        .in('user_id', cleanupState.userIds);
+      const { error: subErr } = await safeRetry(() =>
+        adminClient
+          .from('subscriptions')
+          .delete()
+          .in('user_id', cleanupState.userIds)
+      );
       if (subErr) cleanupErrors.push(`subscriptions deletion error: ${subErr.message}`);
 
-      const { error: prfErr } = await adminClient
-        .from('profiles')
-        .delete()
-        .in('id', cleanupState.userIds);
+      const { error: prfErr } = await safeRetry(() =>
+        adminClient
+          .from('profiles')
+          .delete()
+          .in('id', cleanupState.userIds)
+      );
       if (prfErr) cleanupErrors.push(`profiles deletion error: ${prfErr.message}`);
 
       for (const uid of cleanupState.userIds) {
-        const { error: usrErr } = await adminClient.auth.admin.deleteUser(uid);
+        const { error: usrErr } = await safeRetry(() => adminClient.auth.admin.deleteUser(uid));
         if (usrErr) cleanupErrors.push(`auth user deletion error (${uid}): ${usrErr.message}`);
       }
     }
 
     // 4. Delete provider events (strictly scoped to tracked test event IDs)
     if (cleanupState.providerEventIds.length > 0) {
-      const { error: peErr } = await adminClient
-        .from('provider_events')
-        .delete()
-        .in('provider_event_id', cleanupState.providerEventIds);
+      const { error: peErr } = await safeRetry(() =>
+        adminClient
+          .from('provider_events')
+          .delete()
+          .in('provider_event_id', cleanupState.providerEventIds)
+      );
       if (peErr) cleanupErrors.push(`provider_events deletion error: ${peErr.message}`);
     }
 
