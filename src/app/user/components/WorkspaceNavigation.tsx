@@ -29,12 +29,13 @@ export const WorkspaceNavigation: React.FC<WorkspaceNavigationProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { session, getMyBusinesses, getAccountLimits, switchBusiness, signOut } = useAuth();
-  const { usage } = useUsage(session.activeBusinessId || '');
 
   const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>(initialBusinesses);
+  const [hasLoadedBusinesses, setHasLoadedBusinesses] = useState<boolean>(initialBusinesses.length > 0);
   const [accountLimit, setAccountLimit] = useState(initialAccountLimit);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSwitchingBusiness, setIsSwitchingBusiness] = useState(false);
   const {
     isOpen: showUpgradeModal,
     open: openUpgradeModal,
@@ -45,18 +46,49 @@ export const WorkspaceNavigation: React.FC<WorkspaceNavigationProps> = ({
   const switcherRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  // Derive route-resolved active store before querying usage
+  const routeBizId = extractBusinessIdFromPathname(pathname);
+  const safeBusinesses = Array.isArray(businesses) ? businesses : [];
+  const { activeBiz, activeBizId, activeBizName } = resolveActiveBusiness(
+    routeBizId,
+    session.activeBusinessId,
+    safeBusinesses,
+    { hasLoaded: hasLoadedBusinesses }
+  );
+
+  // Usage strictly follows route-resolved active storefront
+  const { usage, loading: usageLoading } = useUsage(activeBizId || '');
+
   useEffect(() => {
     if (session.isAuthenticated) {
-      getMyBusinesses().then((res) => {
-        if (Array.isArray(res) && res.length > 0) {
+      let isMounted = true;
+      getMyBusinesses()
+        .then((res) => {
+          if (!isMounted) return;
+          // Authoritatively update businesses list on success, including an empty array
           setBusinesses(res);
-        }
-      });
-      getAccountLimits().then((res) => {
-        if (res?.limit) {
-          setAccountLimit(res.limit);
-        }
-      });
+          setHasLoadedBusinesses(true);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          console.warn('Failed to refresh businesses in navigation:', err);
+          // Preserve existing storefront data on network or transient auth error
+        });
+
+      getAccountLimits()
+        .then((res) => {
+          if (!isMounted) return;
+          if (res?.limit) {
+            setAccountLimit(res.limit);
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to refresh account limits in navigation:', err);
+        });
+
+      return () => {
+        isMounted = false;
+      };
     }
   }, [session.isAuthenticated, session.activeBusinessId]);
 
@@ -94,14 +126,6 @@ export const WorkspaceNavigation: React.FC<WorkspaceNavigationProps> = ({
 
   const effectiveAvatarUrl = liveAvatarUrl !== null ? liveAvatarUrl : (session.avatarUrl || initialAvatarUrl);
   const effectiveName = liveName !== null ? liveName : (session.name || initialUserName);
-
-  const routeBizId = extractBusinessIdFromPathname(pathname);
-  const safeBusinesses = Array.isArray(businesses) && businesses.length > 0 ? businesses : initialBusinesses;
-  const { activeBiz, activeBizId, activeBizName } = resolveActiveBusiness(
-    routeBizId,
-    session.activeBusinessId,
-    safeBusinesses
-  );
   const userInitial = (effectiveName || session.email || initialUserEmail || 'U').charAt(0).toUpperCase();
 
   const getBizHref = (section: WorkspaceSection) => getWorkspaceHref(activeBizId, section);
@@ -153,11 +177,20 @@ export const WorkspaceNavigation: React.FC<WorkspaceNavigationProps> = ({
                         <button
                           key={b.id}
                           type="button"
-                          className={`switcher-item ${b.id === activeBizId ? 'active' : ''}`}
+                          disabled={isSwitchingBusiness}
                           onClick={async () => {
-                            await switchBusiness(b.id);
-                            setShowSwitcher(false);
-                            router.push(`/user/business/${encodeURIComponent(b.id)}/today`);
+                            if (b.id === activeBizId) {
+                              setShowSwitcher(false);
+                              return;
+                            }
+                            setIsSwitchingBusiness(true);
+                            try {
+                              await switchBusiness(b.id);
+                              setShowSwitcher(false);
+                              router.push(`/user/business/${encodeURIComponent(b.id)}/today`);
+                            } finally {
+                              setIsSwitchingBusiness(false);
+                            }
                           }}
                         >
                           <Store size={14} />

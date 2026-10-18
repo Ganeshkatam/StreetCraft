@@ -78,13 +78,8 @@ export function useAuth() {
   };
 
   const getMyBusinesses = async () => {
-    try {
-      const list = await api.getMyBusinesses();
-      return Array.isArray(list) ? list : [];
-    } catch (err) {
-      console.warn('Failed to fetch businesses for user:', err);
-      return [];
-    }
+    const list = await api.getMyBusinesses();
+    return Array.isArray(list) ? list : [];
   };
 
   const getAccountLimits = async () => {

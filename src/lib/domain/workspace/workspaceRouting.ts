@@ -22,7 +22,8 @@ export interface BusinessSummary {
 export function resolveActiveBusiness(
   routeBizId: string | null,
   sessionBizId: string | null,
-  businesses: BusinessSummary[]
+  businesses: BusinessSummary[],
+  options?: { hasLoaded?: boolean }
 ): {
   activeBiz: BusinessSummary | null;
   activeBizId: string | null;
@@ -30,6 +31,7 @@ export function resolveActiveBusiness(
   isAuthorized: boolean;
 } {
   const safeBusinesses = Array.isArray(businesses) ? businesses : [];
+  const hasLoaded = options?.hasLoaded ?? (safeBusinesses.length > 0);
 
   // When a specific storefront is requested via URL route parameter:
   if (routeBizId) {
@@ -43,9 +45,9 @@ export function resolveActiveBusiness(
       };
     }
 
-    // If businesses have been provided and the candidate is NOT in the list,
+    // If businesses have finished loading and the candidate is NOT in the list,
     // do NOT fall back to another storefront. Never mask unauthorized access.
-    if (safeBusinesses.length > 0) {
+    if (hasLoaded) {
       return {
         activeBiz: null,
         activeBizId: null,

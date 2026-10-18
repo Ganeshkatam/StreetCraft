@@ -1,21 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { api } from '../lib/api';
 import { UsageSummary, UsageEvent } from '../types/billing';
 import { UUID } from '../types/common';
 
-export function useUsage(businessId: UUID) {
+export function useUsage(businessId: UUID | string | null | undefined) {
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [events, setEvents] = useState<UsageEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(Boolean(businessId));
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchUsage = async () => {
+  const fetchUsage = useCallback(async () => {
     if (!businessId) {
       setUsage(null);
       setEvents([]);
       setLoading(false);
+      setError(null);
       return;
     }
+
+    setLoading(true);
     try {
       const [u, e] = await Promise.all([
         api.getUsageSummary(businessId),
@@ -23,15 +27,59 @@ export function useUsage(businessId: UUID) {
       ]);
       setUsage(u);
       setEvents(e);
-    } catch (err) {
+      setError(null);
+    } catch (err: unknown) {
       console.warn('Failed to fetch usage periods and events:', err);
+      setUsage(null);
+      setEvents([]);
+      setError(err instanceof Error ? err.message : 'Failed to load usage data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessId]);
 
   useEffect(() => {
-    fetchUsage();
+    if (!businessId) {
+      setUsage(null);
+      setEvents([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    // Cancellation token: guarantees earlier delayed requests cannot overwrite newer ones
+    let isCurrent = true;
+
+    // Immediately clear stale usage data from the previous business
+    setUsage(null);
+    setEvents([]);
+    setLoading(true);
+    setError(null);
+
+    const loadData = async () => {
+      try {
+        const [u, e] = await Promise.all([
+          api.getUsageSummary(businessId),
+          api.getUsageEvents(businessId),
+        ]);
+        if (!isCurrent) return;
+        setUsage(u);
+        setEvents(e);
+        setError(null);
+      } catch (err: unknown) {
+        if (!isCurrent) return;
+        console.warn('Failed to fetch usage periods and events:', err);
+        setUsage(null);
+        setEvents([]);
+        setError(err instanceof Error ? err.message : 'Failed to load usage data');
+      } finally {
+        if (isCurrent) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
 
     if (isSupabaseConfigured && businessId) {
       const channel = supabase
@@ -45,21 +93,29 @@ export function useUsage(businessId: UUID) {
             filter: `business_id=eq.${businessId}`,
           },
           () => {
-            fetchUsage();
+            if (isCurrent) {
+              loadData();
+            }
           }
         )
         .subscribe();
 
       return () => {
+        isCurrent = false;
         supabase.removeChannel(channel);
       };
     }
+
+    return () => {
+      isCurrent = false;
+    };
   }, [businessId]);
 
   return {
     usage,
     events,
     loading,
+    error,
     refreshUsage: fetchUsage,
   };
 }

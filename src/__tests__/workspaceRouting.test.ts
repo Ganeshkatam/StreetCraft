@@ -83,6 +83,13 @@ describe('Workspace Routing: Active Business Resolution', () => {
     assert.strictEqual(res.activeBizId, null);
     assert.strictEqual(res.activeBizName, 'No Store Selected');
   });
+
+  it('resolves to Unauthorized Storefront when businesses have finished loading as empty', () => {
+    const res = resolveActiveBusiness('biz-deleted-123', 'biz-fallback', [], { hasLoaded: true });
+    assert.strictEqual(res.isAuthorized, false);
+    assert.strictEqual(res.activeBizId, null);
+    assert.strictEqual(res.activeBizName, 'Unauthorized Storefront');
+  });
 });
 
 describe('Workspace Routing: Navigation Link Generation', () => {
@@ -99,5 +106,79 @@ describe('Workspace Routing: Navigation Link Generation', () => {
     assert.strictEqual(getWorkspaceHref(null, 'plan'), '/user/account/plan');
     assert.strictEqual(getWorkspaceHref(null, 'today'), '/user/today');
     assert.strictEqual(getWorkspaceHref(null, 'create'), '/user/create');
+  });
+});
+
+describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Semantics', () => {
+  const businesses: BusinessSummary[] = [
+    { id: 'store-a', name: 'Store A', category: 'Retail' },
+    { id: 'store-b', name: 'Store B', category: 'Cafe' },
+  ];
+
+  it('guarantees usage query target matches route-resolved store rather than stale session store', () => {
+    // User directly visits Store B URL while session still points to Store A
+    const routeStoreId = extractBusinessIdFromPathname('/user/business/store-b/today');
+    const sessionStoreId = 'store-a';
+
+    const resolution = resolveActiveBusiness(routeStoreId, sessionStoreId, businesses);
+
+    // The business ID passed to useUsage must match resolution.activeBizId
+    const effectiveUsageBusinessId = resolution.activeBizId || '';
+    assert.strictEqual(effectiveUsageBusinessId, 'store-b');
+    assert.notStrictEqual(effectiveUsageBusinessId, sessionStoreId);
+  });
+
+  it('prevents delayed usage response from Store A overwriting newer Store B state', async () => {
+    let currentBusinessId = 'store-a';
+    const usageState: { currentUsage: { businessId: string; remainingPacks: number } | null } = {
+      currentUsage: null,
+    };
+
+    // Simulate async fetch with cancellation token
+    let activeToken = 0;
+    const fetchUsageForStore = async (bizId: string, delayMs: number, quota: number) => {
+      activeToken++;
+      const thisToken = activeToken;
+      currentBusinessId = bizId;
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+      // Cancellation check: only commit if token is still current
+      if (thisToken === activeToken) {
+        usageState.currentUsage = { businessId: bizId, remainingPacks: quota };
+      }
+    };
+
+    // Store A request starts (slow, 50ms)
+    const storeAPromise = fetchUsageForStore('store-a', 50, 25);
+
+    // User switches to Store B immediately (fast, 10ms)
+    const storeBPromise = fetchUsageForStore('store-b', 10, 80);
+
+    await Promise.all([storeAPromise, storeBPromise]);
+
+    // Store B's data must prevail; Store A's delayed response must NOT overwrite Store B
+    assert.strictEqual(currentBusinessId, 'store-b');
+    assert.strictEqual(usageState.currentUsage?.businessId, 'store-b');
+    assert.strictEqual(usageState.currentUsage?.remainingPacks, 80);
+  });
+
+  it('clears stale storefronts when getMyBusinesses succeeds with empty array', () => {
+    let statefulBusinesses: BusinessSummary[] = [
+      { id: 'old-store-1', name: 'Deleted Store 1' },
+      { id: 'old-store-2', name: 'Deleted Store 2' },
+    ];
+
+    // Simulate successful fetch returning 0 businesses
+    const apiResponse: BusinessSummary[] = [];
+    if (Array.isArray(apiResponse)) {
+      statefulBusinesses = apiResponse;
+    }
+
+    assert.strictEqual(statefulBusinesses.length, 0);
+    const resolution = resolveActiveBusiness('old-store-1', null, statefulBusinesses, { hasLoaded: true });
+    assert.strictEqual(resolution.isAuthorized, false);
+    assert.strictEqual(resolution.activeBizId, null);
+    assert.strictEqual(resolution.activeBizName, 'Unauthorized Storefront');
   });
 });

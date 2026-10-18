@@ -111,9 +111,15 @@ export async function updateBusinessProfile(
       };
     }
 
-    // 6. Revalidation
+    // 6. Comprehensive Revalidation across all affected surfaces
+    revalidatePath(`/user/business/${business.id}`);
+    revalidatePath(`/user/business/${business.id}/today`);
+    revalidatePath(`/user/business/${business.id}/create`);
+    revalidatePath(`/user/business/${business.id}/settings`);
+    revalidatePath(`/user/business/${business.id}/campaigns`);
     revalidatePath('/user/business');
     revalidatePath('/user/today');
+    revalidatePath('/user/create');
 
     return { success: true, message: 'Business profile updated successfully.' };
 
