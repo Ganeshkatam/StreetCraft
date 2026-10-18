@@ -4,6 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { getBusinessProfile } from '../business/getBusinessProfile';
+import { getCurrentUsagePeriod } from '../usage/getCurrentUsagePeriod';
+import { getRecentCampaigns } from '../campaigns/getRecentCampaigns';
+import { getFestivalMoments } from '../opportunities/getFestivalMoments';
+import { resolveUpcomingFestivals } from '../../../engine/briefing/opportunityEngine';
+import {
+  buildBrainStoreContext,
+  detectBrainOpportunities,
+  formulateStrategicBlueprint,
+  synthesizeCampaignSpec,
+  validateBrainSpecification,
+} from '../../../brain/index';
 import { createClient } from '../../supabase/server';
 import { generateCampaignPack, CampaignGenerationInput } from '../../../engine/campaignEngine';
 import { CreateCampaignInputSchema } from '../../domain/create/createSchemas';
@@ -70,8 +81,14 @@ export async function createCampaignAction(
       };
     }
 
-    // 4. Load Store Profile
-    const profile = await getBusinessProfile(business.id);
+    // 4. Load Store Profile & Intelligence Context
+    const [profile, usagePeriod, recentCampaigns, festivals] = await Promise.all([
+      getBusinessProfile(business.id),
+      getCurrentUsagePeriod(business.id),
+      getRecentCampaigns(business.id),
+      getFestivalMoments(),
+    ]);
+
     if (!profile) {
       return {
         success: false,
@@ -80,11 +97,63 @@ export async function createCampaignAction(
       };
     }
 
-    // 5. Build Generation Input & Generate Pack Outside DB Transaction
-    const generationInput: CampaignGenerationInput = {
+    // 5. Brain Reasoning & Strategy Synthesis
+    const campaignLimit = usagePeriod?.campaign_limit ?? 3;
+    const campaignsUsed = usagePeriod?.campaigns_used ?? 0;
+    const brainQuota = {
+      planTier: (usagePeriod?.plan || 'FREE').toUpperCase(),
+      packLimit: campaignLimit,
+      packsUsed: campaignsUsed,
+      packsRemaining: Math.max(0, campaignLimit - campaignsUsed),
+    };
+
+    const upcomingFestivals = resolveUpcomingFestivals(festivals, new Date(), 5);
+    const brainContext = buildBrainStoreContext(
+      profile as any,
+      recentCampaigns as any,
+      upcomingFestivals,
+      brainQuota,
+      new Date()
+    );
+
+    const brainOpportunities = detectBrainOpportunities(brainContext);
+    const matchedOpportunity = brainOpportunities.find((opp) => opp.preset.type === input.type) || {
+      id: `custom-${input.type.toLowerCase()}`,
+      type: 'SIGNATURE' as const,
+      badge: 'CUSTOM INITIATIVE',
+      title: input.offer.title,
+      targetWindow: input.schedule.timingLabel || 'Active this week',
+      summary: `Tailored campaign for ${brainContext.name}`,
+      reasoning: `Custom store campaign aligned to ${input.objective.toLowerCase().replace(/_/g, ' ')}.`,
+      confidence: 'HIGH' as const,
+      score: 85,
+      preset: {
+        type: input.type,
+        objective: input.objective,
+        offer: {
+          title: input.offer.title,
+          description: input.offer.description,
+          value: input.offer.value || '',
+          terms: input.offer.terms || '',
+        },
+        schedule: {
+          timingLabel: input.schedule.timingLabel || 'Valid this week',
+        },
+        customNotes: input.customNotes || '',
+      },
+      channelFocus: {
+        google: 'Local store discoverability and high-intent action',
+        instagram: 'Sensory visual storytelling and social engagement',
+        whatsapp: 'Direct, personal customer conversation',
+        poster: 'High-contrast in-store point of sale conversion',
+      },
+    };
+
+    const blueprint = formulateStrategicBlueprint(matchedOpportunity, brainContext);
+    const enrichedSpec = synthesizeCampaignSpec(blueprint, brainContext, {
       type: input.type,
       objective: input.objective,
-      audience: input.audience || profile.target_customer || 'Local neighborhood customers',
+      audience: input.audience || undefined,
       offer: {
         title: input.offer.title,
         description: input.offer.description,
@@ -94,11 +163,21 @@ export async function createCampaignAction(
       schedule: {
         startsAt: input.schedule.startDate || '',
         endsAt: input.schedule.endDate || '',
-        timingLabel: input.schedule.timingLabel || 'Valid this week',
+        timingLabel: input.schedule.timingLabel || '',
       },
       customNotes: input.customNotes,
-    };
+    });
 
+    const specValidation = validateBrainSpecification(enrichedSpec);
+    if (!specValidation.valid) {
+      return {
+        success: false,
+        errorCode: 'VALIDATION_ERROR',
+        message: specValidation.errors.join(' '),
+      };
+    }
+
+    const generationInput = enrichedSpec.generationInput;
     const { outputs } = generateCampaignPack(profile, generationInput);
 
     // 6. Validate Output Completeness

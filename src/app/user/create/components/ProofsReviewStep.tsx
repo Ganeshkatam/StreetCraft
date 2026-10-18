@@ -68,10 +68,10 @@ export function ProofsReviewStep({
           </div>
           <div>
             <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)', margin: 0 }}>
-              Campaign Generated &amp; Saved
+              Campaign Drafts Generated &amp; Saved
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--color-ink-muted)', margin: '2px 0 0' }}>
-              Coordinated proofs across 4 channels are active and ready for dispatch.
+              Coordinated drafts across 4 channels are saved and ready to copy, export, or print.
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export function ProofsReviewStep({
         }}
       >
         <span style={{ fontSize: '12.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}>
-          EXPORT DISPATCH PACKS:
+          EXPORT CAMPAIGN ASSETS:
         </span>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

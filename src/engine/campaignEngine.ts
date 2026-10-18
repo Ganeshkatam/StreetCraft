@@ -37,7 +37,7 @@ export function generateCampaignPack(
   const neighborhood = profile?.neighborhood?.trim() || '';
   const city = profile?.city?.trim() || '';
   const landmarks = profile?.landmarks?.trim() || '';
-  const signatureItems = profile?.signatureItems?.trim() || '';
+  const signatureItems = (((profile as any)?.signatureItems || (profile as any)?.signature_items || '') as string).trim();
   const category = profile?.category?.trim() || 'Store';
 
   const {
@@ -66,13 +66,19 @@ export function generateCampaignPack(
   let whatsappRaw: Partial<WhatsAppOutput> = {};
   let posterRaw: Partial<PosterOutput> = {};
 
+  const phoneRaw = (profile as any)?.phoneWhatsApp || (profile as any)?.phone_whatsapp || '';
+  const cleanPhone = phoneRaw.replace(/[^\d+]/g, '');
+  const hasPhone = Boolean(cleanPhone && cleanPhone.length >= 7);
+  const defaultCtaType: 'Call Now' | 'Visit Us' = hasPhone ? 'Call Now' : 'Visit Us';
+  const defaultCtaValue = hasPhone ? `tel:${cleanPhone}` : undefined;
+
   switch (type) {
     case 'WEEKDAY_BOOST':
       googleRaw = {
         headline: `Afternoon special at ${bizName}${hoodHeader}`,
         body: `${bizName} is offering ${offerText} during ${timing}.${sigText} Visit us at ${locationText}.${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/visit',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: offerSummary.slice(0, 95),
       };
       instagramRaw = {
@@ -103,8 +109,8 @@ export function generateCampaignPack(
       googleRaw = {
         headline: `Weekend specials at ${bizName}${hoodHeader}`,
         body: `Join us at ${bizName}${hoodHeader} for ${offerText} during ${timing}.${sigText} Located at ${locationText}.${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/book',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: offerSummary.slice(0, 95),
       };
       instagramRaw = {
@@ -135,8 +141,8 @@ export function generateCampaignPack(
       googleRaw = {
         headline: `New arrival at ${bizName}${hoodHeader}`,
         body: `We are introducing a new addition at ${bizName}${hoodHeader}: ${customNotes || signatureItems || 'our latest specialty'}.\n\nEnjoy our launch offer: ${offerText}. Visit us at ${locationText}.${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/menu',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: `New: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
@@ -167,8 +173,8 @@ export function generateCampaignPack(
       googleRaw = {
         headline: `Festive celebration at ${bizName}${hoodHeader}`,
         body: `Celebrate the festive season with ${bizName}${hoodHeader}.\n\nEnjoy our festive offer: ${offerText} valid ${timing}.${sigText} Visit us at ${locationText}.${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/festive',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: `Festive: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
@@ -199,8 +205,8 @@ export function generateCampaignPack(
       googleRaw = {
         headline: `Thank you from ${bizName}${hoodHeader}`,
         body: `To our customers and community${hoodHeader} — thank you for your continuous support.\n\nTo show our appreciation, enjoy ${offerText} on your next visit to ${bizName} at ${locationText}.${sigText}${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/community',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: `Appreciation: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {
@@ -232,8 +238,8 @@ export function generateCampaignPack(
       googleRaw = {
         headline: `Welcome back to ${bizName}${hoodHeader}`,
         body: `We would love to welcome you back to ${bizName}${hoodHeader}. Enjoy our welcoming special: ${offerText}.${sigText} Visit us at ${locationText}.${timing ? ` Valid ${timing}.` : ''}${termsText}`,
-        ctaType: 'Visit Us',
-        ctaValue: 'https://streetcraft.local/welcome-back',
+        ctaType: defaultCtaType,
+        ctaValue: defaultCtaValue,
         offerSummary: `Welcome Back: ${offerSummary}`.slice(0, 95),
       };
       instagramRaw = {

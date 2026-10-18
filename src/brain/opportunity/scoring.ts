@@ -28,6 +28,13 @@ export function calculateOpportunityScore(
     reasons.push(`Local neighborhood context mapped (${context.neighborhood})`);
   }
 
+  if (context.targetCustomer && context.targetCustomer.trim().length > 0) {
+    score += 5;
+    reasons.push(`Target audience grounded in store-configured profile (${context.targetCustomer})`);
+  } else {
+    reasons.push('Target audience estimated using neighborhood default pattern');
+  }
+
   if (lastCampaignDaysAgo >= 5) {
     score += 15;
     reasons.push(`No marketing campaign run in ${lastCampaignDaysAgo === 999 ? 'recent history' : `${lastCampaignDaysAgo} days`}`);
@@ -35,6 +42,13 @@ export function calculateOpportunityScore(
 
   switch (opportunityType) {
     case 'SLOW_HOUR':
+      if (context.slowHours && context.slowHours.trim().length > 0) {
+        score += 10;
+        reasons.push(`Slow hours grounded in store-configured schedule (${context.slowHours})`);
+      } else {
+        reasons.push('Slow hours estimated using neighborhood default pattern (3:00 PM – 5:30 PM)');
+      }
+
       // High score on weekday afternoons (13:00 to 17:30)
       if (!context.isWeekend && context.currentHour >= 12 && context.currentHour <= 17) {
         score += 25;

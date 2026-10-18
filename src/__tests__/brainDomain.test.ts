@@ -8,6 +8,8 @@ import {
   synthesizeCampaignSpec,
   validateBrainSpecification,
 } from '../brain/index';
+import { generateCampaignPack } from '../engine/campaignEngine';
+import { CampaignPackSchema } from '../lib/domain/create/campaignPackSchema';
 
 describe('Brain: Store Context Builder', () => {
   it('correctly maps store profile and computes campaign recency', () => {
@@ -130,5 +132,120 @@ describe('Brain: Specification Synthesis & Validation', () => {
     const validation = validateBrainSpecification(spec);
     assert.strictEqual(validation.valid, true);
     assert.strictEqual(validation.errors.length, 0);
+  });
+});
+
+describe('Brain: Category Vocabulary & Grounding Differentiation', () => {
+  it('adapts vocabulary for Salon and marks configured facts vs defaults', () => {
+    const salonContext = buildBrainStoreContext({
+      name: 'Luxe Locks Studio',
+      category: 'SALON',
+      neighborhood: 'Indiranagar',
+      city: 'Bengaluru',
+      slowHours: '1:00 PM – 4:00 PM', // Configured fact
+      signatureItems: 'Balayage, Keratin Spa',
+      // targetCustomer left unconfigured -> should be estimated default
+    });
+
+    const opportunities = detectBrainOpportunities(salonContext);
+    const slowOpp = opportunities.find((o) => o.type === 'SLOW_HOUR');
+    assert.ok(slowOpp);
+    assert.ok(slowOpp.summary.includes('styling chairs'));
+    assert.ok(slowOpp.summary.includes('Store-configured fact: 1:00 PM – 4:00 PM'));
+    assert.ok(slowOpp.reasoning.includes('Store-configured fact'));
+    assert.ok(slowOpp.channelFocus.poster.includes('reception desk'));
+
+    const weekendOpp = opportunities.find((o) => o.type === 'WEEKEND');
+    assert.ok(weekendOpp);
+    assert.ok(weekendOpp.summary.includes('Estimated neighborhood default'));
+  });
+
+  it('adapts vocabulary for Retail Boutique and marks configured audience', () => {
+    const boutiqueContext = buildBrainStoreContext({
+      name: 'Silk & Thread',
+      category: 'BOUTIQUE',
+      neighborhood: 'Koramangala',
+      city: 'Bengaluru',
+      targetCustomer: 'Fashion-forward college students and young professionals', // Configured fact
+      // slowHours left unconfigured -> should be estimated default
+    });
+
+    const opportunities = detectBrainOpportunities(boutiqueContext);
+    const slowOpp = opportunities.find((o) => o.type === 'SLOW_HOUR');
+    assert.ok(slowOpp);
+    assert.ok(slowOpp.summary.includes('Estimated neighborhood default: 3:00 PM – 5:30 PM'));
+    assert.ok(slowOpp.channelFocus.poster.includes('checkout register'));
+
+    const weekendOpp = opportunities.find((o) => o.type === 'WEEKEND');
+    assert.ok(weekendOpp);
+    assert.ok(weekendOpp.summary.includes('Store-configured fact: Fashion-forward college students and young professionals'));
+  });
+});
+
+describe('Brain & Engine: End-to-End Coordinated Pack Quality', () => {
+  it('generates a full campaign pack without any placeholder URLs across all channels', () => {
+    const storeProfile = {
+      name: 'Artisan Bakes',
+      category: 'BAKERY',
+      neighborhood: 'Indiranagar',
+      city: 'Bengaluru',
+      landmarks: '100ft Road',
+      signature_items: 'Sourdough Loaf, Almond Croissant',
+      phone_whatsapp: '+91 98765 43210',
+    };
+
+    const context = buildBrainStoreContext(storeProfile as any);
+    const opportunities = detectBrainOpportunities(context);
+    const blueprint = formulateStrategicBlueprint(opportunities[0], context);
+    const spec = synthesizeCampaignSpec(blueprint, context, {
+      offer: {
+        title: 'Afternoon Croissant Special',
+        description: 'Complimentary pour-over with any artisanal pastry.',
+        value: 'Save 150 INR',
+        terms: 'Dine-in only during promotional hours.',
+      },
+    });
+
+    const pack = generateCampaignPack(storeProfile as any, spec.generationInput);
+
+    // Verify pack passes schema
+    const validation = CampaignPackSchema.safeParse(pack.outputs);
+    assert.strictEqual(validation.success, true);
+
+    // Verify ZERO streetcraft.local URLs in any channel
+    const serializedPack = JSON.stringify(pack.outputs);
+    assert.strictEqual(serializedPack.includes('streetcraft.local'), false);
+    assert.strictEqual(serializedPack.includes('placeholder'), false);
+
+    // Verify phone CTA was mapped
+    assert.strictEqual(pack.outputs.googleBusiness.ctaType, 'Call Now');
+    assert.strictEqual(pack.outputs.googleBusiness.ctaValue, 'tel:+919876543210');
+  });
+
+  it('gracefully handles missing phone by setting ctaType to Visit Us without broken URL', () => {
+    const storeProfileNoPhone = {
+      name: 'Corner Boutique',
+      category: 'BOUTIQUE',
+      neighborhood: 'Jayanagar',
+      city: 'Bengaluru',
+    };
+
+    const context = buildBrainStoreContext(storeProfileNoPhone as any);
+    const opportunities = detectBrainOpportunities(context);
+    const blueprint = formulateStrategicBlueprint(opportunities[0], context);
+    const spec = synthesizeCampaignSpec(blueprint, context, {
+      offer: {
+        title: 'New Season Wardrobe Launch',
+        description: 'Exclusive 20% preview for neighborhood residents.',
+        value: '20% off',
+        terms: 'Valid this weekend only.',
+      },
+    });
+
+    const pack = generateCampaignPack(storeProfileNoPhone as any, spec.generationInput);
+
+    assert.strictEqual(pack.outputs.googleBusiness.ctaType, 'Visit Us');
+    assert.strictEqual(pack.outputs.googleBusiness.ctaValue, '');
+    assert.strictEqual(JSON.stringify(pack.outputs).includes('streetcraft.local'), false);
   });
 });
