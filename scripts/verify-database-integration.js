@@ -7,13 +7,17 @@ import crypto from 'node:crypto';
  *
  * Safe Execution Guarantee:
  * Strictly disallows running integration mutations against the production project (iodwiyfjwzdvqtrczttb).
- * Requires an explicitly configured and confirmed isolated database target via:
- *   - SUPABASE_INTEGRATION_URL
- *   - SUPABASE_INTEGRATION_SERVICE_KEY
- *   - SUPABASE_INTEGRATION_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
- *   - CONFIRM_ISOLATED_TEST_DATABASE=true (or matching SUPABASE_INTEGRATION_PROJECT_REF)
+ * Requires explicit target identity verification and disposable confirmation:
+ *   - For remote cloud targets (*.supabase.co):
+ *       SUPABASE_INTEGRATION_URL
+ *       SUPABASE_INTEGRATION_SERVICE_KEY
+ *       SUPABASE_INTEGRATION_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
+ *       SUPABASE_INTEGRATION_PROJECT_REF (must match targetUrl project ref)
+ *       CONFIRM_ISOLATED_TEST_DATABASE=true
+ *   - For local targets (localhost / 127.0.0.1):
+ *       ALLOW_LOCAL_TEST_TARGET=true or CONFIRM_ISOLATED_TEST_DATABASE=true
  *
- * Exits with code 2 on missing credentials or unverified target to prevent false-green reporting in CI.
+ * Exits with code 2 on missing credentials or unverified target identity to prevent false-green reporting in CI.
  *
  * Verifies real PostgreSQL transactional and concurrency behaviors:
  * 1. Authorization boundaries on privileged RPCs (service_role vs anon/authenticated).
@@ -24,7 +28,7 @@ import crypto from 'node:crypto';
  * 4. Multi-store entitlement propagation and audit events across persisted rows.
  * 5. Subscription cancellation scheduling via request_subscription_cancellation RPC.
  * 6. Fail-closed webhook ingestion, error tracking, and expired subscription downgrades matching SQL contracts.
- * 7. Guaranteed synthetic fixture teardown with early campaign registration and post-run residual sweep.
+ * 7. Guaranteed synthetic fixture teardown with early campaign registration, strict query error handling, and post-run residual sweep.
  */
 
 const PRODUCTION_PROJECT_REF = 'iodwiyfjwzdvqtrczttb';
@@ -43,8 +47,9 @@ if (!targetUrl || !serviceKey) {
   console.error('\nTo execute Phase 4 integration tests safely:');
   console.error('1. Provision a dedicated Supabase staging project, development branch, or local database.');
   console.error('2. Set SUPABASE_INTEGRATION_URL, SUPABASE_INTEGRATION_SERVICE_KEY, and SUPABASE_INTEGRATION_ANON_KEY.');
-  console.error('3. Confirm the disposable target by setting CONFIRM_ISOLATED_TEST_DATABASE=true.');
-  console.error('4. Run: npm run test:integration\n');
+  console.error('3. Set SUPABASE_INTEGRATION_PROJECT_REF matching the disposable project reference.');
+  console.error('4. Confirm the disposable target by setting CONFIRM_ISOLATED_TEST_DATABASE=true.');
+  console.error('5. Run: npm run test:integration\n');
   console.error('Exiting with code 2 (CONFIGURATION_REQUIRED). Refusing to report false-green when tests did not run.\n');
   process.exit(2);
 }
@@ -80,26 +85,50 @@ if (targetUrl.includes(PRODUCTION_PROJECT_REF) || targetRef === PRODUCTION_PROJE
   process.exit(1);
 }
 
-// 3. Isolated Target Identity Confirmation
-const isConfirmedIsolated =
-  process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true' ||
-  process.env.SUPABASE_INTEGRATION_TARGET_CONFIRMED === 'true' ||
-  (process.env.SUPABASE_INTEGRATION_PROJECT_REF && process.env.SUPABASE_INTEGRATION_PROJECT_REF === targetRef) ||
-  targetUrl.includes('localhost') ||
-  targetUrl.includes('127.0.0.1');
+// 3. Isolated Target Identity Verification
+const isLocalTarget = targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1');
 
-if (!isConfirmedIsolated) {
-  console.error(`\n[Target Validation] Target project ref '${targetRef}' is not verified as an isolated disposable target.`);
-  console.error('To prevent accidental execution against shared or unverified environments, confirm the target by setting:');
-  console.error('  CONFIRM_ISOLATED_TEST_DATABASE=true');
-  console.error(`  or SUPABASE_INTEGRATION_PROJECT_REF=${targetRef}\n`);
-  console.error('Exiting with code 2 (TARGET_UNCONFIRMED).\n');
-  process.exit(2);
+if (isLocalTarget) {
+  const isLocalConfirmed = process.env.ALLOW_LOCAL_TEST_TARGET === 'true' || process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true';
+  if (!isLocalConfirmed) {
+    console.error('\n[Target Validation] Local target detected but unconfirmed.');
+    console.error('To run against a local disposable container, set:');
+    console.error('  ALLOW_LOCAL_TEST_TARGET=true or CONFIRM_ISOLATED_TEST_DATABASE=true\n');
+    process.exit(2);
+  }
+  console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
+  console.log('Target classification: LOCAL DISPOSABLE TEST INSTANCE');
+} else {
+  // Remote cloud target: require explicit identity verification against expected project ref
+  const expectedProjectRef = process.env.SUPABASE_INTEGRATION_PROJECT_REF;
+  const isConfirmed = process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true';
+
+  if (!expectedProjectRef) {
+    console.error(`\n[Target Validation] Remote cloud target detected with project ref '${targetRef}'.`);
+    console.error('Target identity verification requires explicitly providing the expected disposable project ref:');
+    console.error(`  SUPABASE_INTEGRATION_PROJECT_REF=${targetRef}`);
+    console.error('  CONFIRM_ISOLATED_TEST_DATABASE=true\n');
+    process.exit(2);
+  }
+
+  if (expectedProjectRef !== targetRef) {
+    console.error(`\n[Target Validation] Target project ref mismatch!`);
+    console.error(`  URL project ref:      '${targetRef}'`);
+    console.error(`  Expected project ref: '${expectedProjectRef}'`);
+    console.error('Refusing execution against an unverified target identity.\n');
+    process.exit(2);
+  }
+
+  if (!isConfirmed) {
+    console.error(`\n[Target Validation] Project ref '${targetRef}' verified, but explicit disposable confirmation is missing.`);
+    console.error('Please set: CONFIRM_ISOLATED_TEST_DATABASE=true\n');
+    process.exit(2);
+  }
+
+  console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
+  console.log('Target project ref:', targetRef);
+  console.log('Target classification: VERIFIED DISPOSABLE TEST PROJECT (IDENTITY MATCHED)');
 }
-
-console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
-console.log('Target project ref:', targetRef);
-console.log('Target classification: CONFIRMED DISPOSABLE INTEGRATION TARGET');
 
 // Privileged admin client with service_role key
 const adminClient = createClient(targetUrl, serviceKey, {
@@ -805,34 +834,40 @@ async function runIntegrationSuite() {
       if (peErr) cleanupErrors.push(`provider_events deletion error: ${peErr.message}`);
     }
 
-    // 5. Post-run residual fixture sweep
+    // 5. Post-run residual fixture sweep with explicit query error handling
     try {
       if (cleanupState.campaignIds.length > 0) {
-        const { data: remainingCampaigns } = await adminClient
+        const { data: remainingCampaigns, error: rcErr } = await adminClient
           .from('campaigns')
           .select('id')
           .in('id', cleanupState.campaignIds);
-        if (remainingCampaigns && remainingCampaigns.length > 0) {
+        if (rcErr) {
+          cleanupErrors.push(`Residual fixture sweep query error (campaigns): ${rcErr.message}`);
+        } else if (remainingCampaigns && remainingCampaigns.length > 0) {
           cleanupErrors.push(`Residual fixture check: ${remainingCampaigns.length} campaigns still present`);
         }
       }
 
       if (cleanupState.businessIds.length > 0) {
-        const { data: remainingBusinesses } = await adminClient
+        const { data: remainingBusinesses, error: rbErr } = await adminClient
           .from('businesses')
           .select('id')
           .in('id', cleanupState.businessIds);
-        if (remainingBusinesses && remainingBusinesses.length > 0) {
+        if (rbErr) {
+          cleanupErrors.push(`Residual fixture sweep query error (businesses): ${rbErr.message}`);
+        } else if (remainingBusinesses && remainingBusinesses.length > 0) {
           cleanupErrors.push(`Residual fixture check: ${remainingBusinesses.length} businesses still present`);
         }
       }
 
       if (cleanupState.providerEventIds.length > 0) {
-        const { data: remainingEvents } = await adminClient
+        const { data: remainingEvents, error: reErr } = await adminClient
           .from('provider_events')
           .select('id')
           .in('provider_event_id', cleanupState.providerEventIds);
-        if (remainingEvents && remainingEvents.length > 0) {
+        if (reErr) {
+          cleanupErrors.push(`Residual fixture sweep query error (provider_events): ${reErr.message}`);
+        } else if (remainingEvents && remainingEvents.length > 0) {
           cleanupErrors.push(`Residual fixture check: ${remainingEvents.length} provider events still present`);
         }
       }
