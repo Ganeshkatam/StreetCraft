@@ -1,11 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import React from 'react';
 import {
   extractBusinessIdFromPathname,
   resolveActiveBusiness,
   getWorkspaceHref,
   BusinessSummary,
 } from '../lib/domain/workspace/workspaceRouting';
+import { useUsage } from '../hooks/useUsage';
+import { api } from '../lib/api';
 
 describe('Workspace Routing: Extract Business ID from Pathname', () => {
   it('extracts business ID from standard store workspace routes', () => {
@@ -233,5 +236,175 @@ describe('Workspace Routing: Route-Resolved Usage Binding & Race Protection Sema
     assert.strictEqual(activeBusinessId, 'store-b');
     assert.strictEqual(finalState?.businessId, 'store-b');
     assert.strictEqual(finalState?.remainingPacks, 100);
+  });
+
+  it('exercises real useUsage hook across store switches while refreshUsage is pending', async () => {
+    class HookRunner<TArgs extends any[], TReturn> {
+      private hookFn: (...args: TArgs) => TReturn;
+      private states: any[] = [];
+      private refs: any[] = [];
+      private effects: Array<{ effect: () => (() => void) | void; deps?: any[]; prevDeps?: any[] | null }> = [];
+      private cleanups: Array<(() => void) | null> = [];
+      private stateIndex = 0;
+      private refIndex = 0;
+      private effectIndex = 0;
+      public currentResult: TReturn | null = null;
+
+      constructor(hookFn: (...args: TArgs) => TReturn) {
+        this.hookFn = hookFn;
+      }
+
+      render(...args: TArgs): TReturn {
+        this.stateIndex = 0;
+        this.refIndex = 0;
+        this.effectIndex = 0;
+
+        const internals = (React as any).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+        const prevDispatcher = internals.H;
+        internals.H = {
+          useState: (initial: any) => {
+            const idx = this.stateIndex++;
+            if (idx >= this.states.length) {
+              const val = typeof initial === 'function' ? initial() : initial;
+              this.states.push(val);
+            }
+            const setState = (next: any) => {
+              const nextVal = typeof next === 'function' ? next(this.states[idx]) : next;
+              this.states[idx] = nextVal;
+            };
+            return [this.states[idx], setState];
+          },
+          useRef: (initial: any) => {
+            const idx = this.refIndex++;
+            if (idx >= this.refs.length) {
+              this.refs.push({ current: initial });
+            }
+            return this.refs[idx];
+          },
+          useCallback: (fn: any) => fn,
+          useEffect: (effect: any, deps: any) => {
+            const idx = this.effectIndex++;
+            if (idx >= this.effects.length) {
+              this.effects.push({ effect, deps, prevDeps: null });
+            } else {
+              this.effects[idx].effect = effect;
+              this.effects[idx].prevDeps = this.effects[idx].deps;
+              this.effects[idx].deps = deps;
+            }
+          },
+        };
+
+        try {
+          this.currentResult = this.hookFn(...args);
+        } finally {
+          internals.H = prevDispatcher;
+        }
+
+        for (let i = 0; i < this.effects.length; i++) {
+          const { effect, deps, prevDeps } = this.effects[i];
+          let hasChanged = !prevDeps || !deps || deps.length !== prevDeps.length;
+          if (!hasChanged && deps && prevDeps) {
+            hasChanged = deps.some((d, j) => !Object.is(d, prevDeps[j]));
+          }
+          if (hasChanged) {
+            if (this.cleanups[i]) {
+              try { this.cleanups[i]!(); } catch {}
+              this.cleanups[i] = null;
+            }
+            const cleanup = effect();
+            if (typeof cleanup === 'function') {
+              this.cleanups[i] = cleanup;
+            }
+          }
+        }
+
+        return this.currentResult;
+      }
+
+      unmount() {
+        for (const cleanup of this.cleanups) {
+          if (typeof cleanup === 'function') {
+            try { cleanup(); } catch {}
+          }
+        }
+        this.cleanups = [];
+      }
+    }
+
+    const origSummary = api.getUsageSummary;
+    const origEvents = api.getUsageEvents;
+
+    api.getUsageSummary = async (bizId: any) => {
+      if (bizId === 'store-a') {
+        await new Promise((r) => setTimeout(r, 60));
+        return {
+          periodId: 'p-a',
+          businessId: 'store-a',
+          plan: 'GROWTH',
+          planName: 'Growth Plan',
+          priceINR: 1999,
+          monthlyLimit: 50,
+          usedCampaigns: 30,
+          remainingCampaigns: 20,
+          usedPacks: 30,
+          remainingPacks: 20,
+          percentUsed: 60,
+          periodStart: '2026-10-01',
+          periodEnd: '2026-10-31',
+          canGenerate: true,
+        } as any;
+      }
+      if (bizId === 'store-b') {
+        await new Promise((r) => setTimeout(r, 10));
+        return {
+          periodId: 'p-b',
+          businessId: 'store-b',
+          plan: 'SCALE',
+          planName: 'Scale Plan',
+          priceINR: 4999,
+          monthlyLimit: 150,
+          usedCampaigns: 50,
+          remainingCampaigns: 100,
+          usedPacks: 50,
+          remainingPacks: 100,
+          percentUsed: 33,
+          periodStart: '2026-10-01',
+          periodEnd: '2026-10-31',
+          canGenerate: true,
+        } as any;
+      }
+      return { businessId: bizId, remainingPacks: 0 } as any;
+    };
+    api.getUsageEvents = async () => [];
+
+    try {
+      const runner = new HookRunner(useUsage);
+
+      // 1. Initial render on store-a
+      runner.render('store-a');
+
+      // 2. Trigger manual refreshUsage() on store-a (slow, 60ms)
+      const refreshPromise = runner.currentResult!.refreshUsage();
+
+      // 3. Switch to store-b while store-a's refresh is still pending
+      runner.render('store-b');
+
+      // 4. Wait for both promises to resolve
+      await refreshPromise;
+      await new Promise((r) => setTimeout(r, 80));
+
+      // 5. Final render to inspect committed hook state
+      const finalResult = runner.render('store-b');
+
+      assert.strictEqual(finalResult.usage?.businessId, 'store-b');
+      assert.strictEqual(finalResult.usage?.remainingPacks, 100);
+      assert.strictEqual(finalResult.loading, false);
+      assert.strictEqual(finalResult.error, null);
+
+      runner.unmount();
+    } finally {
+      api.getUsageSummary = origSummary;
+      api.getUsageEvents = origEvents;
+    }
   });
 });
