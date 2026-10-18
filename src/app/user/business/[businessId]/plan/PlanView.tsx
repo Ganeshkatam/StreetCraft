@@ -7,6 +7,7 @@ import { requestSubscriptionCancellationAction, CancellationActionState } from '
 import { UpgradeModal } from '../../../../../components/UpgradeModal';
 import { Sparkles, AlertTriangle, ArrowLeft, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { useBodyScrollLock } from '../../../../../hooks/useBodyScrollLock';
 
 interface PlanViewProps {
   planData: StorePlanViewModel;
@@ -18,6 +19,8 @@ export function PlanView({ planData }: PlanViewProps) {
   const { businessId, businessName, connectedStorefrontsCount, subscription, quota, activityLedger } = planData;
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  useBodyScrollLock(showCancelDialog);
 
   const [cancelState, cancelAction, isCancelling] = useActionState(
     requestSubscriptionCancellationAction,

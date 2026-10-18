@@ -1211,6 +1211,8 @@ button {
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Where: Modal card dialog box | How: Paper surface with overlay elevation shadow */
@@ -1222,6 +1224,7 @@ button {
   width: 100%;
   max-width: 680px;
   box-shadow: var(--shadow-overlay);
+  overscroll-behavior: contain;
 }
 
 /* Where: Modal header row | How: Displays title and close trigger */

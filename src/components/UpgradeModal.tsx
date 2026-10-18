@@ -6,6 +6,7 @@ import { getUserFacingErrorMessage } from '../lib/userFacingError';
 import { createRazorpayOrderAction } from '../lib/server/plan/createRazorpayOrderAction';
 import { verifyRazorpayPaymentAction } from '../lib/server/plan/verifyRazorpayPaymentAction';
 import { loadRazorpayScript } from '../lib/client/loadRazorpayScript';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onSuccess,
   businessId,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
@@ -241,10 +244,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   ];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
       <div
         className="modal-card"
-        style={{ maxWidth: '1100px', width: '95vw', maxHeight: '92vh', overflowY: 'auto' }}
+        style={{ maxWidth: '1100px', width: '95vw', maxHeight: '92vh', overflowY: 'auto', overscrollBehavior: 'contain' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

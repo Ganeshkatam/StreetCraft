@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Check, PenLine } from 'lucide-react';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 
 export interface EditFieldOption {
   value: string;
@@ -34,6 +35,8 @@ export const EditFieldModal: React.FC<EditFieldModalProps> = ({
   onClose,
   onSave,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [value, setValue] = useState(initialValue);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [customText, setCustomText] = useState('');
