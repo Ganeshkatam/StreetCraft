@@ -19,14 +19,57 @@ import {
 
 const PAYMENT_PLANS = [
   {
+    id: 'FREE',
+    name: 'Neighborhood Starter',
+    price: 'Free',
+    period: '/ lifetime',
+    monthlyBreakdown: '₹0/mo · Free forever',
+    quota: '3 campaigns / month',
+    highlight: 'FREE FOREVER',
+    accentColor: '#4B5563',
+    ctaText: 'Start Free Account',
+    ctaHref: '/free-tool',
+    features: [
+      '3 Coordinated monthly campaigns',
+      'Google Search & Maps store updates',
+      'Instagram post & reels generator',
+      'Print-ready counter card formats',
+      'Storefront review hooks',
+      'Zero monthly cost forever',
+    ],
+  },
+  {
+    id: 'FOUNDER',
+    name: 'Early Adopter Pro',
+    price: '₹789',
+    period: '/ quarter',
+    monthlyBreakdown: 'That\'s ₹263/mo breakdown (Founder lifetime rate)',
+    quota: '100 campaigns / month',
+    highlight: 'LIMITED ALLOCATION',
+    accentColor: 'var(--color-ink)',
+    ctaText: 'Claim Founder Checkout',
+    ctaHref: '/checkout?plan=FOUNDER&cycle=quarterly',
+    features: [
+      '100 Campaigns every month',
+      'Locked-in rate guaranteed for life',
+      'Google Maps & Search promotion hooks',
+      'Instagram Reels & WhatsApp distribution',
+      'Print-ready counter QR layouts',
+      'Up to 3 storefront accounts',
+      '0% sales commission',
+    ],
+  },
+  {
     id: 'PRO',
     name: 'High-Street Pro',
-    price: '₹399',
-    period: '/ month',
+    price: '₹1,099',
+    period: '/ quarter',
+    monthlyBreakdown: 'That\'s ₹366/mo breakdown (or ₹399/mo monthly)',
     quota: '100 campaigns / month',
     highlight: 'MOST POPULAR',
     accentColor: 'var(--color-primary)',
     ctaText: 'Checkout Pro Plan',
+    ctaHref: '/checkout?plan=PRO&cycle=quarterly',
     features: [
       '100 Coordinated multi-channel campaigns',
       'Google Search & Maps store updates',
@@ -39,34 +82,16 @@ const PAYMENT_PLANS = [
     ],
   },
   {
-    id: 'FOUNDER',
-    name: 'Early Adopter Pro',
-    price: '₹279',
-    period: '/ month',
-    quota: '100 campaigns / month',
-    highlight: 'LIMITED ALLOCATION',
-    accentColor: 'var(--color-ink)',
-    ctaText: 'Claim Founder Checkout',
-    features: [
-      '100 Campaigns every month',
-      'Locked-in rate guaranteed for life',
-      'Billed quarterly at ₹837 / 3 months',
-      'Google Maps & Search promotion hooks',
-      'Instagram Reels & WhatsApp distribution',
-      'Print-ready counter QR layouts',
-      'Up to 3 storefront accounts',
-      '0% sales commission',
-    ],
-  },
-  {
     id: 'GROWTH',
     name: 'Multi-Business Growth',
-    price: '₹799',
-    period: '/ month',
+    price: '₹2,199',
+    period: '/ quarter',
+    monthlyBreakdown: 'That\'s ₹733/mo breakdown (or ₹799/mo monthly)',
     quota: '300 campaigns / month',
     highlight: 'MULTI-OUTLET',
     accentColor: '#374151',
     ctaText: 'Checkout Growth Plan',
+    ctaHref: '/checkout?plan=GROWTH&cycle=quarterly',
     features: [
       '300 Campaigns monthly quota',
       'Up to 10 isolated storefront accounts',
@@ -223,6 +248,10 @@ export function PaymentsView() {
                       <span style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>{plan.period}</span>
                     </div>
 
+                    <div style={{ fontSize: '11.5px', color: 'var(--color-ink-muted)', marginBottom: '10px', fontWeight: 500 }}>
+                      {plan.monthlyBreakdown}
+                    </div>
+
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '20px' }}>
                       {plan.quota}
                     </div>
@@ -238,7 +267,7 @@ export function PaymentsView() {
                   </div>
 
                   <Link
-                    href={`/checkout?plan=${plan.id}`}
+                    href={plan.ctaHref || `/checkout?plan=${plan.id}`}
                     className={isPro ? 'btn-primary' : 'btn-secondary'}
                     style={{
                       width: '100%',

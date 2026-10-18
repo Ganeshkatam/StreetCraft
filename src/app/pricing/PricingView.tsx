@@ -203,6 +203,9 @@ export function PricingView() {
                           <span style={{ fontSize: '20px', color: 'var(--color-ink-soft)' }}>or</span> ₹{founderPlan.annual_price_inr.toLocaleString('en-IN')} <span style={{ fontSize: '15px', color: 'var(--color-ink-muted)' }}>/ year</span>
                         </span>
                       </div>
+                      <div style={{ fontSize: '12.5px', color: 'var(--color-primary)', marginTop: '8px', fontWeight: 500 }}>
+                        That's ₹{Math.round(founderPlan.quarterly_price_inr / 3)}/mo breakdown · Founder lifetime rate
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
@@ -234,31 +237,38 @@ export function PricingView() {
         {/* Standard Plan Cards Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '24px', marginBottom: '64px' }}>
           {plans
-            .filter(p => p.id !== 'FOUNDER' && !(billingCycle !== 'monthly' && p.monthly_inr === 0))
+            .filter(p => p.id !== 'FOUNDER')
             .sort((a, b) => {
               const order: Record<string, number> = { FREE: 0, PRO: 1, GROWTH: 2 };
               return (order[a.id] ?? 99) - (order[b.id] ?? 99);
             })
             .map((p) => {
             const isPro = p.id === 'PRO';
+            const isFree = p.monthly_inr === 0;
 
-            const displayPrice = billingCycle === 'annual'
-              ? p.annual_price_inr
-              : billingCycle === 'quarterly'
-                ? p.quarterly_price_inr
-                : p.monthly_inr;
+            const displayPrice = isFree
+              ? 'Free'
+              : billingCycle === 'annual'
+                ? `₹${p.annual_price_inr.toLocaleString('en-IN')}`
+                : billingCycle === 'quarterly'
+                  ? `₹${p.quarterly_price_inr.toLocaleString('en-IN')}`
+                  : `₹${p.monthly_inr.toLocaleString('en-IN')}`;
 
-            const periodLabel = billingCycle === 'annual'
-              ? '/ year'
-              : billingCycle === 'quarterly'
-                ? '/ 3 months'
-                : '/ month';
+            const periodLabel = isFree
+              ? '/ lifetime'
+              : billingCycle === 'annual'
+                ? '/ year'
+                : billingCycle === 'quarterly'
+                  ? '/ quarter'
+                  : '/ month';
 
-            const subtitle = billingCycle === 'annual' && p.annual_price_inr > 0
-              ? `That's ₹${Math.round(p.annual_price_inr / 12).toLocaleString('en-IN')}/month — 2 months free`
-              : billingCycle === 'quarterly' && p.quarterly_price_inr > 0
-                ? `That's ₹${Math.round(p.quarterly_price_inr / 3).toLocaleString('en-IN')}/month`
-                : null;
+            const subtitle = isFree
+              ? '₹0/mo · Free forever'
+              : billingCycle === 'annual' && p.annual_price_inr > 0
+                ? `That's ₹${Math.round(p.annual_price_inr / 12).toLocaleString('en-IN')}/mo breakdown — 2 months free`
+                : billingCycle === 'quarterly' && p.quarterly_price_inr > 0
+                  ? `That's ₹${Math.round(p.quarterly_price_inr / 3).toLocaleString('en-IN')}/mo breakdown`
+                  : `₹${p.monthly_inr}/mo · Billed monthly`;
 
             return (
               <div
@@ -290,7 +300,7 @@ export function PricingView() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                         <span style={{ fontSize: '38px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', lineHeight: 1 }}>
-                          ₹{displayPrice.toLocaleString('en-IN')}
+                          {displayPrice}
                         </span>
                         <span style={{ fontSize: '13.5px', color: 'var(--color-ink-muted)' }}>
                           {periodLabel}

@@ -146,16 +146,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   const getPlanRateDisplay = (plan: DatabasePlan) => {
     if (plan.monthly_inr === 0) {
-      return { price: 'Free', period: '/mo', subtext: 'Free forever' };
+      return {
+        largePrice: 'Free',
+        period: '/ lifetime',
+        monthlyBreakdown: '₹0/mo · Free forever',
+      };
     }
 
     if (billingCycle === 'annual') {
       const annualPrice = plan.annual_price_inr;
       const effectivePerMonth = Math.round(annualPrice / 12);
       return {
-        price: `₹${effectivePerMonth}`,
-        period: '/mo',
-        subtext: `Billed annually at ₹${annualPrice.toLocaleString('en-IN')} (2 months free)`,
+        largePrice: `₹${annualPrice.toLocaleString('en-IN')}`,
+        period: '/ year',
+        monthlyBreakdown: `That's ₹${effectivePerMonth}/mo breakdown · 2 months free`,
       };
     }
 
@@ -163,26 +167,27 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       const quarterlyPrice = plan.quarterly_price_inr;
       const effectivePerMonth = Math.round(quarterlyPrice / 3);
       return {
-        price: `₹${effectivePerMonth}`,
-        period: '/mo',
-        subtext: `Billed quarterly at ₹${quarterlyPrice.toLocaleString('en-IN')}`,
+        largePrice: `₹${quarterlyPrice.toLocaleString('en-IN')}`,
+        period: '/ quarter',
+        monthlyBreakdown: `That's ₹${effectivePerMonth}/mo breakdown`,
       };
     }
 
     if (plan.id === 'FOUNDER') {
       return {
-        price: '₹279',
-        period: '/mo',
-        subtext: `Billed quarterly at ₹${plan.quarterly_price_inr.toLocaleString('en-IN')}`,
+        largePrice: `₹${plan.quarterly_price_inr.toLocaleString('en-IN')}`,
+        period: '/ quarter',
+        monthlyBreakdown: `That's ₹${Math.round(plan.quarterly_price_inr / 3)}/mo · Founder lifetime rate`,
       };
     }
 
     return {
-      price: `₹${plan.monthly_inr}`,
-      period: '/mo',
-      subtext: 'Billed monthly',
+      largePrice: `₹${plan.monthly_inr.toLocaleString('en-IN')}`,
+      period: '/ month',
+      monthlyBreakdown: `₹${plan.monthly_inr}/mo · Billed monthly`,
     };
   };
+
 
   const featureMatrixRows = [
     {
@@ -424,12 +429,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                               <span style={{ fontSize: '9.5px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>POPULAR</span>
                             ) : null}
                           </div>
-                          <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '10px 0 2px', color: 'var(--color-ink)', fontWeight: 700 }}>
-                            {rateDisplay.price}
+                          <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', margin: '10px 0 2px', color: 'var(--color-ink)', fontWeight: 700, display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                            <span>{rateDisplay.largePrice}</span>
                             <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>{rateDisplay.period}</span>
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', minHeight: '16px', marginBottom: '8px' }}>
-                            {rateDisplay.subtext}
+                          <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', minHeight: '16px', marginBottom: '8px', fontWeight: 500 }}>
+                            {rateDisplay.monthlyBreakdown}
                           </div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--color-primary)', marginBottom: '14px', fontWeight: 600 }}>
                             {plan.monthly_campaign_limit ?? plan.monthly_pack_limit ?? 3} campaigns / month
@@ -495,10 +500,31 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <thead>
                     <tr style={{ background: 'var(--color-surface-raised)', borderBottom: '1px solid var(--color-border)' }}>
                       <th style={{ padding: '12px 16px', color: 'var(--color-ink-muted)', fontWeight: 600, width: '28%' }}>Capability</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Starter (Free)</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Early Adopter (₹279/mo)</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-primary)', fontWeight: 700, width: '18%' }}>High-Street Pro (₹399/mo)</th>
-                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Growth (₹799/mo)</th>
+                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>Starter (Free / lifetime)</th>
+                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
+                        {(() => {
+                          const p = plans.find((x) => x.id === 'FOUNDER');
+                          if (!p) return 'Early Adopter';
+                          const r = getPlanRateDisplay(p);
+                          return `Early Adopter (${r.largePrice}${r.period})`;
+                        })()}
+                      </th>
+                      <th style={{ padding: '12px 14px', color: 'var(--color-primary)', fontWeight: 700, width: '18%' }}>
+                        {(() => {
+                          const p = plans.find((x) => x.id === 'PRO');
+                          if (!p) return 'High-Street Pro';
+                          const r = getPlanRateDisplay(p);
+                          return `High-Street Pro (${r.largePrice}${r.period})`;
+                        })()}
+                      </th>
+                      <th style={{ padding: '12px 14px', color: 'var(--color-ink)', fontWeight: 600, width: '18%' }}>
+                        {(() => {
+                          const p = plans.find((x) => x.id === 'GROWTH');
+                          if (!p) return 'Growth';
+                          const r = getPlanRateDisplay(p);
+                          return `Growth (${r.largePrice}${r.period})`;
+                        })()}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
