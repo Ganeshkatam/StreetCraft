@@ -62,20 +62,27 @@ if (!anonKey) {
   process.exit(2);
 }
 
-function extractProjectRef(url) {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname;
-    if (hostname.endsWith('.supabase.co')) {
-      return hostname.split('.')[0];
-    }
-    return hostname;
-  } catch {
-    return 'unknown';
-  }
+let parsedUrl;
+try {
+  parsedUrl = new URL(targetUrl);
+} catch (urlErr) {
+  console.error('\n[Configuration Error] Invalid SUPABASE_INTEGRATION_URL format:', urlErr.message);
+  process.exit(2);
 }
 
-const targetRef = extractProjectRef(targetUrl);
+const targetHostname = parsedUrl.hostname.toLowerCase();
+const APPROVED_LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+const isLocalTarget = APPROVED_LOCAL_HOSTNAMES.has(targetHostname);
+
+function extractProjectRef(urlObj) {
+  const hostname = urlObj.hostname.toLowerCase();
+  if (hostname.endsWith('.supabase.co')) {
+    return hostname.split('.')[0];
+  }
+  return hostname;
+}
+
+const targetRef = extractProjectRef(parsedUrl);
 
 // Strict Production Project Disallowance
 if (targetUrl.includes(PRODUCTION_PROJECT_REF) || targetRef === PRODUCTION_PROJECT_REF) {
@@ -86,17 +93,16 @@ if (targetUrl.includes(PRODUCTION_PROJECT_REF) || targetRef === PRODUCTION_PROJE
 }
 
 // 3. Isolated Target Identity Verification
-const isLocalTarget = targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1');
-
 if (isLocalTarget) {
   const isLocalConfirmed = process.env.ALLOW_LOCAL_TEST_TARGET === 'true' || process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true';
   if (!isLocalConfirmed) {
-    console.error('\n[Target Validation] Local target detected but unconfirmed.');
+    console.error('\n[Target Validation] Local target detected (' + targetHostname + ') but unconfirmed.');
     console.error('To run against a local disposable container, set:');
     console.error('  ALLOW_LOCAL_TEST_TARGET=true or CONFIRM_ISOLATED_TEST_DATABASE=true\n');
     process.exit(2);
   }
   console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
+  console.log('Target hostname:', targetHostname);
   console.log('Target classification: LOCAL DISPOSABLE TEST INSTANCE');
 } else {
   // Remote cloud target: require explicit identity verification against expected project ref
