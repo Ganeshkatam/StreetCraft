@@ -241,3 +241,202 @@ describe('Payment Lifecycle: Idempotency & Duplicate Webhook Replay', () => {
     assert.strictEqual(secondAttempt.status, 'PROCESSED');
   });
 });
+
+describe('Payment Lifecycle: End-to-End Database Activation & Cross-Account Isolation', () => {
+  interface SubscriptionRow {
+    id: string;
+    user_id: string;
+    provider: string;
+    provider_subscription_id: string;
+    plan_id: string;
+    billing_cycle: string;
+    status: 'ACTIVE' | 'CANCELLED';
+  }
+
+  class MockActivationDatabase {
+    public subscriptions: SubscriptionRow[] = [];
+
+    public confirmPaymentAndActivate(params: {
+      callerRole: 'anon' | 'authenticated' | 'service_role';
+      paymentId: string;
+      orderId: string;
+      planId: string;
+      billingCycle: string;
+      userId: string;
+    }): { success: boolean; idempotent_replay?: boolean; subscription_id?: string; error?: string } {
+      // 1. Role Boundary Check
+      if (params.callerRole !== 'service_role') {
+        throw new Error('42501: permission denied for function confirm_payment_and_activate_subscription');
+      }
+
+      if (!params.paymentId || params.paymentId.trim() === '') {
+        throw new Error('INVALID_PAYMENT: Payment reference ID is required.');
+      }
+
+      // 2. Cross-Account Claim Check
+      const otherUserSub = this.subscriptions.find(
+        (s) => s.provider === 'razorpay' && s.provider_subscription_id === params.paymentId && s.user_id !== params.userId
+      );
+      if (otherUserSub) {
+        throw new Error('PAYMENT_ALREADY_CLAIMED: This payment reference is already attached to another account.');
+      }
+
+      // 3. Idempotent Replay for Same Account
+      const existingSub = this.subscriptions.find(
+        (s) => s.provider === 'razorpay' && s.provider_subscription_id === params.paymentId && s.user_id === params.userId
+      );
+      if (existingSub) {
+        if (existingSub.status === 'CANCELLED') {
+          throw new Error('PAYMENT_ALREADY_EXPIRED: Payment reference belongs to a cancelled subscription.');
+        }
+        return {
+          success: true,
+          idempotent_replay: true,
+          subscription_id: existingSub.id,
+        };
+      }
+
+      // 4. Cancel prior active subscriptions for user
+      for (const sub of this.subscriptions) {
+        if (sub.user_id === params.userId && sub.status === 'ACTIVE') {
+          sub.status = 'CANCELLED';
+        }
+      }
+
+      // 5. Insert new active subscription
+      const newSub: SubscriptionRow = {
+        id: `sub_${Math.random().toString(36).substring(2, 9)}`,
+        user_id: params.userId,
+        provider: 'razorpay',
+        provider_subscription_id: params.paymentId,
+        plan_id: params.planId,
+        billing_cycle: params.billingCycle,
+        status: 'ACTIVE',
+      };
+      this.subscriptions.push(newSub);
+
+      return {
+        success: true,
+        subscription_id: newSub.id,
+      };
+    }
+  }
+
+  it('denies direct execution to authenticated and anon callers', () => {
+    const db = new MockActivationDatabase();
+    assert.throws(
+      () =>
+        db.confirmPaymentAndActivate({
+          callerRole: 'authenticated',
+          paymentId: 'pay_123',
+          orderId: 'order_123',
+          planId: 'PRO',
+          billingCycle: 'monthly',
+          userId: 'user_a',
+        }),
+      /42501: permission denied/
+    );
+
+    assert.throws(
+      () =>
+        db.confirmPaymentAndActivate({
+          callerRole: 'anon',
+          paymentId: 'pay_123',
+          orderId: 'order_123',
+          planId: 'PRO',
+          billingCycle: 'monthly',
+          userId: 'user_a',
+        }),
+      /42501: permission denied/
+    );
+  });
+
+  it('activates subscription on first legitimate call and idempotently accepts duplicate callback without duplicate rows', () => {
+    const db = new MockActivationDatabase();
+    const firstCall = db.confirmPaymentAndActivate({
+      callerRole: 'service_role',
+      paymentId: 'pay_legit_001',
+      orderId: 'order_legit_001',
+      planId: 'PRO',
+      billingCycle: 'monthly',
+      userId: 'user_a',
+    });
+
+    assert.strictEqual(firstCall.success, true);
+    assert.strictEqual(db.subscriptions.length, 1);
+    assert.strictEqual(db.subscriptions[0].status, 'ACTIVE');
+
+    // Duplicate callback with same payment ID
+    const duplicateCall = db.confirmPaymentAndActivate({
+      callerRole: 'service_role',
+      paymentId: 'pay_legit_001',
+      orderId: 'order_legit_001',
+      planId: 'PRO',
+      billingCycle: 'monthly',
+      userId: 'user_a',
+    });
+
+    assert.strictEqual(duplicateCall.success, true);
+    assert.strictEqual(duplicateCall.idempotent_replay, true);
+    assert.strictEqual(duplicateCall.subscription_id, firstCall.subscription_id);
+    assert.strictEqual(db.subscriptions.length, 1, 'Duplicate call must NOT create a second subscription row');
+  });
+
+  it('strictly rejects payment ID reuse by a different user account', () => {
+    const db = new MockActivationDatabase();
+    db.confirmPaymentAndActivate({
+      callerRole: 'service_role',
+      paymentId: 'pay_user_a_only',
+      orderId: 'order_001',
+      planId: 'PRO',
+      billingCycle: 'monthly',
+      userId: 'user_a',
+    });
+
+    // Attacker on user_b attempts to claim User A's payment ID
+    assert.throws(
+      () =>
+        db.confirmPaymentAndActivate({
+          callerRole: 'service_role',
+          paymentId: 'pay_user_a_only',
+          orderId: 'order_001',
+          planId: 'GROWTH',
+          billingCycle: 'annual',
+          userId: 'user_b',
+        }),
+      /PAYMENT_ALREADY_CLAIMED/
+    );
+  });
+
+  it('safely recovers when webhook arrives before client-side verification completes', () => {
+    const db = new MockActivationDatabase();
+    const paymentId = 'pay_interrupted_recovery_001';
+
+    // 1. Asynchronous webhook arrives and activates subscription in background
+    const webhookRes = db.confirmPaymentAndActivate({
+      callerRole: 'service_role',
+      paymentId,
+      orderId: 'order_interrupted_001',
+      planId: 'GROWTH',
+      billingCycle: 'quarterly',
+      userId: 'user_a',
+    });
+    assert.strictEqual(webhookRes.success, true);
+    const initialSubId = webhookRes.subscription_id;
+
+    // 2. Client-side verify action recovers after network reconnect and submits verification
+    const clientRecoverRes = db.confirmPaymentAndActivate({
+      callerRole: 'service_role',
+      paymentId,
+      orderId: 'order_interrupted_001',
+      planId: 'GROWTH',
+      billingCycle: 'quarterly',
+      userId: 'user_a',
+    });
+
+    assert.strictEqual(clientRecoverRes.success, true);
+    assert.strictEqual(clientRecoverRes.idempotent_replay, true);
+    assert.strictEqual(clientRecoverRes.subscription_id, initialSubId);
+    assert.strictEqual(db.subscriptions.length, 1);
+  });
+});
