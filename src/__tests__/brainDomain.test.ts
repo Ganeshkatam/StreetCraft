@@ -133,6 +133,51 @@ describe('Brain: Specification Synthesis & Validation', () => {
     assert.strictEqual(validation.valid, true);
     assert.strictEqual(validation.errors.length, 0);
   });
+
+  it('rejects deceptive claims and chronologically invalid schedules in specification', () => {
+    const context = buildBrainStoreContext({
+      name: 'Wellness Oasis',
+      category: 'RETAIL',
+      neighborhood: 'Koramangala',
+      city: 'Bengaluru',
+    });
+
+    const opportunities = detectBrainOpportunities(context);
+    const blueprint = formulateStrategicBlueprint(opportunities[0], context);
+
+    // Deceptive claim test
+    const deceptiveSpec = synthesizeCampaignSpec(blueprint, context, {
+      offer: {
+        title: 'Guaranteed 100% Cure Elixir',
+        description: 'Miracle cure for all ailments.',
+        value: 'Special Elixir',
+        terms: 'No refunds.',
+      },
+    });
+
+    const deceptiveValidation = validateBrainSpecification(deceptiveSpec);
+    assert.strictEqual(deceptiveValidation.valid, false);
+    assert.ok(deceptiveValidation.errors.some((e) => e.includes('deceptive claims')));
+
+    // Chronologically inverted schedule test
+    const invertedScheduleSpec = synthesizeCampaignSpec(blueprint, context, {
+      offer: {
+        title: 'Valid Organic Honey',
+        description: 'Fresh local batch.',
+        value: 'Special price',
+        terms: 'Daily.',
+      },
+      schedule: {
+        startsAt: '2026-08-25T10:00:00Z',
+        endsAt: '2026-08-20T10:00:00Z', // Inverted: 5 days before start
+        timingLabel: 'This Week',
+      },
+    });
+
+    const invertedValidation = validateBrainSpecification(invertedScheduleSpec);
+    assert.strictEqual(invertedValidation.valid, false);
+    assert.ok(invertedValidation.errors.some((e) => e.includes('end date cannot precede start date')));
+  });
 });
 
 describe('Brain: Category Vocabulary & Grounding Differentiation', () => {

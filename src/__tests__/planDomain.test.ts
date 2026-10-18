@@ -49,10 +49,17 @@ describe('Plan Domain: Entitlement Status Derivation', () => {
 });
 
 describe('Plan Domain: Schemas Validation', () => {
-  it('validates RequestCancellationSchema with valid UUID', () => {
+  it('validates RequestCancellationSchema with valid UUID and reason', () => {
     const res = RequestCancellationSchema.safeParse({
       subscriptionId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
       reason: 'Downsizing storefront operations.',
+    });
+    assert.strictEqual(res.success, true);
+  });
+
+  it('validates RequestCancellationSchema without optional reason', () => {
+    const res = RequestCancellationSchema.safeParse({
+      subscriptionId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
     });
     assert.strictEqual(res.success, true);
   });

@@ -30,15 +30,18 @@ export async function requestSubscriptionCancellationAction(
       };
     }
 
-    // Invoke trusted database RPC to cancel subscription safely
-    const { data: _rpcResult, error: rpcError } = await supabase.rpc('request_subscription_cancellation');
+    // Invoke trusted database RPC targeting the specific subscription and recording reason
+    const { data: _rpcResult, error: rpcError } = await supabase.rpc('request_subscription_cancellation', {
+      p_subscription_id: parsed.data.subscriptionId,
+      p_reason: parsed.data.reason || null,
+    });
 
     if (rpcError) {
       console.error('request_subscription_cancellation RPC error:', rpcError.message);
       if (rpcError.message.includes('NO_ACTIVE_SUBSCRIPTION')) {
         return {
           success: false,
-          message: 'No active paid subscription found to cancel.',
+          message: 'Specified active paid subscription not found to cancel.',
         };
       }
       return {

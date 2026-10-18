@@ -204,6 +204,7 @@ export async function createCampaignAction(
       p_instagram_content: outputs.instagram,
       p_whatsapp_content: outputs.whatsapp,
       p_poster_content: outputs.poster,
+      p_generation_request_id: input.generationRequestId || null,
     });
 
     if (rpcError) {
@@ -217,6 +218,7 @@ export async function createCampaignAction(
     }
 
     const campaignId = rpcResult?.campaign_id;
+    const isIdempotentReplay = Boolean(rpcResult?.idempotent_replay);
 
     // 8. Revalidation
     revalidatePath('/user/campaigns');
@@ -226,7 +228,9 @@ export async function createCampaignAction(
     return {
       success: true,
       campaignId,
-      message: 'Campaign created and coordinated across 4 channels.',
+      message: isIdempotentReplay
+        ? 'Existing campaign retrieved (idempotent request).'
+        : 'Campaign created and coordinated across 4 channels.',
       data: {
         campaignId,
         campaign: {

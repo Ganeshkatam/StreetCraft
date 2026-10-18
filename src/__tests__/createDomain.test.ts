@@ -108,6 +108,23 @@ describe('Create Domain: Campaign Input Validation Schema', () => {
     const result = CreateCampaignInputSchema.safeParse(shortPayload);
     assert.strictEqual(result.success, false);
   });
+
+  it('rejects invalid generationRequestId UUID format', () => {
+    const invalidPayload = {
+      businessId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+      generationRequestId: 'non-uuid-random-string',
+      type: 'WEEKDAY_BOOST',
+      objective: 'MORE_ORDERS',
+      offer: {
+        title: 'Valid Offer Title',
+        description: 'Valid offer description for tests.',
+      },
+      schedule: {},
+    };
+
+    const result = CreateCampaignInputSchema.safeParse(invalidPayload);
+    assert.strictEqual(result.success, false);
+  });
 });
 
 describe('Create Domain: Campaign Pack 4-Channel Validation', () => {

@@ -1,8 +1,17 @@
 import type { BrainStoreContext } from '../context/storeContext';
 
+/**
+ * OpportunityScore represents the rule-based contextual alignment between a store's
+ * current operational state and marketing opportunity types.
+ *
+ * NOTE: The confidence tier denotes the degree of factual alignment with verified store
+ * attributes (e.g. configured slow hours, signature items, cultural calendar timing, recency)
+ * rather than empirical conversion rate or proven customer demand.
+ */
 export interface OpportunityScore {
   score: number; // 0 to 100
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  confidenceBasis: string;
   reasons: string[];
 }
 
@@ -100,9 +109,17 @@ export function calculateOpportunityScore(
   if (boundedScore >= 75) confidence = 'HIGH';
   else if (boundedScore >= 50) confidence = 'MEDIUM';
 
+  let confidenceBasis = 'Partial heuristic alignment with store profile';
+  if (confidence === 'HIGH') {
+    confidenceBasis = 'Strong contextual rule alignment based on verified store attributes, timing, and recency';
+  } else if (confidence === 'MEDIUM') {
+    confidenceBasis = 'Moderate rule alignment; some store attributes estimated using neighborhood defaults';
+  }
+
   return {
     score: boundedScore,
     confidence,
+    confidenceBasis,
     reasons,
   };
 }
