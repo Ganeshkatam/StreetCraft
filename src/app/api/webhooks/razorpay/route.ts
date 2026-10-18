@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { reconcileRazorpayWebhookPayload } from '../../../../lib/domain/plan/paymentReconciliation';
 
 /**
  * POST handler for Razorpay webhook endpoint.
@@ -53,6 +54,19 @@ export async function POST(req: NextRequest) {
     if (!providerEventId) {
       return NextResponse.json({ error: 'MISSING_EVENT_ID' }, { status: 400 });
     }
+
+    // Defense-in-depth: Reconcile payload invariants before privileged database activation
+    if (eventType === 'payment.captured' || eventType === 'order.paid') {
+      const reconResult = reconcileRazorpayWebhookPayload({ eventType, payload });
+      if (!reconResult.valid) {
+        console.error('[Razorpay Webhook] Purchase reconciliation rejected:', reconResult.error);
+        return NextResponse.json({
+          error: 'RECONCILIATION_FAILED',
+          message: reconResult.error,
+        }, { status: 400 });
+      }
+    }
+
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

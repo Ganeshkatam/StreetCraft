@@ -246,5 +246,24 @@ describe('Security Hardening: Least-Privilege Entitlement Activation RPC Permiss
       /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription\(text,\s*text,\s*text,\s*text,\s*text\)\s+TO\s+service_role;/i
     );
   });
+
+  it('enforces least-privilege permissions in 20261018190000_harden_webhook_reconciliation.sql', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+
+    const migrationPath = path.resolve('supabase/migrations/20261018190000_harden_webhook_reconciliation.sql');
+    assert.ok(fs.existsSync(migrationPath), 'Migration 20261018190000_harden_webhook_reconciliation.sql must exist');
+
+    const content = fs.readFileSync(migrationPath, 'utf8');
+
+    // Revocations from public, anon, authenticated
+    assert.match(content, /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription.*FROM\s+PUBLIC,\s*anon,\s*authenticated;/i);
+    assert.match(content, /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.reconcile_provider_event.*FROM\s+PUBLIC,\s*anon,\s*authenticated;/i);
+
+    // Grants to service_role
+    assert.match(content, /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.confirm_payment_and_activate_subscription.*TO\s+service_role;/i);
+    assert.match(content, /GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.reconcile_provider_event.*TO\s+service_role;/i);
+  });
 });
+
 

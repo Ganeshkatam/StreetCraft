@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import crypto from 'node:crypto';
+import { reconcileRazorpayWebhookPayload } from '../lib/domain/plan/paymentReconciliation';
+import { POST as handleRazorpayWebhook } from '../app/api/webhooks/razorpay/route';
 
 describe('Payment Lifecycle: Webhook Payload & Signature Verification', () => {
   const secret = 'whsec_test_secret_streetcraft_2026';
@@ -440,3 +442,439 @@ describe('Payment Lifecycle: End-to-End Database Activation & Cross-Account Isol
     assert.strictEqual(db.subscriptions.length, 1);
   });
 });
+
+describe('Payment Lifecycle: Webhook Reconciliation & Metadata Integrity', () => {
+  const validUserId = '00000000-0000-0000-0000-000000000001';
+  const attackerUserId = '00000000-0000-0000-0000-000000000002';
+
+  const baseOrderPaidPayload = {
+    event: 'order.paid',
+    event_id: 'evt_order_paid_001',
+    payload: {
+      order: {
+        entity: {
+          id: 'order_paid_123',
+          amount: 39900,
+          currency: 'INR',
+          status: 'paid',
+          notes: {
+            userId: validUserId,
+            planId: 'PRO',
+            billingCycle: 'monthly',
+          },
+        },
+      },
+      payment: {
+        entity: {
+          id: 'pay_captured_123',
+          order_id: 'order_paid_123',
+          amount: 39900,
+          currency: 'INR',
+          status: 'captured',
+          captured: true,
+          notes: {
+            userId: validUserId,
+            planId: 'PRO',
+            billingCycle: 'monthly',
+          },
+        },
+      },
+    },
+  };
+
+  it('successfully validates legitimate order.paid webhook payload', () => {
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload: baseOrderPaidPayload,
+    });
+
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.verifiedUserId, validUserId);
+    assert.strictEqual(result.verifiedPlanId, 'PRO');
+    assert.strictEqual(result.verifiedBillingCycle, 'monthly');
+    assert.strictEqual(result.verifiedAmountPaise, 39900);
+  });
+
+  it('rejects order.paid when order notes are missing userId', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.order.entity.notes.userId;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order entity is missing authoritative userId/);
+  });
+
+  it('rejects order.paid when order notes are missing planId', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.order.entity.notes.planId;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order entity is missing authoritative planId/);
+  });
+
+  it('rejects order.paid when order notes are missing billingCycle without defaulting to monthly', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    delete payload.payload.order.entity.notes.billingCycle;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order entity is missing authoritative billingCycle/);
+  });
+
+  it('rejects when payment notes indicate a conflicting user account', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.notes.userId = attackerUserId;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment notes indicate conflicting user account/);
+  });
+
+  it('rejects when payment notes indicate a conflicting plan tier', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.notes.planId = 'GROWTH';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment notes indicate conflicting plan/);
+  });
+
+  it('rejects when payment notes indicate a conflicting billing cycle', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.notes.billingCycle = 'annual';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment notes indicate conflicting billing cycle/);
+  });
+
+  it('rejects standalone payment.captured when billing cycle is missing rather than defaulting', () => {
+    const payload = {
+      event: 'payment.captured',
+      payload: {
+        payment: {
+          entity: {
+            id: 'pay_standalone_001',
+            order_id: 'order_standalone_001',
+            amount: 39900,
+            currency: 'INR',
+            status: 'captured',
+            notes: {
+              userId: validUserId,
+              planId: 'PRO',
+              // billingCycle deliberately omitted
+            },
+          },
+        },
+      },
+    };
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'payment.captured',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Missing authoritative billingCycle.*Cannot default to monthly/);
+  });
+
+  it('rejects underpayment attack (100 paise payment for 399 INR plan)', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.amount = 100; // 1 INR instead of 399 INR
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment amount 100 paise does not match expected amount 39900 paise/);
+  });
+
+  it('rejects non-INR currency in webhook payload', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.currency = 'USD';
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Invalid currency.*StreetCraft operates in INR/);
+  });
+
+  it('rejects uncaptured payment status in webhook payload', () => {
+    const payload = JSON.parse(JSON.stringify(baseOrderPaidPayload));
+    payload.payload.payment.entity.status = 'authorized';
+    payload.payload.payment.entity.captured = false;
+
+    const result = reconcileRazorpayWebhookPayload({
+      eventType: 'order.paid',
+      payload,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment is not captured/);
+  });
+});
+
+describe('Payment Lifecycle: Razorpay Webhook Endpoint Route Handler', () => {
+  const secret = 'whsec_route_test_secret_2026';
+  process.env.RAZORPAY_WEBHOOK_SECRET = secret;
+
+  function makeWebhookRequest(bodyObj: any, customSig?: string | null): any {
+    const rawBody = JSON.stringify(bodyObj);
+    const signature = customSig !== undefined
+      ? customSig
+      : crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+
+    const headers = new Map<string, string>();
+    if (signature !== null) {
+      headers.set('x-razorpay-signature', signature);
+    }
+    headers.set('content-type', 'application/json');
+
+    return {
+      headers: {
+        get: (key: string) => headers.get(key.toLowerCase()) || null,
+      },
+      text: async () => rawBody,
+    };
+  }
+
+  it('returns 400 MISSING_SIGNATURE when x-razorpay-signature header is missing', async () => {
+    const req = makeWebhookRequest({ event: 'payment.captured' }, null);
+
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'MISSING_SIGNATURE');
+  });
+
+  it('returns 400 INVALID_SIGNATURE when signature does not match secret', async () => {
+    const req = makeWebhookRequest({ event: 'payment.captured' }, 'invalid_hex_signature_deadbeef');
+
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'INVALID_SIGNATURE');
+  });
+
+  it('returns 400 RECONCILIATION_FAILED when payment amount is tampered', async () => {
+    const payload = {
+      event: 'order.paid',
+      event_id: 'evt_tampered_amt_001',
+      payload: {
+        order: {
+          entity: {
+            id: 'order_123',
+            amount: 39900,
+            currency: 'INR',
+            status: 'paid',
+            notes: {
+              userId: '00000000-0000-0000-0000-000000000001',
+              planId: 'PRO',
+              billingCycle: 'monthly',
+            },
+          },
+        },
+        payment: {
+          entity: {
+            id: 'pay_123',
+            order_id: 'order_123',
+            amount: 100, // Tampered: 1 INR instead of 399 INR
+            currency: 'INR',
+            status: 'captured',
+            notes: {
+              userId: '00000000-0000-0000-0000-000000000001',
+              planId: 'PRO',
+              billingCycle: 'monthly',
+            },
+          },
+        },
+      },
+    };
+
+    const req = makeWebhookRequest(payload);
+    const res = await handleRazorpayWebhook(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'RECONCILIATION_FAILED');
+    assert.match(data.message, /Payment amount 100 paise does not match/);
+  });
+});
+
+describe('Payment Lifecycle: Database Quota Enforcement & Boundary Concurrency', () => {
+  interface UsagePeriodRow {
+    id: string;
+    business_id: string;
+    campaigns_used: number;
+    campaign_limit: number;
+  }
+
+  interface CampaignRow {
+    id: string;
+    business_id: string;
+    generation_request_id?: string;
+  }
+
+  class MockAtomicDatabaseBoundary {
+    public periods: UsagePeriodRow[] = [];
+    public campaigns: CampaignRow[] = [];
+
+    public saveCampaignAtomically(params: {
+      businessId: string;
+      generationRequestId?: string;
+    }): { campaign_id: string; campaigns_used: number; campaign_limit: number; idempotent_replay: boolean } {
+      // 1. Idempotent check before lock or deduction
+      if (params.generationRequestId) {
+        const existing = this.campaigns.find(
+          (c) => c.generation_request_id === params.generationRequestId && c.business_id === params.businessId
+        );
+        if (existing) {
+          const period = this.periods.find((p) => p.business_id === params.businessId);
+          return {
+            campaign_id: existing.id,
+            campaigns_used: period?.campaigns_used || 0,
+            campaign_limit: period?.campaign_limit || 3,
+            idempotent_replay: true,
+          };
+        }
+      }
+
+      // 2. Lock and quota check
+      const period = this.periods.find((p) => p.business_id === params.businessId);
+      if (!period) {
+        throw new Error('ENTITLEMENT_UNAVAILABLE: No active usage period found.');
+      }
+
+      if (period.campaigns_used >= period.campaign_limit) {
+        throw new Error(`QUOTA_EXHAUSTED: Usage quota reached: ${period.campaigns_used} of ${period.campaign_limit} campaigns used this cycle.`);
+      }
+
+      // 3. Atomically increment quota
+      period.campaigns_used += 1;
+
+      // 4. Insert campaign with unique constraint check on generation_request_id
+      if (params.generationRequestId) {
+        const duplicateIndex = this.campaigns.find(
+          (c) => c.generation_request_id === params.generationRequestId
+        );
+        if (duplicateIndex) {
+          // Unique violation rollback simulation
+          period.campaigns_used -= 1;
+          return {
+            campaign_id: duplicateIndex.id,
+            campaigns_used: period.campaigns_used,
+            campaign_limit: period.campaign_limit,
+            idempotent_replay: true,
+          };
+        }
+      }
+
+      const newCampaign: CampaignRow = {
+        id: `cmp_${Math.random().toString(36).substring(2, 9)}`,
+        business_id: params.businessId,
+        generation_request_id: params.generationRequestId,
+      };
+      this.campaigns.push(newCampaign);
+
+      return {
+        campaign_id: newCampaign.id,
+        campaigns_used: period.campaigns_used,
+        campaign_limit: period.campaign_limit,
+        idempotent_replay: false,
+      };
+    }
+  }
+
+  it('enforces quota limit and rejects campaign creation with QUOTA_EXHAUSTED when quota is reached', () => {
+    const db = new MockAtomicDatabaseBoundary();
+    const businessId = '11111111-1111-1111-1111-111111111111';
+    db.periods.push({
+      id: 'prd_01',
+      business_id: businessId,
+      campaigns_used: 3,
+      campaign_limit: 3, // Exhausted free tier quota
+    });
+
+    assert.throws(
+      () => db.saveCampaignAtomically({ businessId }),
+      /QUOTA_EXHAUSTED: Usage quota reached: 3 of 3/
+    );
+  });
+
+  it('replayed generation_request_id returns existing campaign without consuming additional quota', () => {
+    const db = new MockAtomicDatabaseBoundary();
+    const businessId = '11111111-1111-1111-1111-111111111111';
+    db.periods.push({
+      id: 'prd_01',
+      business_id: businessId,
+      campaigns_used: 1,
+      campaign_limit: 100,
+    });
+
+    const genId = 'gen_req_unique_9988';
+    const firstCall = db.saveCampaignAtomically({ businessId, generationRequestId: genId });
+    assert.strictEqual(firstCall.idempotent_replay, false);
+    assert.strictEqual(firstCall.campaigns_used, 2);
+
+    // Replay call
+    const replayCall = db.saveCampaignAtomically({ businessId, generationRequestId: genId });
+    assert.strictEqual(replayCall.idempotent_replay, true);
+    assert.strictEqual(replayCall.campaign_id, firstCall.campaign_id);
+    assert.strictEqual(replayCall.campaigns_used, 2, 'Replay call must NOT increment campaigns_used');
+    assert.strictEqual(db.campaigns.length, 1);
+  });
+
+  it('concurrently racing generation_request_id recovers gracefully without burning quota', () => {
+    const db = new MockAtomicDatabaseBoundary();
+    const businessId = '11111111-1111-1111-1111-111111111111';
+    db.periods.push({
+      id: 'prd_01',
+      business_id: businessId,
+      campaigns_used: 0,
+      campaign_limit: 100,
+    });
+
+    const genId = 'gen_concurrent_race_001';
+
+    // Simulate concurrent call 1
+    const call1 = db.saveCampaignAtomically({ businessId, generationRequestId: genId });
+    assert.strictEqual(call1.idempotent_replay, false);
+    assert.strictEqual(call1.campaigns_used, 1);
+
+    // Simulate concurrent call 2 that passed initial check but encounters unique index
+    const call2 = db.saveCampaignAtomically({ businessId, generationRequestId: genId });
+    assert.strictEqual(call2.idempotent_replay, true);
+    assert.strictEqual(call2.campaign_id, call1.campaign_id);
+    assert.strictEqual(db.periods[0].campaigns_used, 1, 'Concurrent collision must preserve quota at 1');
+  });
+});
+

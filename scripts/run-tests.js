@@ -30,8 +30,17 @@ function compileFile(srcPath, outPath) {
     return match;
   });
 
+  // Rewrite relative dynamic imports to append .js if not present
+  jsCode = jsCode.replace(/(import\s*\(\s*['"])(\.\.?\/[^'"]+?)(['"]\s*\))/g, (match, p1, p2, p3) => {
+    if (!p2.endsWith('.js') && !p2.endsWith('.json')) {
+      return `${p1}${p2}.js${p3}`;
+    }
+    return match;
+  });
+
   // Rewrite Next.js subpath imports to append .js for native Node ESM resolution
-  jsCode = jsCode.replace(/(from\s+['"])next\/(cache|navigation|headers)(['"])/g, '$1next/$2.js$3');
+  jsCode = jsCode.replace(/(from\s+['"])next\/(cache|navigation|headers|server)(['"])/g, '$1next/$2.js$3');
+  jsCode = jsCode.replace(/(import\s*\(\s*['"])next\/(cache|navigation|headers|server)(['"]\s*\))/g, '$1next/$2.js$3');
   
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, jsCode);
