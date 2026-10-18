@@ -12,6 +12,7 @@ interface UpgradeModalProps {
   onPlanUpdated?: () => void;
   onSuccess?: () => void;
   businessId?: string;
+  onSelectPlan?: (planId: string, cycle: 'monthly' | 'quarterly' | 'annual') => void;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({
@@ -19,6 +20,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onClose,
   currentPlanId,
   businessId,
+  onSelectPlan,
 }) => {
   useBodyScrollLock(isOpen);
   const router = useRouter();
@@ -100,6 +102,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       plan.id === 'FOUNDER' && billingCycle === 'monthly' ? 'quarterly' : billingCycle;
 
     handleClose();
+    if (onSelectPlan) {
+      onSelectPlan(plan.id, effectiveBillingCycle);
+    }
     const bizQuery = businessId ? `&businessId=${encodeURIComponent(businessId)}` : '';
     router.push(
       `/checkout?plan=${encodeURIComponent(plan.id)}&cycle=${encodeURIComponent(effectiveBillingCycle)}${bizQuery}`

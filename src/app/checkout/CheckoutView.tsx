@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BillablePlanId, BillingCycle, getPlanPricingQuote } from '../../lib/domain/plan/planPricing';
@@ -9,6 +9,7 @@ import { verifyRazorpayPaymentAction } from '../../lib/server/plan/verifyRazorpa
 import { loadRazorpayScript } from '../../lib/client/loadRazorpayScript';
 import { getUserFacingErrorMessage } from '../../lib/userFacingError';
 import { Logo } from '../../components/Logo';
+import { UpgradeModal } from '../../components/UpgradeModal';
 import {
   Lock,
   ShieldCheck,
@@ -127,6 +128,7 @@ export function CheckoutView({
       : businesses[0]?.id || ''
   );
 
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<{
@@ -136,6 +138,18 @@ export function CheckoutView({
     quota: number;
     amountPaid: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (initialPlanId) {
+      setSelectedPlan(normalizePlanId(initialPlanId));
+    }
+  }, [initialPlanId]);
+
+  useEffect(() => {
+    if (initialBillingCycle) {
+      setBillingCycle(normalizeCycle(initialBillingCycle));
+    }
+  }, [initialBillingCycle]);
 
   // Founder plan requires quarterly or annual cycle
   const effectiveBillingCycle: BillingCycle =
@@ -535,116 +549,108 @@ export function CheckoutView({
                   )}
                 </div>
 
-                {/* 2. Plan Tier Selection */}
+                {/* 2. Selected Plan Tier (Fixed from Modal) */}
                 <div className="card" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Sparkles size={18} color="var(--color-primary)" />
                       <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
-                        Select Commercial Tier
+                        Selected Plan Tier
                       </h3>
                     </div>
-                    <Link
-                      href="/pricing"
-                      target="_blank"
-                      style={{ fontSize: '12px', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600 }}
+                    <button
+                      type="button"
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="btn-ghost"
+                      style={{
+                        fontSize: '12.5px',
+                        padding: '6px 12px',
+                        color: 'var(--color-primary)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
                     >
-                      Compare All Features &rarr;
-                    </Link>
+                      <span>Change Plan in Modal</span>
+                      &rarr;
+                    </button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-                    {AVAILABLE_PLANS.map((plan) => {
-                      const isSelected = selectedPlan === plan.id;
-                      const planQuote = getPlanPricingQuote(
-                        plan.id,
-                        plan.id === 'FOUNDER' && billingCycle === 'monthly' ? 'quarterly' : billingCycle
-                      );
-
-                      return (
-                        <div
-                          key={plan.id}
-                          onClick={() => setSelectedPlan(plan.id)}
-                          style={{
-                            border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
-                            background: isSelected ? 'var(--color-surface-raised)' : 'var(--color-surface)',
-                            borderRadius: 'var(--radius-sm)',
-                            padding: '16px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            transition: 'all 0.15s ease',
-                            boxShadow: isSelected ? '0 4px 16px rgba(22, 101, 52, 0.08)' : 'none',
-                          }}
-                        >
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '22px' }}>
-                              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-ink)' }}>
-                                {plan.name}
-                              </span>
-                              {plan.highlight && (
-                                <span
-                                  style={{
-                                    fontSize: '9px',
-                                    fontFamily: 'var(--font-mono)',
-                                    fontWeight: 700,
-                                    color: isSelected ? '#15803D' : '#4B5563',
-                                    background: isSelected ? '#DCFCE7' : '#F3F4F6',
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                  }}
-                                >
-                                  {plan.highlight}
-                                </span>
-                              )}
-                            </div>
-
-                            <div style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)', margin: '8px 0 2px', display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-                              <span>₹{planQuote.amountINR.toLocaleString('en-IN')}</span>
-                              <span style={{ fontSize: '11px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>
-                                /{planQuote.billingCycle === 'annual' ? 'year' : planQuote.billingCycle === 'quarterly' ? 'quarter' : 'month'}
-                              </span>
-                            </div>
-
-                            <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', marginBottom: '8px', fontWeight: 500 }}>
-                              {planQuote.billingCycle === 'monthly'
-                                ? `₹${planQuote.monthlyEffectiveINR}/mo · Billed monthly`
-                                : `That's ₹${planQuote.monthlyEffectiveINR}/mo breakdown`}
-                            </div>
-
-                            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '10px' }}>
-                              {plan.monthlyQuota} campaigns / mo
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              marginTop: '12px',
-                              paddingTop: '10px',
-                              borderTop: '1px solid var(--color-border)',
-                              fontSize: '11px',
-                              color: isSelected ? 'var(--color-primary)' : 'var(--color-ink-muted)',
-                              fontWeight: 600,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <div
+                  <div
+                    style={{
+                      border: '2px solid var(--color-primary)',
+                      background: 'var(--color-surface-raised)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '20px 22px',
+                      boxShadow: '0 4px 16px rgba(22, 101, 52, 0.08)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)', margin: 0, fontFamily: 'var(--font-display)' }}>
+                            {activePlanDef.name}
+                          </h4>
+                          {activePlanDef.highlight && (
+                            <span
                               style={{
-                                width: '14px',
-                                height: '14px',
-                                borderRadius: '50%',
-                                border: isSelected ? '4px solid var(--color-primary)' : '1px solid #9CA3AF',
-                                background: '#FFFFFF',
+                                fontSize: '9.5px',
+                                fontFamily: 'var(--font-mono)',
+                                fontWeight: 700,
+                                color: '#15803D',
+                                background: '#DCFCE7',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
                               }}
-                            />
-                            <span>{isSelected ? 'Selected' : 'Choose Tier'}</span>
-                          </div>
+                            >
+                              {activePlanDef.highlight}
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
+                        <div style={{ fontSize: '12.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, marginTop: '4px' }}>
+                          {activePlanDef.monthlyQuota} coordinated campaigns / month
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '24px', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-ink)', display: 'flex', alignItems: 'baseline', gap: '4px', justifyContent: 'flex-end' }}>
+                          <span>₹{quote.amountINR.toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)', fontWeight: 400 }}>
+                            /{quote.billingCycle === 'annual' ? 'year' : quote.billingCycle === 'quarterly' ? 'quarter' : 'month'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--color-ink-muted)', marginTop: '2px', fontWeight: 500 }}>
+                          {quote.billingCycle === 'monthly'
+                            ? `₹${quote.monthlyEffectiveINR}/mo · Billed monthly`
+                            : `That's ₹${quote.monthlyEffectiveINR}/mo breakdown`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: '16px',
+                        paddingTop: '14px',
+                        borderTop: '1px solid var(--color-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '12px',
+                        color: 'var(--color-ink-muted)',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                      }}
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-primary)', fontWeight: 600 }}>
+                        <Check size={14} />
+                        Plan selected from modal · Ready for gateway checkout
+                      </span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                        Tier ID: {selectedPlan}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -889,6 +895,20 @@ export function CheckoutView({
           </div>
         )}
       </main>
+
+      {showUpgradeModal && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          currentPlanId={selectedPlan}
+          businessId={selectedBusinessId}
+          onSelectPlan={(planId, cycle) => {
+            setSelectedPlan(normalizePlanId(planId));
+            setBillingCycle(normalizeCycle(cycle));
+            setShowUpgradeModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
