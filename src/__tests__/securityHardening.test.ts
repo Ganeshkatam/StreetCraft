@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import crypto from 'node:crypto';
 import { getSafeRedirectUrl } from '../lib/domain/auth/safeRedirect';
 import { filterAuthorizedBusiness, type AccessibleBusinessSummary } from '../lib/domain/business/businessAuthorization';
+import { deriveCommercialEntitlementStatus } from '../lib/domain/plan/entitlementState';
 
 describe('Security Hardening: Safe Redirect Validation', () => {
   const origin = 'https://streetcraft.in';
@@ -138,3 +139,78 @@ describe('Security Hardening: Webhook Signature Verification Logic', () => {
     assert.strictEqual(isValid, false);
   });
 });
+
+describe('Security Hardening: Multi-Tenant Storage Folder Isolation', () => {
+  const storeUuidRegex = /^[0-9a-f-]{36}$/;
+
+  it('accepts valid RFC 4122 UUID folder names', () => {
+    assert.strictEqual(storeUuidRegex.test('123e4567-e89b-12d3-a456-426614174000'), true);
+    assert.strictEqual(storeUuidRegex.test('d9a8f3b4-1c2e-4b5a-9f8e-7d6c5b4a3f2e'), true);
+  });
+
+  it('rejects directory traversal payloads as top-level folder', () => {
+    assert.strictEqual(storeUuidRegex.test('..'), false);
+    assert.strictEqual(storeUuidRegex.test('../other-store'), false);
+    assert.strictEqual(storeUuidRegex.test('..%2Fstore'), false);
+    assert.strictEqual(storeUuidRegex.test('123e4567-e89b-12d3-a456-426614174000/../evil'), false);
+  });
+
+  it('rejects non-UUID top-level folders preventing root-level contamination', () => {
+    assert.strictEqual(storeUuidRegex.test('public'), false);
+    assert.strictEqual(storeUuidRegex.test('avatars'), false);
+    assert.strictEqual(storeUuidRegex.test('storefronts'), false);
+    assert.strictEqual(storeUuidRegex.test('admin'), false);
+    assert.strictEqual(storeUuidRegex.test(''), false);
+  });
+});
+
+describe('Security Hardening: Subscription Cancellation Lifecycle & Entitlement Retention', () => {
+  it('preserves paid tier access during scheduled cancellation before period end', () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 15);
+
+    const subscription = {
+      status: 'ACTIVE',
+      cancel_at_period_end: true,
+      current_period_end: futureDate.toISOString(),
+    };
+
+    const derived = deriveCommercialEntitlementStatus(subscription);
+    assert.strictEqual(derived.status, 'CANCEL_SCHEDULED');
+    assert.strictEqual(derived.isCancellationScheduled, true);
+    assert.strictEqual(derived.isActive, true);
+  });
+
+  it('transitions to inactive CANCELED once period end has passed after scheduled cancellation', () => {
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - 1);
+
+    const subscription = {
+      status: 'ACTIVE',
+      cancel_at_period_end: true,
+      current_period_end: pastDate.toISOString(),
+    };
+
+    const derived = deriveCommercialEntitlementStatus(subscription);
+    assert.strictEqual(derived.status, 'CANCELED');
+    assert.strictEqual(derived.isCancellationScheduled, false);
+    assert.strictEqual(derived.isActive, false);
+  });
+
+  it('treats active subscription without cancellation schedule as normally active', () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+
+    const subscription = {
+      status: 'ACTIVE',
+      cancel_at_period_end: false,
+      current_period_end: futureDate.toISOString(),
+    };
+
+    const derived = deriveCommercialEntitlementStatus(subscription);
+    assert.strictEqual(derived.status, 'ACTIVE');
+    assert.strictEqual(derived.isCancellationScheduled, false);
+    assert.strictEqual(derived.isActive, true);
+  });
+});
+

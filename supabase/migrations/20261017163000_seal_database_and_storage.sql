@@ -67,6 +67,11 @@ CREATE POLICY "Store Admin Update Storefront Asset"
     bucket_id = 'storefronts' AND
     (storage.foldername(name))[1] ~ '^[0-9a-f-]{36}$' AND
     public.is_business_admin(((storage.foldername(name))[1])::uuid)
+  )
+  WITH CHECK (
+    bucket_id = 'storefronts' AND
+    (storage.foldername(name))[1] ~ '^[0-9a-f-]{36}$' AND
+    public.is_business_admin(((storage.foldername(name))[1])::uuid)
   );
 
 CREATE POLICY "Store Admin Delete Storefront Asset"
