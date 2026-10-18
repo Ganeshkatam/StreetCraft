@@ -9,15 +9,30 @@ import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
 import { useRouteModal } from '../../../hooks/useRouteModal';
 import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ExternalLink } from 'lucide-react';
+import { extractBusinessIdFromPathname, resolveActiveBusiness, getWorkspaceHref, WorkspaceSection } from '../../../lib/domain/workspace/workspaceRouting';
 
-export const WorkspaceNavigation: React.FC = () => {
+export interface WorkspaceNavigationProps {
+  initialBusinesses?: Array<{ id: string; name: string; category?: string }>;
+  initialAccountLimit?: number;
+  initialUserEmail?: string;
+  initialUserName?: string;
+  initialAvatarUrl?: string | null;
+}
+
+export const WorkspaceNavigation: React.FC<WorkspaceNavigationProps> = ({
+  initialBusinesses = [],
+  initialAccountLimit = 2,
+  initialUserEmail,
+  initialUserName,
+  initialAvatarUrl = null,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const { session, getMyBusinesses, getAccountLimits, switchBusiness, signOut } = useAuth();
   const { usage } = useUsage(session.activeBusinessId || '');
 
-  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
-  const [accountLimit, setAccountLimit] = useState(2);
+  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>(initialBusinesses);
+  const [accountLimit, setAccountLimit] = useState(initialAccountLimit);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const {
@@ -32,8 +47,16 @@ export const WorkspaceNavigation: React.FC = () => {
 
   useEffect(() => {
     if (session.isAuthenticated) {
-      getMyBusinesses().then((res) => setBusinesses(Array.isArray(res) ? res : []));
-      getAccountLimits().then((res) => setAccountLimit(res?.limit || 2));
+      getMyBusinesses().then((res) => {
+        if (Array.isArray(res) && res.length > 0) {
+          setBusinesses(res);
+        }
+      });
+      getAccountLimits().then((res) => {
+        if (res?.limit) {
+          setAccountLimit(res.limit);
+        }
+      });
     }
   }, [session.isAuthenticated, session.activeBusinessId]);
 
@@ -69,25 +92,21 @@ export const WorkspaceNavigation: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const effectiveAvatarUrl = liveAvatarUrl !== null ? liveAvatarUrl : session.avatarUrl;
-  const effectiveName = liveName !== null ? liveName : session.name;
+  const effectiveAvatarUrl = liveAvatarUrl !== null ? liveAvatarUrl : (session.avatarUrl || initialAvatarUrl);
+  const effectiveName = liveName !== null ? liveName : (session.name || initialUserName);
 
-  const safeBusinesses = Array.isArray(businesses) ? businesses : [];
-  const activeBiz = safeBusinesses.find((b) => b && b.id === session.activeBusinessId) || (safeBusinesses.length > 0 ? safeBusinesses[0] : null);
-  const activeBizName = activeBiz ? activeBiz.name : 'No Store Selected';
-  const activeBizId = activeBiz ? activeBiz.id : null;
-  const userInitial = (effectiveName || session.email || 'U').charAt(0).toUpperCase();
+  const routeBizId = extractBusinessIdFromPathname(pathname);
+  const safeBusinesses = Array.isArray(businesses) && businesses.length > 0 ? businesses : initialBusinesses;
+  const { activeBiz, activeBizId, activeBizName } = resolveActiveBusiness(
+    routeBizId,
+    session.activeBusinessId,
+    safeBusinesses
+  );
+  const userInitial = (effectiveName || session.email || initialUserEmail || 'U').charAt(0).toUpperCase();
 
-  const getBizHref = (section: 'today' | 'create' | 'campaigns' | 'settings' | 'plan') => {
-    if (!activeBizId) {
-      if (section === 'settings') return '/user/business';
-      if (section === 'plan') return '/user/account/plan';
-      return `/user/${section}`;
-    }
-    return `/user/business/${encodeURIComponent(activeBizId)}/${section}`;
-  };
+  const getBizHref = (section: WorkspaceSection) => getWorkspaceHref(activeBizId, section);
 
-  const isAccountSpace = pathname.startsWith('/user/account');
+  const isAccountSpace = pathname ? pathname.startsWith('/user/account') : false;
 
   return (
     <>

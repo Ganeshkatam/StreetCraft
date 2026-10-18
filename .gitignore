@@ -28,3 +28,8 @@ build/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Local secrets & sensitive documents
+docs/
+*.csv
+

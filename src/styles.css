@@ -59,10 +59,53 @@ textarea {
   color: inherit;
 }
 
-/* Where: Global button elements | How: Sets pointer cursor for clickable interactions */
 button {
   cursor: pointer;
 }
+
+/* Accessible Skeleton Loading States */
+@keyframes sc-skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+.skeleton {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-xs);
+  animation: sc-skeleton-pulse 1.8s ease-in-out infinite;
+  display: block;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: var(--radius-xs);
+}
+
+.skeleton-title {
+  height: 28px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-xs);
+}
+
+.skeleton-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
 
 /* App Shell Layout */
 /* Where: Root application shell layout | How: Vertical flexbox ensuring full viewport height */
