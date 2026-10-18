@@ -552,11 +552,25 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
             {/* Footer with See All Plans link and Close */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <a
                   href="/pricing"
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{
+                    fontSize: '12.5px',
+                    color: 'var(--color-ink-muted)',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <span>Compare Plans Matrix</span>
+                  <ExternalLink size={13} />
+                </a>
+                <span style={{ color: 'var(--color-border)' }}>&bull;</span>
+                <a
+                  href={`/checkout?cycle=${encodeURIComponent(billingCycle)}${businessId ? `&businessId=${encodeURIComponent(businessId)}` : ''}`}
                   style={{
                     fontSize: '12.5px',
                     color: 'var(--color-primary)',
@@ -567,10 +581,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <span>See All Plans &amp; Full Feature Breakdown</span>
+                  <span>Open Dedicated Checkout Page</span>
                   <ExternalLink size={13} />
                 </a>
-              </div>
               <button className="btn-secondary" onClick={onClose} disabled={isProcessing}>
                 Close
               </button>

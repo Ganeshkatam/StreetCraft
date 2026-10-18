@@ -217,7 +217,7 @@ export function PricingView() {
                     </div>
      
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--color-border)', paddingLeft: '28px' }}>
-                      <button className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '14.5px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => router.push('/login')}>
+                      <button className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '14.5px', justifyContent: 'center', background: 'var(--color-ink)', color: '#FFFFFF' }} onClick={() => router.push('/checkout?plan=FOUNDER')}>
                         Become a Founder
                       </button>
                       <div style={{ marginTop: '12px', fontSize: '13.5px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.02em' }}>
@@ -321,7 +321,7 @@ export function PricingView() {
                 <button
                   className={isPro ? 'btn-primary' : 'btn-secondary'}
                   style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: '13.5px' }}
-                  onClick={() => router.push(p.monthly_inr === 0 ? '/free-tool' : '/login')}
+                  onClick={() => router.push(p.monthly_inr === 0 ? '/free-tool' : `/checkout?plan=${encodeURIComponent(p.id)}&cycle=${encodeURIComponent(billingCycle)}`)}
                 >
                   {p.monthly_inr === 0 ? 'Start Free' : `Select ${p.name}`}
                 </button>

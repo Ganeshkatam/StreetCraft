@@ -285,6 +285,15 @@ export const WorkspaceNavigation: React.FC = () => {
                     <span>See All Plans</span>
                   </a>
 
+                  <Link
+                    href={activeBizId ? `/user/business/${encodeURIComponent(activeBizId)}/checkout` : '/checkout'}
+                    className="user-dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <CreditCard size={14} color="var(--color-primary)" />
+                    <span>Payments &amp; Checkout</span>
+                  </Link>
+
                   <div className="user-dropdown-divider" />
 
                   <button
