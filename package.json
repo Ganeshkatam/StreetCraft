@@ -14,7 +14,6 @@
     "start": "next start -p 3018",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-tests.js",
-    "test:integration": "node --env-file-if-exists=.env scripts/verify-database-integration.js",
     "tree": "node scripts/generate-project-tree.js"
   },
   "dependencies": {
