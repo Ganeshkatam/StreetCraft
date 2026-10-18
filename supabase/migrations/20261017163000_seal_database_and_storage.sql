@@ -1,5 +1,5 @@
 -- Migration: 20261017163000_seal_database_and_storage.sql
--- Description: Hardens database RPCs, secures storefront storage bucket, and prevents quota and membership probing.
+-- Description: Hardens database RPCs, secures storefront storage bucket, prevents quota and membership probing, and adds missing indexes.
 
 -- 1. Helper function for store admin/owner role checks
 CREATE OR REPLACE FUNCTION public.is_business_admin(target_biz_id uuid)
@@ -32,12 +32,22 @@ AS $$
   );
 $$;
 
--- 3. Revoke public/client execution on vulnerable payment and cleanup functions
+-- 3. Fix mutable search_path on transition_campaign_status
+ALTER FUNCTION public.transition_campaign_status(uuid, text) SET search_path = public;
+
+-- 4. Revoke public/client execution on privileged and administrative RPCs
 REVOKE EXECUTE ON FUNCTION public.confirm_payment_and_activate_subscription(text, text, text, text, text) FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.claim_founder_tier(text) FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.cleanup_unconfirmed_users() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.sync_business_name_and_category() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.delete_business_atomically(uuid) FROM PUBLIC, anon;
 
--- 4. Scope the storefronts bucket strictly to store folders with admin-only write permissions
+-- Ensure authenticated role can call authorized store deletion and cancellation
+GRANT EXECUTE ON FUNCTION public.delete_business_atomically(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.request_subscription_cancellation() TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.request_subscription_cancellation() FROM PUBLIC, anon;
+
+-- 5. Scope the storefronts bucket strictly to store folders with admin-only write permissions
 DROP POLICY IF EXISTS "Allow authenticated upload on storefronts bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Allow authenticated update on storefronts bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Allow authenticated delete on storefronts bucket" ON storage.objects;
@@ -66,7 +76,19 @@ CREATE POLICY "Store Admin Delete Storefront Asset"
     public.is_business_admin(((storage.foldername(name))[1])::uuid)
   );
 
--- 5. Race-free claim_anonymous_campaign: atomic claim, owner/admin check, and quota consumption
+-- 6. Explicit policy for provider_events table to satisfy RLS linter
+CREATE POLICY "Deny client access to provider events"
+  ON public.provider_events
+  FOR ALL
+  TO anon, authenticated
+  USING (false);
+
+-- 7. Add covering indexes on unindexed foreign keys
+CREATE INDEX IF NOT EXISTS idx_subscriptions_plan_id ON public.subscriptions(plan_id);
+CREATE INDEX IF NOT EXISTS idx_usage_events_campaign_id ON public.usage_events(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_usage_events_user_id ON public.usage_events(user_id);
+
+-- 8. Race-free claim_anonymous_campaign: atomic claim, owner/admin check, and quota consumption
 CREATE OR REPLACE FUNCTION public.claim_anonymous_campaign(p_claim_token text, p_business_id uuid)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -146,7 +168,7 @@ BEGIN
 END;
 $$;
 
--- 6. Cancel subscription at period end: retains paid status until current_period_end
+-- 9. Cancel subscription at period end: retains paid status until current_period_end
 CREATE OR REPLACE FUNCTION public.request_subscription_cancellation()
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -211,5 +233,5 @@ BEGIN
 END;
 $$;
 
--- 7. Revoke execution on future public functions by default
-ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon, authenticated;
+-- 10. Revoke execution on future public functions by default
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon;
