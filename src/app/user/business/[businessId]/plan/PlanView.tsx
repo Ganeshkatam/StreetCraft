@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { StorePlanViewModel } from '../../../../../lib/domain/plan/planTypes';
 import { requestSubscriptionCancellationAction, CancellationActionState } from '../../../../../lib/server/plan/requestSubscriptionCancellationAction';
 import { UpgradeModal } from '../../../../../components/UpgradeModal';
-import { Sparkles, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Sparkles, AlertTriangle, ArrowLeft, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PlanViewProps {
@@ -61,7 +61,17 @@ export function PlanView({ planData }: PlanViewProps) {
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <a
+            href="/pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary"
+            style={{ fontSize: '13px', padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+          >
+            <span>See All Plans</span>
+            <ExternalLink size={13} />
+          </a>
           <button
             type="button"
             className="btn-primary"

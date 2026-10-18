@@ -92,6 +92,7 @@ export async function getCreateContext(
         }
       : null,
     entitlement: {
+      planId: planTier,
       available: Boolean(usagePeriod),
       campaignLimit,
       campaignsUsed,

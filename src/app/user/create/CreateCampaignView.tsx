@@ -190,6 +190,8 @@ export function CreateCampaignView({ context }: CreateCampaignViewProps) {
       {showUpgradeModal && (
         <UpgradeModal
           isOpen={showUpgradeModal}
+          currentPlanId={entitlement?.planId || 'FREE'}
+          businessId={business?.id}
           onClose={() => setShowUpgradeModal(false)}
         />
       )}

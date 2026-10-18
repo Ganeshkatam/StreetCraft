@@ -7,7 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUsage } from '../../../hooks/useUsage';
 import { Logo } from '../../../components/Logo';
 import { UpgradeModal } from '../../../components/UpgradeModal';
-import { LogOut, ChevronDown, Plus, Store, User, CreditCard } from 'lucide-react';
+import { LogOut, ChevronDown, Plus, Store, User, CreditCard, ExternalLink } from 'lucide-react';
 
 export const WorkspaceNavigation: React.FC = () => {
   const router = useRouter();
@@ -273,6 +273,17 @@ export const WorkspaceNavigation: React.FC = () => {
                     <CreditCard size={14} color="var(--color-ink-muted)" />
                     <span>Plan &amp; Usage</span>
                   </Link>
+
+                  <a
+                    href="/pricing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="user-dropdown-item"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <ExternalLink size={14} color="var(--color-ink-muted)" />
+                    <span>See All Plans</span>
+                  </a>
 
                   <div className="user-dropdown-divider" />
 

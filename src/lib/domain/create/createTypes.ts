@@ -31,6 +31,7 @@ export interface CreateCampaignProfileSummary {
 }
 
 export interface CreateCampaignEntitlementSummary {
+  planId: string;
   available: boolean;
   campaignLimit: number;
   campaignsUsed: number;
