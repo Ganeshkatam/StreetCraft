@@ -70,12 +70,18 @@ try {
   process.exit(2);
 }
 
-const targetHostname = parsedUrl.hostname.toLowerCase();
+const rawHostname = parsedUrl.hostname.toLowerCase();
+const normalizedHostname = rawHostname.startsWith('[') && rawHostname.endsWith(']')
+  ? rawHostname.slice(1, -1)
+  : rawHostname;
+
 const APPROVED_LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
-const isLocalTarget = APPROVED_LOCAL_HOSTNAMES.has(targetHostname);
+const isLocalTarget = APPROVED_LOCAL_HOSTNAMES.has(normalizedHostname) || APPROVED_LOCAL_HOSTNAMES.has(rawHostname);
 
 function extractProjectRef(urlObj) {
-  const hostname = urlObj.hostname.toLowerCase();
+  const hostname = (urlObj.hostname.toLowerCase().startsWith('[') && urlObj.hostname.endsWith(']'))
+    ? urlObj.hostname.slice(1, -1).toLowerCase()
+    : urlObj.hostname.toLowerCase();
   if (hostname.endsWith('.supabase.co')) {
     return hostname.split('.')[0];
   }
@@ -96,15 +102,22 @@ if (targetUrl.includes(PRODUCTION_PROJECT_REF) || targetRef === PRODUCTION_PROJE
 if (isLocalTarget) {
   const isLocalConfirmed = process.env.ALLOW_LOCAL_TEST_TARGET === 'true' || process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true';
   if (!isLocalConfirmed) {
-    console.error('\n[Target Validation] Local target detected (' + targetHostname + ') but unconfirmed.');
+    console.error('\n[Target Validation] Local target detected (' + normalizedHostname + ') but unconfirmed.');
     console.error('To run against a local disposable container, set:');
     console.error('  ALLOW_LOCAL_TEST_TARGET=true or CONFIRM_ISOLATED_TEST_DATABASE=true\n');
     process.exit(2);
   }
   console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
-  console.log('Target hostname:', targetHostname);
+  console.log('Target hostname:', normalizedHostname);
   console.log('Target classification: LOCAL DISPOSABLE TEST INSTANCE');
 } else {
+  // Remote target: strictly require HTTPS
+  if (parsedUrl.protocol !== 'https:') {
+    console.error('\nSAFETY VIOLATION: Remote targets must use HTTPS. Insecure HTTP connections are only permitted for local test containers.');
+    console.error('Received URL:', targetUrl);
+    process.exit(2);
+  }
+
   // Remote cloud target: require explicit identity verification against expected project ref
   const expectedProjectRef = process.env.SUPABASE_INTEGRATION_PROJECT_REF;
   const isConfirmed = process.env.CONFIRM_ISOLATED_TEST_DATABASE === 'true';
