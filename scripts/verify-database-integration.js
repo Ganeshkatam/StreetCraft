@@ -6,9 +6,9 @@ import crypto from 'node:crypto';
  * StreetCraft — Phase 4 Database Integration Test Runner
  *
  * Safe Execution Guarantee:
- * Refuses to run mutations against the production project (iodwiyfjwzdvqtrczttb) by default.
- * Requires an isolated target database (SUPABASE_INTEGRATION_URL) or explicit
- * sandbox authorization (ALLOW_PRODUCTION_TEST_TARGET=true).
+ * Strictly disallows running integration mutations against the production project (iodwiyfjwzdvqtrczttb).
+ * Requires an explicitly configured isolated database target via SUPABASE_INTEGRATION_URL
+ * and SUPABASE_INTEGRATION_SERVICE_KEY.
  *
  * Verifies real PostgreSQL transactional and concurrency behaviors:
  * 1. Authorization boundaries on privileged RPCs (service_role vs anon/authenticated).
@@ -18,68 +18,44 @@ import crypto from 'node:crypto';
  *    - Distinct generation_request_id concurrency near quota limit (QUOTA_EXHAUSTED race).
  * 4. Multi-store entitlement propagation and audit events across persisted rows.
  * 5. Subscription cancellation scheduling via request_subscription_cancellation RPC.
- * 6. Fail-closed webhook ingestion, error tracking, and expired subscription downgrades.
- * 7. Guaranteed synthetic fixture teardown in finally block.
+ * 6. Fail-closed webhook ingestion, error tracking, and expired subscription downgrades matching SQL contracts.
+ * 7. Guaranteed synthetic fixture teardown with fail-fast cleanup error propagation.
  */
 
 const PRODUCTION_PROJECT_REF = 'iodwiyfjwzdvqtrczttb';
 
-const targetUrl = process.env.SUPABASE_INTEGRATION_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_INTEGRATION_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const targetUrl = process.env.SUPABASE_INTEGRATION_URL;
+const serviceKey = process.env.SUPABASE_INTEGRATION_SERVICE_KEY;
 const anonKey = process.env.SUPABASE_INTEGRATION_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 console.log('--- StreetCraft Phase 4 Database Integration Runner ---');
 
+// 1. Strict Target Validation
 if (!targetUrl || !serviceKey) {
-  console.error('ERROR: Target database credentials not found.');
-  console.error('Provide SUPABASE_INTEGRATION_URL and SUPABASE_INTEGRATION_SERVICE_KEY,');
-  console.error('or set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.');
-  process.exit(1);
-}
-
-const isProductionTarget = targetUrl.includes(PRODUCTION_PROJECT_REF);
-
-if (isProductionTarget && process.env.ALLOW_PRODUCTION_TEST_TARGET !== 'true') {
-  console.warn('');
-  console.warn('========================================================================');
-  console.warn('SAFETY ABORT: Target database matches production project (' + PRODUCTION_PROJECT_REF + ').');
-  console.warn('Refusing to execute integration mutations against production by default.');
-  console.warn('');
-  console.warn('To execute Phase 4 integration tests safely:');
-  console.warn('1. Set SUPABASE_INTEGRATION_URL to an isolated Supabase staging or branch target.');
-  console.warn('2. Or, if intentionally testing synthetic sandbox fixtures against this target,');
-  console.warn('   explicitly provide: ALLOW_PRODUCTION_TEST_TARGET=true');
-  console.warn('========================================================================');
-  console.warn('');
+  console.log('\n[Target Validation] SUPABASE_INTEGRATION_URL or SUPABASE_INTEGRATION_SERVICE_KEY not set.');
+  console.log('The live production database (ref: ' + PRODUCTION_PROJECT_REF + ') is strictly protected.');
+  console.log('Integration mutations will not be run against production.');
+  console.log('\nTo execute Phase 4 integration tests safely:');
+  console.log('1. Provision a dedicated Supabase staging project, development branch, or local database.');
+  console.log('2. Set SUPABASE_INTEGRATION_URL and SUPABASE_INTEGRATION_SERVICE_KEY in your environment.');
+  console.log('3. Run: npm run test:integration\n');
   process.exit(0);
 }
 
+if (targetUrl.includes(PRODUCTION_PROJECT_REF)) {
+  console.error('\nSAFETY VIOLATION: Target URL matches production project ref (' + PRODUCTION_PROJECT_REF + ').');
+  console.error('Integration tests must never execute against the live production database.');
+  console.error('Please configure SUPABASE_INTEGRATION_URL pointing to an isolated staging or dev database.\n');
+  process.exit(1);
+}
+
 console.log('Target database URL:', targetUrl.replace(/:\/\/.*@/, '://***@'));
-console.log('Target status:', isProductionTarget ? 'PRODUCTION SANDBOX (EXPLICIT)' : 'ISOLATED TARGET');
+console.log('Target status: VERIFIED ISOLATED TARGET');
 
 // Privileged admin client with service_role key
 const adminClient = createClient(targetUrl, serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
-
-// Deterministic pricing helper
-function getExpectedAmountPaise(planId, cycle) {
-  const p = planId.toUpperCase();
-  const c = cycle.toLowerCase();
-  if (p === 'PRO') {
-    if (c === 'monthly') return 39900;
-    if (c === 'quarterly') return 109900;
-    if (c === 'annual') return 399000;
-  } else if (p === 'GROWTH') {
-    if (c === 'monthly') return 79900;
-    if (c === 'quarterly') return 219900;
-    if (c === 'annual') return 799000;
-  } else if (p === 'FOUNDER') {
-    if (c === 'quarterly') return 83700;
-    if (c === 'annual') return 279000;
-  }
-  return null;
-}
 
 const runId = crypto.randomBytes(4).toString('hex');
 const FIXTURE_PREFIX = `test_p4_${runId}`;
@@ -107,6 +83,21 @@ async function runIntegrationSuite() {
   const totalSuites = 6;
 
   try {
+    // ------------------------------------------------------------------------
+    // Authoritative Plan Parameter Resolution
+    // ------------------------------------------------------------------------
+    console.log('\n[Setup] Querying authoritative plan records from public.plans...');
+    const { data: plansData, error: plansErr } = await adminClient
+      .from('plans')
+      .select('id, name, monthly_campaign_limit, business_limit, active');
+    assert.ifError(plansErr);
+    assert.ok(plansData && plansData.length > 0, 'public.plans must contain plan records');
+
+    const proPlan = plansData.find((p) => p.id === 'PRO');
+    assert.ok(proPlan, 'PRO plan must exist in public.plans');
+    const expectedProLimit = proPlan.monthly_campaign_limit;
+    console.log(`  Authoritative PRO plan: monthly_campaign_limit = ${expectedProLimit}, business_limit = ${proPlan.business_limit}`);
+
     // ------------------------------------------------------------------------
     // Suite 1: Privileged RPC Authorization Boundaries
     // ------------------------------------------------------------------------
@@ -220,12 +211,13 @@ async function runIntegrationSuite() {
     console.log('  PASS: PostgreSQL rejected webhook missing order entity with SECURITY_VIOLATION');
 
     // 2d. Check failed event row was persisted in public.provider_events
-    const { data: failedEventRow } = await adminClient
+    const { data: failedEventRow, error: fetchFailedEventErr } = await adminClient
       .from('provider_events')
       .select('status, attempt_count, error_message')
       .eq('provider_event_id', invalidEventId)
       .single();
 
+    assert.ifError(fetchFailedEventErr);
     assert.ok(failedEventRow, 'Failed event must be recorded for auditability');
     assert.strictEqual(failedEventRow.status, 'FAILED');
     assert.strictEqual(failedEventRow.attempt_count, 1);
@@ -253,31 +245,35 @@ async function runIntegrationSuite() {
     cleanupState.userIds.push(userAId);
 
     // Profile record for user A
-    await adminClient.from('profiles').upsert({
+    const { error: profileAErr } = await adminClient.from('profiles').upsert({
       id: userAId,
       full_name: 'Merchant Test A',
       phone: '+919999999901',
       notification_preferences: {},
     });
+    if (profileAErr) throw new Error(`Profile A upsert failed: ${profileAErr.message}`);
 
     // Synthetic Store A1 (Primary)
     const storeA1Id = crypto.randomUUID();
     cleanupState.businessIds.push(storeA1Id);
-    await adminClient.from('businesses').insert({
+    const { error: storeA1Err } = await adminClient.from('businesses').insert({
       id: storeA1Id,
       name: `${FIXTURE_PREFIX} Cafe 1`,
       category: 'Cafe',
       timezone: 'Asia/Kolkata',
     });
-    await adminClient.from('business_members').insert({
+    if (storeA1Err) throw new Error(`Store A1 insert failed: ${storeA1Err.message}`);
+
+    const { error: memberA1Err } = await adminClient.from('business_members').insert({
       business_id: storeA1Id,
       user_id: userAId,
       role: 'owner',
     });
+    if (memberA1Err) throw new Error(`Member A1 insert failed: ${memberA1Err.message}`);
 
     const periodStart = new Date().toISOString().slice(0, 10);
     const periodEnd = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-    await adminClient.from('usage_periods').insert({
+    const { error: usageA1Err } = await adminClient.from('usage_periods').insert({
       business_id: storeA1Id,
       period_start: periodStart,
       period_end: periodEnd,
@@ -285,22 +281,27 @@ async function runIntegrationSuite() {
       campaign_limit: 3,
       campaigns_used: 0,
     });
+    if (usageA1Err) throw new Error(`Usage A1 insert failed: ${usageA1Err.message}`);
 
     // Synthetic Store A2 (Secondary store owned by User A to test multi-store entitlement propagation)
     const storeA2Id = crypto.randomUUID();
     cleanupState.businessIds.push(storeA2Id);
-    await adminClient.from('businesses').insert({
+    const { error: storeA2Err } = await adminClient.from('businesses').insert({
       id: storeA2Id,
       name: `${FIXTURE_PREFIX} Bakery 2`,
       category: 'Bakery',
       timezone: 'Asia/Kolkata',
     });
-    await adminClient.from('business_members').insert({
+    if (storeA2Err) throw new Error(`Store A2 insert failed: ${storeA2Err.message}`);
+
+    const { error: memberA2Err } = await adminClient.from('business_members').insert({
       business_id: storeA2Id,
       user_id: userAId,
       role: 'owner',
     });
-    await adminClient.from('usage_periods').insert({
+    if (memberA2Err) throw new Error(`Member A2 insert failed: ${memberA2Err.message}`);
+
+    const { error: usageA2Err } = await adminClient.from('usage_periods').insert({
       business_id: storeA2Id,
       period_start: periodStart,
       period_end: periodEnd,
@@ -308,6 +309,7 @@ async function runIntegrationSuite() {
       campaign_limit: 3,
       campaigns_used: 0,
     });
+    if (usageA2Err) throw new Error(`Usage A2 insert failed: ${usageA2Err.message}`);
 
     // Synthetic User B (Unrelated merchant to test cross-tenant isolation)
     const userBPassword = `SecTest_${crypto.randomBytes(8).toString('hex')}!`;
@@ -324,12 +326,13 @@ async function runIntegrationSuite() {
     const userBId = userBCreated.user.id;
     cleanupState.userIds.push(userBId);
 
-    await adminClient.from('profiles').upsert({
+    const { error: profileBErr } = await adminClient.from('profiles').upsert({
       id: userBId,
       full_name: 'Merchant Test B',
       phone: '+919999999902',
       notification_preferences: {},
     });
+    if (profileBErr) throw new Error(`Profile B upsert failed: ${profileBErr.message}`);
 
     console.log('  PASS: Synthetic accounts and stores provisioned in isolated sandbox');
 
@@ -367,7 +370,7 @@ async function runIntegrationSuite() {
     console.log('\n[Suite 3/6] Verifying Cross-Tenant Business Isolation in save_campaign_atomically...');
     const payloadA = samplePayload('Cross Tenant');
     const { error: crossTenantErr } = await clientB_conn.rpc('save_campaign_atomically', {
-      p_business_id: storeA1Id, // Store owned by User A!
+      p_business_id: storeA1Id, // Store owned by User A
       p_campaign_type: 'FESTIVAL',
       p_objective: 'SALES',
       p_audience: 'Local Shoppers',
@@ -433,18 +436,20 @@ async function runIntegrationSuite() {
     assert.ok(hasReplay, 'At least one concurrent branch must acknowledge idempotent replay');
 
     // Assert that exactly one campaign row was persisted in PostgreSQL
-    const { count: campaignCount } = await adminClient
+    const { count: campaignCount, error: countErr } = await adminClient
       .from('campaigns')
       .select('id', { count: 'exact', head: true })
       .eq('generation_request_id', identicalReqId);
+    assert.ifError(countErr);
     assert.strictEqual(campaignCount, 1, 'Exactly one campaign row must exist for the generation_request_id');
 
-    // Assert quota was deducted exactly once (campaigns_used == 1, not 2!)
-    const { data: periodRow1 } = await adminClient
+    // Assert quota was deducted exactly once (campaigns_used == 1, not 2)
+    const { data: periodRow1, error: p1Err } = await adminClient
       .from('usage_periods')
       .select('campaigns_used')
       .eq('business_id', storeA1Id)
       .single();
+    assert.ifError(p1Err);
     assert.strictEqual(periodRow1.campaigns_used, 1, 'Quota must be deducted exactly once despite concurrent race');
     console.log('  PASS: Concurrent identical request race resolved idempotently without double quota deduction');
     passedSuites++;
@@ -454,10 +459,11 @@ async function runIntegrationSuite() {
     // ------------------------------------------------------------------------
     console.log('\n[Suite 5/6] Testing Concurrent Transaction Race Near Quota Boundary...');
     // Set campaigns_used to 2 (limit is 3, exactly 1 slot remaining)
-    await adminClient
+    const { error: updateBoundaryErr } = await adminClient
       .from('usage_periods')
       .update({ campaigns_used: 2 })
       .eq('business_id', storeA1Id);
+    assert.ifError(updateBoundaryErr);
 
     const reqIdSlotA = crypto.randomUUID();
     const reqIdSlotB = crypto.randomUUID();
@@ -516,11 +522,12 @@ async function runIntegrationSuite() {
     );
 
     // Verify usage_periods campaigns_used reached exactly 3 (no overrun)
-    const { data: periodRowBoundary } = await adminClient
+    const { data: periodRowBoundary, error: pBoundaryErr } = await adminClient
       .from('usage_periods')
       .select('campaigns_used, campaign_limit')
       .eq('business_id', storeA1Id)
       .single();
+    assert.ifError(pBoundaryErr);
     assert.strictEqual(periodRowBoundary.campaigns_used, 3, 'campaigns_used must cap strictly at limit');
     assert.strictEqual(periodRowBoundary.campaign_limit, 3);
     console.log('  PASS: Row-level lock strictly guarded quota limit: 1 winner, 1 QUOTA_EXHAUSTED rejection');
@@ -545,44 +552,49 @@ async function runIntegrationSuite() {
     });
     assert.ifError(actError);
 
-    // Verify subscription row
-    const { data: activeSub } = await adminClient
+    // Verify subscription row in subscriptions table
+    const { data: activeSub, error: subFetchErr } = await adminClient
       .from('subscriptions')
-      .select('id, plan_id, status, cancel_at_period_end')
+      .select('id, plan_id, status, cancel_at_period_end, provider_subscription_id, current_period_end')
       .eq('user_id', userAId)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
+    assert.ifError(subFetchErr);
     assert.ok(activeSub, 'Active subscription must exist for User A');
     assert.strictEqual(activeSub.plan_id, 'PRO');
     assert.strictEqual(activeSub.status, 'ACTIVE');
     assert.strictEqual(activeSub.cancel_at_period_end, false);
+    assert.strictEqual(activeSub.provider_subscription_id, activationPaymentId);
 
-    // Verify multi-store entitlement upgrade: BOTH Store A1 and Store A2 must have limit = 30
-    const { data: storeA1Usage } = await adminClient
+    // Verify multi-store entitlement upgrade: BOTH Store A1 and Store A2 must have limit = expectedProLimit
+    const { data: storeA1Usage, error: uA1Err } = await adminClient
       .from('usage_periods')
       .select('plan, campaign_limit')
       .eq('business_id', storeA1Id)
       .single();
+    assert.ifError(uA1Err);
     assert.strictEqual(storeA1Usage.plan, 'PRO');
-    assert.strictEqual(storeA1Usage.campaign_limit, 30);
+    assert.strictEqual(storeA1Usage.campaign_limit, expectedProLimit);
 
-    const { data: storeA2Usage } = await adminClient
+    const { data: storeA2Usage, error: uA2Err } = await adminClient
       .from('usage_periods')
       .select('plan, campaign_limit')
       .eq('business_id', storeA2Id)
       .single();
+    assert.ifError(uA2Err);
     assert.strictEqual(storeA2Usage.plan, 'PRO');
-    assert.strictEqual(storeA2Usage.campaign_limit, 30);
+    assert.strictEqual(storeA2Usage.campaign_limit, expectedProLimit);
 
     // Verify audit event SUBSCRIPTION_ACTIVATED
-    const { data: auditEvents } = await adminClient
+    const { data: auditEvents, error: auditErr } = await adminClient
       .from('usage_events')
       .select('event_type, business_id')
       .eq('user_id', userAId)
       .eq('event_type', 'SUBSCRIPTION_ACTIVATED');
+    assert.ifError(auditErr);
     assert.ok(auditEvents.length >= 2, 'Audit events must record SUBSCRIPTION_ACTIVATED for each owned store');
-    console.log('  PASS: Multi-store entitlement upgrade propagated to both stores (limit 30) with audit events');
+    console.log(`  PASS: Multi-store entitlement upgrade propagated to both stores (limit ${expectedProLimit}) with audit events`);
 
     // 6b. Request cancellation at period end via authenticated client
     const cancelReason = 'Automated Phase 4 Lifecycle Test';
@@ -594,28 +606,39 @@ async function runIntegrationSuite() {
     assert.strictEqual(cancelRes.success, true);
     assert.strictEqual(cancelRes.cancel_at_period_end, true);
 
-    const { data: cancelledSub } = await adminClient
+    const { data: cancelledSub, error: subCancelFetchErr } = await adminClient
       .from('subscriptions')
       .select('cancel_at_period_end, cancellation_reason')
       .eq('id', activeSub.id)
       .single();
+    assert.ifError(subCancelFetchErr);
     assert.strictEqual(cancelledSub.cancel_at_period_end, true);
     assert.strictEqual(cancelledSub.cancellation_reason, cancelReason);
 
-    const { data: cancelAudit } = await adminClient
+    const { data: cancelAudit, error: cancelAuditErr } = await adminClient
       .from('usage_events')
       .select('event_type, description')
       .eq('user_id', userAId)
       .eq('event_type', 'SUBSCRIPTION_CANCEL_REQUESTED');
+    assert.ifError(cancelAuditErr);
     assert.ok(cancelAudit.length >= 1, 'Audit log must record SUBSCRIPTION_CANCEL_REQUESTED');
     console.log('  PASS: Cancellation scheduled at period end with audit trail preserved');
 
     // 6c. Expired subscription transition via webhook reconciliation
+    // In PostgreSQL reconcile_provider_event:
+    // - Looks up subscription by provider_subscription_id = v_sub_id (which is activeSub.provider_subscription_id)
+    // - If current_period_end < CURRENT_DATE, sets status = 'CANCELLED' (downgrades usage_periods to Free limit 3, emits SUBSCRIPTION_ENTITLEMENT_ENDED)
+    // Provision expired current_period_end on activeSub to exercise this contract:
+    const yesterdayDate = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const { error: setExpiredPeriodErr } = await adminClient
+      .from('subscriptions')
+      .update({ current_period_end: yesterdayDate })
+      .eq('id', activeSub.id);
+    assert.ifError(setExpiredPeriodErr);
+
     const expiredSubEventId = `${FIXTURE_PREFIX}_evt_expired`;
     cleanupState.providerEventIds.push(expiredSubEventId);
 
-    // Webhook with past period_end marks subscription EXPIRED and downgrades usage periods to Free (limit 3)
-    const yesterdayTimestamp = Math.floor((Date.now() - 86400000) / 1000);
     const { error: expiryReconErr } = await adminClient.rpc('reconcile_provider_event', {
       p_provider: 'razorpay',
       p_provider_event_id: expiredSubEventId,
@@ -624,9 +647,7 @@ async function runIntegrationSuite() {
         payload: {
           subscription: {
             entity: {
-              id: activeSub.id,
-              status: 'cancelled',
-              current_end: yesterdayTimestamp,
+              id: activeSub.provider_subscription_id,
             },
           },
         },
@@ -634,39 +655,44 @@ async function runIntegrationSuite() {
     });
     assert.ifError(expiryReconErr);
 
-    // Verify subscription status is EXPIRED
-    const { data: expiredSub } = await adminClient
+    // Verify subscription status matches SQL contract: CANCELLED
+    const { data: expiredSub, error: fetchExpSubErr } = await adminClient
       .from('subscriptions')
-      .select('status')
+      .select('status, cancel_at_period_end')
       .eq('id', activeSub.id)
       .single();
-    assert.strictEqual(expiredSub.status, 'EXPIRED');
+    assert.ifError(fetchExpSubErr);
+    assert.strictEqual(expiredSub.status, 'CANCELLED');
+    assert.strictEqual(expiredSub.cancel_at_period_end, true);
 
     // Verify usage periods downgraded to FREE with limit 3
-    const { data: downgradedStore1 } = await adminClient
+    const { data: downgradedStore1, error: dStore1Err } = await adminClient
       .from('usage_periods')
       .select('plan, campaign_limit')
       .eq('business_id', storeA1Id)
       .single();
+    assert.ifError(dStore1Err);
     assert.strictEqual(downgradedStore1.plan, 'FREE');
     assert.strictEqual(downgradedStore1.campaign_limit, 3);
 
-    const { data: downgradedStore2 } = await adminClient
+    const { data: downgradedStore2, error: dStore2Err } = await adminClient
       .from('usage_periods')
       .select('plan, campaign_limit')
       .eq('business_id', storeA2Id)
       .single();
+    assert.ifError(dStore2Err);
     assert.strictEqual(downgradedStore2.plan, 'FREE');
     assert.strictEqual(downgradedStore2.campaign_limit, 3);
 
-    // Verify audit event SUBSCRIPTION_EXPIRED_DOWNGRADED
-    const { data: downgradeAudit } = await adminClient
+    // Verify audit event SUBSCRIPTION_ENTITLEMENT_ENDED matches SQL contract
+    const { data: downgradeAudit, error: dAuditErr } = await adminClient
       .from('usage_events')
       .select('event_type')
       .eq('user_id', userAId)
-      .eq('event_type', 'SUBSCRIPTION_EXPIRED_DOWNGRADED');
-    assert.ok(downgradeAudit.length >= 1, 'SUBSCRIPTION_EXPIRED_DOWNGRADED audit event recorded');
-    console.log('  PASS: Expired subscription transitioned to EXPIRED and downgraded stores to FREE (limit 3)');
+      .eq('event_type', 'SUBSCRIPTION_ENTITLEMENT_ENDED');
+    assert.ifError(dAuditErr);
+    assert.ok(downgradeAudit.length >= 1, 'SUBSCRIPTION_ENTITLEMENT_ENDED audit event recorded');
+    console.log('  PASS: Expired subscription transitioned to CANCELLED and downgraded stores to FREE (limit 3)');
     passedSuites++;
 
     console.log('\n========================================================================');
@@ -675,36 +701,57 @@ async function runIntegrationSuite() {
     console.log('========================================================================\n');
   } finally {
     console.log('\n[Teardown] Cleaning up isolated synthetic test fixtures...');
-    try {
-      // 1. Delete campaign outputs and campaigns
-      if (cleanupState.campaignIds.length > 0) {
-        await adminClient.from('campaign_outputs').delete().in('campaign_id', cleanupState.campaignIds);
-        await adminClient.from('campaigns').delete().in('id', cleanupState.campaignIds);
-      }
-      // 2. Delete usage events and usage periods
-      if (cleanupState.businessIds.length > 0) {
-        await adminClient.from('usage_events').delete().in('business_id', cleanupState.businessIds);
-        await adminClient.from('usage_periods').delete().in('business_id', cleanupState.businessIds);
-        await adminClient.from('business_members').delete().in('business_id', cleanupState.businessIds);
-        await adminClient.from('business_profiles').delete().in('business_id', cleanupState.businessIds);
-        await adminClient.from('businesses').delete().in('id', cleanupState.businessIds);
-      }
-      // 3. Delete subscriptions
-      if (cleanupState.userIds.length > 0) {
-        await adminClient.from('subscriptions').delete().in('user_id', cleanupState.userIds);
-        await adminClient.from('profiles').delete().in('id', cleanupState.userIds);
-        for (const uid of cleanupState.userIds) {
-          await adminClient.auth.admin.deleteUser(uid);
-        }
-      }
-      // 4. Delete provider events
-      if (cleanupState.providerEventIds.length > 0) {
-        await adminClient.from('provider_events').delete().in('provider_event_id', cleanupState.providerEventIds);
-      }
-      console.log('  PASS: All synthetic fixtures cleanly deleted from PostgreSQL database');
-    } catch (cleanupErr) {
-      console.error('  WARN: Teardown encountered error:', cleanupErr.message);
+    const cleanupErrors = [];
+
+    // 1. Delete campaign outputs and campaigns
+    if (cleanupState.campaignIds.length > 0) {
+      const { error: outErr } = await adminClient.from('campaign_outputs').delete().in('campaign_id', cleanupState.campaignIds);
+      if (outErr) cleanupErrors.push(`campaign_outputs deletion error: ${outErr.message}`);
+      const { error: cmpErr } = await adminClient.from('campaigns').delete().in('id', cleanupState.campaignIds);
+      if (cmpErr) cleanupErrors.push(`campaigns deletion error: ${cmpErr.message}`);
     }
+
+    // 2. Delete usage events, periods, members, profiles, businesses
+    if (cleanupState.businessIds.length > 0) {
+      const { error: evErr } = await adminClient.from('usage_events').delete().in('business_id', cleanupState.businessIds);
+      if (evErr) cleanupErrors.push(`usage_events deletion error: ${evErr.message}`);
+      const { error: upErr } = await adminClient.from('usage_periods').delete().in('business_id', cleanupState.businessIds);
+      if (upErr) cleanupErrors.push(`usage_periods deletion error: ${upErr.message}`);
+      const { error: bmErr } = await adminClient.from('business_members').delete().in('business_id', cleanupState.businessIds);
+      if (bmErr) cleanupErrors.push(`business_members deletion error: ${bmErr.message}`);
+      const { error: bpErr } = await adminClient.from('business_profiles').delete().in('business_id', cleanupState.businessIds);
+      if (bpErr) cleanupErrors.push(`business_profiles deletion error: ${bpErr.message}`);
+      const { error: bzErr } = await adminClient.from('businesses').delete().in('id', cleanupState.businessIds);
+      if (bzErr) cleanupErrors.push(`businesses deletion error: ${bzErr.message}`);
+    }
+
+    // 3. Delete subscriptions, profiles, and auth users
+    if (cleanupState.userIds.length > 0) {
+      const { error: subErr } = await adminClient.from('subscriptions').delete().in('user_id', cleanupState.userIds);
+      if (subErr) cleanupErrors.push(`subscriptions deletion error: ${subErr.message}`);
+      const { error: prfErr } = await adminClient.from('profiles').delete().in('id', cleanupState.userIds);
+      if (prfErr) cleanupErrors.push(`profiles deletion error: ${prfErr.message}`);
+      for (const uid of cleanupState.userIds) {
+        const { error: usrErr } = await adminClient.auth.admin.deleteUser(uid);
+        if (usrErr) cleanupErrors.push(`auth user deletion error (${uid}): ${usrErr.message}`);
+      }
+    }
+
+    // 4. Delete provider events
+    if (cleanupState.providerEventIds.length > 0) {
+      const { error: peErr } = await adminClient.from('provider_events').delete().in('provider_event_id', cleanupState.providerEventIds);
+      if (peErr) cleanupErrors.push(`provider_events deletion error: ${peErr.message}`);
+    }
+
+    if (cleanupErrors.length > 0) {
+      console.error('  FAIL: Teardown errors encountered:');
+      for (const err of cleanupErrors) {
+        console.error('   -', err);
+      }
+      throw new Error(`Integration fixture teardown failed with ${cleanupErrors.length} errors.`);
+    }
+
+    console.log('  PASS: All synthetic fixtures cleanly deleted from PostgreSQL database');
   }
 }
 
