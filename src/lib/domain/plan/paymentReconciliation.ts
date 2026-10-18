@@ -95,12 +95,12 @@ export function reconcileRazorpayPurchase(
     };
   }
 
-  // 4. Verify user ownership (fail-closed: require authoritative userId in order notes)
-  const orderUserId = (order.notes?.userId || payment.notes?.userId) as string | undefined;
+  // 4. Verify user ownership (strictly require authoritative userId directly in server-created order notes)
+  const orderUserId = order.notes?.userId as string | undefined;
   if (!orderUserId || typeof orderUserId !== 'string' || orderUserId.trim() === '') {
     return {
       valid: false,
-      error: 'Security violation: Purchase record is missing authoritative user ownership metadata in order notes.',
+      error: 'Security violation: Purchase order is missing authoritative user ownership metadata in order notes.',
     };
   }
 
@@ -111,12 +111,21 @@ export function reconcileRazorpayPurchase(
     };
   }
 
-  // 5. Authoritatively derive Plan and Billing Cycle from server-created order notes (fail-closed)
-  const notePlan = (order.notes?.planId || payment.notes?.planId) as string | undefined;
+  // Cross-check payment notes if present to prevent mismatched payloads
+  const paymentUserId = payment.notes?.userId as string | undefined;
+  if (paymentUserId && paymentUserId !== authenticatedUserId) {
+    return {
+      valid: false,
+      error: 'Security violation: Payment notes indicate a different account.',
+    };
+  }
+
+  // 5. Authoritatively derive Plan and Billing Cycle directly from server-created order notes (fail-closed)
+  const notePlan = order.notes?.planId as string | undefined;
   if (!notePlan || typeof notePlan !== 'string' || notePlan.trim() === '') {
     return {
       valid: false,
-      error: 'Security violation: Purchase record is missing authoritative plan metadata in order notes.',
+      error: 'Security violation: Purchase order is missing authoritative plan metadata in order notes.',
     };
   }
 
@@ -128,8 +137,15 @@ export function reconcileRazorpayPurchase(
     };
   }
 
-  const noteCycle = (order.notes?.billingCycle || payment.notes?.billingCycle) as string | undefined;
-  const authoritativeCycle = (noteCycle || 'monthly').toLowerCase();
+  const noteCycle = order.notes?.billingCycle as string | undefined;
+  if (!noteCycle || typeof noteCycle !== 'string' || noteCycle.trim() === '') {
+    return {
+      valid: false,
+      error: 'Security violation: Purchase order is missing authoritative billing cycle in order notes.',
+    };
+  }
+
+  const authoritativeCycle = noteCycle.toLowerCase();
   if (!['monthly', 'quarterly', 'annual'].includes(authoritativeCycle)) {
     return {
       valid: false,
@@ -156,7 +172,7 @@ export function reconcileRazorpayPurchase(
   const verifiedPlanId = authoritativePlan as BillablePlanId;
   const verifiedBillingCycle = authoritativeCycle as BillingCycle;
 
-  // 6. Enforce price calculation match
+  // 6. Enforce price calculation match on BOTH order.amount and payment.amount
   let expectedQuote;
   try {
     expectedQuote = getPlanPricingQuote(verifiedPlanId, verifiedBillingCycle);
@@ -167,6 +183,13 @@ export function reconcileRazorpayPurchase(
     };
   }
 
+  if (order.amount !== expectedQuote.amountPaise) {
+    return {
+      valid: false,
+      error: `Order amount ${order.amount} paise does not match expected amount ${expectedQuote.amountPaise} paise for plan ${verifiedPlanId} (${verifiedBillingCycle}).`,
+    };
+  }
+
   if (payment.amount !== expectedQuote.amountPaise) {
     return {
       valid: false,
@@ -174,7 +197,7 @@ export function reconcileRazorpayPurchase(
     };
   }
 
-  const verifiedBusinessId = (order.notes?.businessId || payment.notes?.businessId) as string | undefined;
+  const verifiedBusinessId = order.notes?.businessId as string | undefined;
 
   return {
     valid: true,

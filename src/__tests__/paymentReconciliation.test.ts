@@ -113,11 +113,6 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
   });
 
   it('rejects when paid amount does not match expected quote for plan and cycle', () => {
-    const tamperedOrder = {
-      ...baseOrder,
-      amount: 10000, // 100 INR instead of 399 INR
-      notes: { ...baseOrder.notes, planId: 'PRO', billingCycle: 'monthly' },
-    };
     const tamperedPayment = {
       ...basePayment,
       amount: 10000,
@@ -129,7 +124,7 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
       expectedPaymentId: paymentId,
       clientTargetPlanId: 'PRO',
       clientBillingCycle: 'monthly',
-      order: tamperedOrder,
+      order: baseOrder, // has 39900
       payment: tamperedPayment,
     });
 
@@ -137,14 +132,14 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
     assert.match(result.error || '', /Payment amount 10000 paise does not match expected amount 39900 paise/);
   });
 
-  it('rejects when order notes are missing userId (fail-closed user ownership)', () => {
+  it('rejects when order notes are missing userId even if payment notes contain valid userId', () => {
     const orderWithoutUserId = {
       ...baseOrder,
       notes: { planId: 'PRO', billingCycle: 'monthly' },
     };
-    const paymentWithoutUserId = {
+    const paymentWithUserId = {
       ...basePayment,
-      notes: { planId: 'PRO', billingCycle: 'monthly' },
+      notes: { userId: validUserId, planId: 'PRO', billingCycle: 'monthly' },
     };
 
     const result = reconcileRazorpayPurchase({
@@ -152,21 +147,21 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
       expectedOrderId: orderId,
       expectedPaymentId: paymentId,
       order: orderWithoutUserId,
-      payment: paymentWithoutUserId,
+      payment: paymentWithUserId,
     });
 
     assert.strictEqual(result.valid, false);
-    assert.match(result.error || '', /missing authoritative user ownership metadata/);
+    assert.match(result.error || '', /Purchase order is missing authoritative user ownership metadata in order notes/);
   });
 
-  it('rejects when order notes are missing planId (fail-closed plan specification)', () => {
+  it('rejects when order notes are missing planId even if payment notes contain valid planId', () => {
     const orderWithoutPlan = {
       ...baseOrder,
       notes: { userId: validUserId, billingCycle: 'monthly' },
     };
-    const paymentWithoutPlan = {
+    const paymentWithPlan = {
       ...basePayment,
-      notes: { userId: validUserId, billingCycle: 'monthly' },
+      notes: { userId: validUserId, planId: 'PRO', billingCycle: 'monthly' },
     };
 
     const result = reconcileRazorpayPurchase({
@@ -175,11 +170,68 @@ describe('Payment Reconciliation: Razorpay Purchase Validation', () => {
       expectedPaymentId: paymentId,
       clientTargetPlanId: 'PRO',
       order: orderWithoutPlan,
-      payment: paymentWithoutPlan,
+      payment: paymentWithPlan,
     });
 
     assert.strictEqual(result.valid, false);
-    assert.match(result.error || '', /missing authoritative plan metadata in order notes/);
+    assert.match(result.error || '', /Purchase order is missing authoritative plan metadata in order notes/);
+  });
+
+  it('rejects when order notes are missing billingCycle', () => {
+    const orderWithoutCycle = {
+      ...baseOrder,
+      notes: { userId: validUserId, planId: 'PRO' },
+    };
+
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      clientTargetPlanId: 'PRO',
+      order: orderWithoutCycle,
+      payment: basePayment,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Purchase order is missing authoritative billing cycle in order notes/);
+  });
+
+  it('rejects when order.amount does not match expected plan quote even if payment.amount matches', () => {
+    const orderWithWrongAmount = {
+      ...baseOrder,
+      amount: 10000, // 100 INR instead of 399 INR
+    };
+
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      clientTargetPlanId: 'PRO',
+      clientBillingCycle: 'monthly',
+      order: orderWithWrongAmount,
+      payment: basePayment, // has 39900
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Order amount 10000 paise does not match expected amount 39900 paise/);
+  });
+
+  it('rejects when payment notes indicate a different account than authenticated user', () => {
+    const paymentWithOtherUser = {
+      ...basePayment,
+      notes: { userId: attackerUserId, planId: 'PRO', billingCycle: 'monthly' },
+    };
+
+    const result = reconcileRazorpayPurchase({
+      authenticatedUserId: validUserId,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+      order: baseOrder,
+      payment: paymentWithOtherUser,
+    });
+
+    assert.strictEqual(result.valid, false);
+    assert.match(result.error || '', /Payment notes indicate a different account/);
   });
 
   it('rejects when client attempts to activate a different billing cycle than ordered', () => {
