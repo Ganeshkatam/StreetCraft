@@ -67,13 +67,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('[Razorpay Webhook] Configuration error: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL is not set.');
-      return NextResponse.json({ error: 'SERVER_CONFIGURATION_ERROR' }, { status: 500 });
+      console.error('[Razorpay Webhook] Configuration error: Missing Supabase credentials.');
+      return NextResponse.json({ received: false }, { status: 500 });
     }
 
     // Instantiate service-role client for privileged reconciliation RPC
@@ -88,18 +87,41 @@ export async function POST(req: NextRequest) {
       p_payload: payload,
     });
 
+    // Dual compatibility: Handle OLD function behavior (which raises exceptions)
     if (reconcileError) {
-      console.error('[Razorpay Webhook] reconcile_provider_event error:', reconcileError.message);
-      return NextResponse.json({ error: 'RECONCILIATION_FAILED' }, { status: 500 });
+      const errorCode = reconcileError.code || 'UNKNOWN_ERROR';
+      console.error('[Razorpay Webhook] Error code:', errorCode);
+
+      // Retryable SQL states: 40001 (serialization failure), 40P01 (deadlock), 55P03 (lock not available)
+      const isRetryable = ['40001', '40P01', '55P03'].includes(errorCode);
+      if (isRetryable) {
+        return NextResponse.json({ received: false }, { status: 503 });
+      }
+
+      // Permanent failure under old raising function: return 200 to acknowledge receipt and prevent indefinite replays
+      return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    return NextResponse.json({
-      received: true,
-      event_id: providerEventId,
-      reconcileResult,
-    });
+    // Dual compatibility: Handle NEW function behavior (which returns JSONB with success, retryable, error_code)
+    if (reconcileResult && typeof reconcileResult === 'object') {
+      const res = reconcileResult as Record<string, unknown>;
+      if (res.success === false) {
+        const errorCode = typeof res.error_code === 'string' ? res.error_code : 'FAILED';
+        console.error('[Razorpay Webhook] Error code:', errorCode);
+
+        if (res.retryable === true) {
+          return NextResponse.json({ received: false }, { status: 503 });
+        }
+
+        // Permanent failure persisted as FAILED or NEEDS_REVIEW: acknowledge receipt to stop Razorpay retries
+        return NextResponse.json({ received: true }, { status: 200 });
+      }
+    }
+
+    // Clean acknowledgment: Never leak internal database text or reconcile structures
+    return NextResponse.json({ received: true }, { status: 200 });
   } catch (err: unknown) {
-    console.error('Razorpay webhook processing error:', err instanceof Error ? err.message : 'Unknown error');
-    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 });
+    console.error('[Razorpay Webhook] Error code: INTERNAL_ERROR');
+    return NextResponse.json({ received: false }, { status: 500 });
   }
 }

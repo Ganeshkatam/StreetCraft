@@ -3,6 +3,7 @@
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../business/resolveAuthorizedBusiness';
 import { getPlanPricingQuote } from '../../domain/plan/planPricing';
+import { createClient } from '../../supabase/server';
 import { z } from 'zod';
 
 const CreateOrderInputSchema = z.object({
@@ -53,6 +54,44 @@ export async function createRazorpayOrderAction(input: {
 
     const quote = getPlanPricingQuote(targetPlanId, billingCycle);
 
+    // Pre-check for FOUNDER membership to avoid paid-but-unfulfilled orders
+    if (targetPlanId === 'FOUNDER') {
+      if (billingCycle !== 'quarterly' && billingCycle !== 'annual') {
+        return {
+          success: false,
+          message: 'Founder tier requires quarterly or annual billing.',
+        };
+      }
+
+      const supabase = await createClient();
+
+      const { data: userClaim } = await supabase
+        .from('founder_claims')
+        .select('id')
+        .eq('user_id', claims.userId)
+        .maybeSingle();
+
+      if (userClaim) {
+        return {
+          success: false,
+          message: 'You have already claimed a Founder membership.',
+        };
+      }
+
+      const { data: allocation } = await supabase
+        .from('founder_allocation')
+        .select('total_slots, claimed_slots')
+        .eq('id', 1)
+        .single();
+
+      if (allocation && allocation.claimed_slots >= allocation.total_slots) {
+        return {
+          success: false,
+          message: 'All Founder memberships are currently sold out.',
+        };
+      }
+    }
+
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -77,6 +116,7 @@ export async function createRazorpayOrderAction(input: {
         currency: 'INR',
         receipt: receiptId,
         notes: {
+          app: 'streetcraft',
           userId: claims.userId,
           planId: quote.planId,
           billingCycle: quote.billingCycle,
