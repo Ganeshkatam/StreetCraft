@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { requireAuthenticatedClaims } from '../../../lib/server/auth/requireAuthenticatedClaims';
 import { NewStoreView } from './NewStoreView';
 
@@ -17,6 +18,9 @@ export default async function NewStorePage({ searchParams }: PageProps) {
   await requireAuthenticatedClaims('/new/store');
   const resolvedParams = await searchParams;
   const claimToken = typeof resolvedParams.claim === 'string' ? resolvedParams.claim : undefined;
+  const cookieStore = await cookies();
+  const cookieClaim = cookieStore.get('streetcraft_claim_token')?.value;
+  const effectiveClaimToken = claimToken || cookieClaim;
 
-  return <NewStoreView claimToken={claimToken} />;
+  return <NewStoreView claimToken={effectiveClaimToken} />;
 }

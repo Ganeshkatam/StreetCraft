@@ -36,10 +36,13 @@ function SignupContent() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await signUp(email, password, name);
+      const res = await signUp(email, password, name, claimToken || undefined);
       if (!res.isAuthenticated) {
         toast.info(`Verification email sent to ${email}. Please check your inbox.`);
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        const verifyUrl = claimToken
+          ? `/verify-email?email=${encodeURIComponent(email)}&claim=${encodeURIComponent(claimToken)}`
+          : `/verify-email?email=${encodeURIComponent(email)}`;
+        router.push(verifyUrl);
       } else {
         toast.success('Account created successfully.');
         const dest = claimToken ? `/setup?claim=${encodeURIComponent(claimToken)}` : '/setup';

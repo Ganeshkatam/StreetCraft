@@ -322,7 +322,7 @@ class RealtimeApiClient {
     return this.getSession();
   }
 
-  public async signUp(email: string, password: string, fullName: string): Promise<UserSession> {
+  public async signUp(email: string, password: string, fullName: string, claimToken?: string): Promise<UserSession> {
     if (!isSupabaseConfigured) {
       const sess: UserSession = {
         userId: 'usr_' + Date.now(),
@@ -337,6 +337,10 @@ class RealtimeApiClient {
       return sess;
     }
 
+    const emailRedirectTo = typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/callback${claimToken ? `?claim=${encodeURIComponent(claimToken)}` : ''}`
+      : undefined;
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -344,6 +348,7 @@ class RealtimeApiClient {
         data: {
           full_name: fullName,
         },
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
       },
     });
 
@@ -380,13 +385,17 @@ class RealtimeApiClient {
     return this.getSession();
   }
 
-  public async resendConfirmationEmail(email: string): Promise<void> {
+  public async resendConfirmationEmail(email: string, claimToken?: string): Promise<void> {
     if (isSupabaseConfigured) {
+      const emailRedirectTo = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback${claimToken ? `?claim=${encodeURIComponent(claimToken)}` : ''}`
+        : undefined;
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          ...(emailRedirectTo ? { emailRedirectTo } : {}),
         },
       });
       if (error) throw error;
@@ -817,73 +826,10 @@ class RealtimeApiClient {
     };
   }
 
-  // 6. FREE TOOL OPTION B: Anonymous Generation & Lead Claiming
-  public async generateAnonymousCampaign(
-    input: CampaignGenerationInput,
-    profile: BusinessProfile
-  ): Promise<{ campaignId: string; claimToken: string; pack: FullCampaignPack }> {
-    const claimToken = crypto.randomUUID();
-    const { outputs, validationStatus } = generateCampaignPack(profile, input);
-    const campaignId = 'cmp_anon_' + Date.now();
-    const now = new Date().toISOString();
-
-    const pack: FullCampaignPack = {
-      campaign: {
-        id: campaignId,
-        businessId: null,
-        claimToken,
-        type: input.type,
-        objective: input.objective,
-        audience: input.audience || '',
-        offer: input.offer,
-        schedule: input.schedule,
-        status: 'ready',
-        performanceNotes: '',
-        createdAt: now,
-        updatedAt: now,
-      },
-      outputs,
-      validationStatus,
-    };
-
-    if (isSupabaseConfigured) {
-      try {
-        const { data: campaignRow, error: cError } = await (supabase.from('campaigns') as any)
-          .insert({
-            business_id: null,
-            claim_token: claimToken,
-            type: input.type,
-            objective: input.objective,
-            audience: input.audience || '',
-            offer: input.offer,
-            schedule: input.schedule,
-            status: 'ready',
-          })
-          .select('id')
-          .single();
-
-        if (!cError && campaignRow?.id) {
-          const dbCampaignId = campaignRow.id;
-          pack.campaign.id = dbCampaignId;
-          await (supabase.from('campaign_outputs') as any).insert([
-            { campaign_id: dbCampaignId, channel: 'GOOGLE_BUSINESS', status: 'ready', content: outputs.googleBusiness, validation_status: validationStatus },
-            { campaign_id: dbCampaignId, channel: 'INSTAGRAM', status: 'ready', content: outputs.instagram, validation_status: validationStatus },
-            { campaign_id: dbCampaignId, channel: 'WHATSAPP', status: 'ready', content: outputs.whatsapp, validation_status: validationStatus },
-            { campaign_id: dbCampaignId, channel: 'IN_STORE_POSTER', status: 'ready', content: outputs.poster || {}, validation_status: validationStatus },
-          ]);
-          return { campaignId: dbCampaignId, claimToken, pack };
-        }
-      } catch (err) {
-        console.warn('Failed to persist anonymous campaign to database, using client-side pack:', err);
-      }
-    }
-
-    return {
-      campaignId,
-      claimToken,
-      pack,
-    };
-  }
+  // 6. FREE TOOL: Anonymous Generation is now handled authoritatively via
+  // generateFreeCampaignAction (Server Action) with CAPTCHA verification,
+  // IP rate limiting, server-side payload bounds, and httpOnly claim cookie handover.
+  // Direct browser insertion of anonymous campaigns has been removed.
 
   public async claimAnonymousCampaign(claimToken: string, businessId: UUID): Promise<boolean> {
     if (!isSupabaseConfigured || !claimToken || !businessId) return false;

@@ -71,8 +71,8 @@ export function useAuth() {
     return s;
   };
 
-  const signUp = async (email: string, pass: string, fullName: string) => {
-    const s = await api.signUp(email, pass, fullName);
+  const signUp = async (email: string, pass: string, fullName: string, claimToken?: string) => {
+    const s = await api.signUp(email, pass, fullName, claimToken);
     setSession(s);
     return s;
   };

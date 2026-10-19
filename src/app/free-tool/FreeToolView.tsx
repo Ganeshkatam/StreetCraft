@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '../../lib/api';
+import { generateFreeCampaignAction } from '../../lib/server/free-tool/generateFreeCampaignAction';
 import { CampaignType, FullCampaignPack } from '../../types/campaign';
-import { BusinessProfile } from '../../types/business';
 import { ChannelCard } from '../../components/ChannelCard';
 import { CustomSelect, SelectOption } from '../../components/CustomSelect';
 import { CalendarPicker } from '../../components/CalendarPicker';
@@ -34,7 +33,42 @@ export function FreeToolView() {
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generatedPack, setGeneratedPack] = useState<FullCampaignPack | null>(null);
   const [claimToken, setClaimToken] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | undefined>(undefined);
   const [activeChannelView, setActiveChannelView] = useState<'ALL' | 'GOOGLE_BUSINESS' | 'INSTAGRAM' | 'WHATSAPP' | 'IN_STORE_POSTER'>('ALL');
+  const turnstileWidgetRef = useRef<HTMLDivElement>(null);
+
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    if (!turnstileSiteKey || typeof window === 'undefined') return;
+
+    const renderWidget = () => {
+      const turnstile = (window as any).turnstile;
+      if (turnstile && turnstileWidgetRef.current) {
+        try {
+          turnstile.render(turnstileWidgetRef.current, {
+            sitekey: turnstileSiteKey,
+            callback: (token: string) => setTurnstileToken(token),
+            'expired-callback': () => setTurnstileToken(undefined),
+            'error-callback': () => setTurnstileToken(undefined),
+          });
+        } catch (err) {
+          console.warn('[FreeTool] Turnstile render warning:', err);
+        }
+      }
+    };
+
+    if ((window as any).turnstile) {
+      renderWidget();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = renderWidget;
+      document.head.appendChild(script);
+    }
+  }, [turnstileSiteKey]);
 
   const presets = [
     {
@@ -127,45 +161,21 @@ export function FreeToolView() {
     setIsGenerating(true);
     setGenerationError(null);
     try {
-      const ephemeralProfile: BusinessProfile = {
-        businessId: '00000000-0000-0000-0000-000000000000',
+      const result = await generateFreeCampaignAction({
         name: targetName,
         category: targetCategory || 'Retail Store',
         neighborhood: targetNeighborhood || '',
         city: targetCity || '',
-        landmarks: '',
-        targetCustomer: '',
-        styleVoice: '',
-        signatureItems: '',
-        primaryGoal: '',
-        peakHours: '',
-        slowHours: targetTiming || '',
-        defaultOffer: targetOffer,
-        avgTicketINR: 0,
-        targetMonthlyCustomers: 0,
-        phoneWhatsApp: '',
-        updatedAt: new Date().toISOString(),
-      };
+        type: targetType,
+        offerTitle: targetOffer,
+        timing: targetTiming || '',
+        turnstileToken,
+      });
 
-      const result = await api.generateAnonymousCampaign(
-        {
-          type: targetType,
-          objective: 'MORE_WALK_INS',
-          audience: targetNeighborhood ? `Nearby customers in ${targetNeighborhood}` : 'Local neighborhood customers',
-          offer: {
-            title: targetOffer,
-            description: targetOffer,
-            value: targetOffer,
-            terms: 'Show message at counter to redeem.',
-          },
-          schedule: {
-            startsAt: new Date().toISOString(),
-            endsAt: new Date(Date.now() + 5 * 86400000).toISOString(),
-            timingLabel: targetTiming || 'Valid this week',
-          },
-        },
-        ephemeralProfile
-      );
+      if (!result.success || !result.pack) {
+        setGenerationError(result.message || "Failed to generate campaign proofs. Please check your inputs and try again.");
+        return;
+      }
 
       setGeneratedPack(result.pack);
       if (result.claimToken) {
@@ -372,6 +382,10 @@ export function FreeToolView() {
               placeholder="e.g. Monday–Thursday, 3:00 PM – 6:00 PM"
             />
 
+            {turnstileSiteKey && (
+              <div ref={turnstileWidgetRef} style={{ marginBottom: '14px', minHeight: '65px' }} />
+            )}
+
             <button
               type="submit"
               className="btn-primary"
@@ -398,7 +412,7 @@ export function FreeToolView() {
                 <button
                   className="btn-primary"
                   style={{ fontSize: '13.5px', padding: '8px 18px' }}
-                  onClick={() => router.push(`/signup?claim=${claimToken}`)}
+                  onClick={() => router.push(claimToken ? `/signup?claim=${encodeURIComponent(claimToken)}` : '/signup')}
                 >
                   Save to Workspace
                 </button>

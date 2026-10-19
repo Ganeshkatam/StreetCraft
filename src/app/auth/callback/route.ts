@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
   const tokenHash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type') as EmailOtpType | null;
   const claim = requestUrl.searchParams.get('claim');
+  const cookieClaim = request.cookies.get('streetcraft_claim_token')?.value;
+  const effectiveClaim = claim || cookieClaim;
   const next = requestUrl.searchParams.get('next');
   const error = requestUrl.searchParams.get('error');
   const errorDescription = requestUrl.searchParams.get('error_description');
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest) {
 
       const defaultTarget = members && members.length > 0
         ? '/user/today'
-        : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
+        : (effectiveClaim ? `/setup?claim=${encodeURIComponent(effectiveClaim)}` : '/setup');
 
       const safeDestination = getSafeRedirectUrl(next, requestUrl.origin, defaultTarget);
 
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
 
       const defaultTarget = members && members.length > 0
         ? '/user/today'
-        : (claim ? `/setup?claim=${encodeURIComponent(claim)}` : '/setup');
+        : (effectiveClaim ? `/setup?claim=${encodeURIComponent(effectiveClaim)}` : '/setup');
 
       const safeDestination = getSafeRedirectUrl(next, requestUrl.origin, defaultTarget);
 

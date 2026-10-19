@@ -12,6 +12,7 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email') || '';
+  const claimParam = searchParams.get('claim') || '';
 
   const [email, setEmail] = useState(emailParam);
   const [isResending, setIsResending] = useState(false);
@@ -34,7 +35,7 @@ function VerifyEmailContent() {
     if (!email || cooldown > 0) return;
     setIsResending(true);
     try {
-      await api.resendConfirmationEmail(email);
+      await api.resendConfirmationEmail(email, claimParam || undefined);
       toast.success(`Verification email resent to ${email}. Please check your inbox.`);
       setCooldown(60);
     } catch (err: unknown) {

@@ -26,10 +26,52 @@ class TelemetryLogger {
 
   public track(event: TelemetryEvent, payload?: TelemetryPayload): void {
     const timestamp = new Date().toISOString();
+    
+    const REDACTED_EXACT_KEYS = new Set([
+      'token',
+      'claim',
+      'claim_token',
+      'claimtoken',
+      'secret',
+      'key',
+      'api_key',
+      'apikey',
+      'service_role_key',
+      'turnstile_secret',
+      'turnstilesecret',
+      'password',
+      'code',
+      'auth_code',
+      'access_token',
+      'refresh_token',
+    ]);
+
+    // Defensive redaction: guarantee tokens, secrets, and claim parameters are never logged
+    let sanitizedPayload: Record<string, unknown> | undefined = undefined;
+    if (payload && typeof payload === 'object') {
+      sanitizedPayload = {};
+      for (const [key, value] of Object.entries(payload)) {
+        const lowerKey = key.toLowerCase();
+        if (
+          REDACTED_EXACT_KEYS.has(lowerKey) ||
+          lowerKey.includes('token') ||
+          lowerKey.includes('claim') ||
+          lowerKey.includes('secret') ||
+          lowerKey.includes('password')
+        ) {
+          continue;
+        }
+        if (typeof value === 'string' && (value.includes('claim=') || value.includes('token=') || value.includes('secret='))) {
+          continue;
+        }
+        sanitizedPayload[key] = value;
+      }
+    }
+
     const entry = {
       event,
       timestamp,
-      ...payload,
+      ...sanitizedPayload,
     };
 
     if (this._isDev) {

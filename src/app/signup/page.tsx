@@ -3,6 +3,7 @@ import { SignupView } from './SignupView';
 
 export const metadata: Metadata = {
   title: 'Create Account — StreetCraft Storefront Engine',
+  referrer: 'no-referrer',
   description: 'Create your free StreetCraft workspace. Turn slow hours, new arrivals, and store moments into walk-in foot traffic.',
   openGraph: {
     title: 'Start Free with StreetCraft',

@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { createClient } from '../../supabase/server';
 import { requireAuthenticatedClaims } from '../auth/requireAuthenticatedClaims';
 import { getAccessibleBusinesses } from '../business/getAccessibleBusinesses';
@@ -37,7 +38,9 @@ export async function createStoreAction(
     }
 
     const validData = validationResult.data;
-    targetClaimToken = validData.claimToken || null;
+    const cookieStore = await cookies();
+    const cookieClaimToken = cookieStore.get('streetcraft_claim_token')?.value;
+    targetClaimToken = validData.claimToken || cookieClaimToken || null;
 
     // 3. Verify storefront limit / entitlement
     const accessible = await getAccessibleBusinesses(claims.userId);
@@ -81,10 +84,17 @@ export async function createStoreAction(
     // 5. Consume optional anonymous claim token if present
     if (targetClaimToken) {
       try {
-        await (supabase as any).rpc('claim_anonymous_campaign', {
+        const { data: claimSuccess } = await (supabase as any).rpc('claim_anonymous_campaign', {
           p_claim_token: targetClaimToken,
           p_business_id: createdBusinessId,
         });
+        if (claimSuccess) {
+          try {
+            cookieStore.delete('streetcraft_claim_token');
+          } catch {
+            // Cookie cleanup best-effort
+          }
+        }
       } catch (claimErr) {
         console.warn('[Action: createStoreAction] Non-fatal claim token error:', claimErr);
       }

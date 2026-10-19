@@ -4,6 +4,7 @@ import '../styles.css';
 
 export const metadata: Metadata = {
   title: 'StreetCraft — A Growth Engine for Physical Businesses',
+  referrer: 'strict-origin-when-cross-origin',
   description:
     'StreetCraft — Turn one business opportunity into everything customers need to see. Google, Instagram, WhatsApp, and your counter, prepared together for physical businesses.',
   metadataBase: new URL('https://streetcraft.app'),

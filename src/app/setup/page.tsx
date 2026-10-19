@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { requireAuthenticatedClaims } from '../../lib/server/auth/requireAuthenticatedClaims';
 import { resolveAuthorizedBusiness } from '../../lib/server/business/resolveAuthorizedBusiness';
 import { getAccessibleBusinesses } from '../../lib/server/business/getAccessibleBusinesses';
@@ -16,11 +17,14 @@ export default async function SetupResolverPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const candidateBizId = typeof resolvedParams.biz === 'string' ? resolvedParams.biz : undefined;
   const claimToken = typeof resolvedParams.claim === 'string' ? resolvedParams.claim : undefined;
+  const cookieStore = await cookies();
+  const cookieClaim = cookieStore.get('streetcraft_claim_token')?.value;
+  const effectiveClaimToken = claimToken || cookieClaim;
   const isNew = resolvedParams.new === 'true';
 
   // If user explicitly requested to add/create a new storefront, send to /new/store
   if (isNew) {
-    const targetUrl = claimToken ? `/new/store?claim=${encodeURIComponent(claimToken)}` : '/new/store';
+    const targetUrl = effectiveClaimToken ? `/new/store?claim=${encodeURIComponent(effectiveClaimToken)}` : '/new/store';
     redirect(targetUrl);
   }
 
@@ -36,7 +40,7 @@ export default async function SetupResolverPage({ searchParams }: PageProps) {
 
   // If user still has 0 businesses, send to /new/store creation
   if (!business) {
-    const targetUrl = claimToken ? `/new/store?claim=${encodeURIComponent(claimToken)}` : '/new/store';
+    const targetUrl = effectiveClaimToken ? `/new/store?claim=${encodeURIComponent(effectiveClaimToken)}` : '/new/store';
     redirect(targetUrl);
   }
 
