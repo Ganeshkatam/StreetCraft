@@ -30,7 +30,8 @@ build/
 Thumbs.db
 
 # Local secrets & sensitive documents
-docs/
+docs/*
+!docs/runbooks/
 *.csv
 backups/
 
