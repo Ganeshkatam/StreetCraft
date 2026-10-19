@@ -15,6 +15,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-tests.js",
     "test:integration": "node --env-file-if-exists=.env scripts/verify-database-integration.js",
+    "test:brief1": "node --env-file-if-exists=.env scripts/verify-brief1-integration.js",
+    "test:brief2": "node --env-file-if-exists=.env scripts/verify-brief2-integration.js",
+    "test:brief3": "node --env-file-if-exists=.env scripts/verify-brief3-integration.js",
     "tree": "node scripts/generate-project-tree.js"
   },
   "dependencies": {

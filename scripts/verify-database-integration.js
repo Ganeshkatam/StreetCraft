@@ -908,6 +908,15 @@ async function runIntegrationSuite() {
       );
       if (upErr) cleanupErrors.push(`usage_periods deletion error: ${upErr.message}`);
 
+      // Delete businesses first so foreign key cascades clean up members without triggering last-owner guard on alive business
+      const { error: bzErr } = await safeRetry(() =>
+        adminClient
+          .from('businesses')
+          .delete()
+          .in('id', cleanupState.businessIds)
+      );
+      if (bzErr) cleanupErrors.push(`businesses deletion error: ${bzErr.message}`);
+
       const { error: bmErr } = await safeRetry(() =>
         adminClient
           .from('business_members')
@@ -923,14 +932,6 @@ async function runIntegrationSuite() {
           .in('business_id', cleanupState.businessIds)
       );
       if (bpErr) cleanupErrors.push(`business_profiles deletion error: ${bpErr.message}`);
-
-      const { error: bzErr } = await safeRetry(() =>
-        adminClient
-          .from('businesses')
-          .delete()
-          .in('id', cleanupState.businessIds)
-      );
-      if (bzErr) cleanupErrors.push(`businesses deletion error: ${bzErr.message}`);
     }
 
     // 3. Delete subscriptions, profiles, and auth users (strictly scoped to tracked test IDs)
