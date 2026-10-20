@@ -317,7 +317,7 @@ async function runIntegrationSuite() {
     const invalidEventId = `${FIXTURE_PREFIX}_evt_no_order`;
     cleanupState.providerEventIds.push(invalidEventId);
 
-    const { error: missingOrderError } = await adminClient.rpc('reconcile_provider_event', {
+    const { data: missingOrderRes, error: missingOrderErr } = await adminClient.rpc('reconcile_provider_event', {
       p_provider: 'razorpay',
       p_provider_event_id: invalidEventId,
       p_event_type: 'order.paid',
@@ -327,19 +327,23 @@ async function runIntegrationSuite() {
         },
       },
     });
-    assert.ok(missingOrderError, 'Must reject webhook without order entity');
-    assert.match(missingOrderError.message, /SECURITY_VIOLATION.*mandatory order entity/i);
-    console.log('  PASS: PostgreSQL rejected webhook missing order entity with SECURITY_VIOLATION');
+    assert.ifError(missingOrderErr);
+    assert.strictEqual(missingOrderRes?.success, false, 'Must fail webhook without order entity');
+    assert.strictEqual(missingOrderRes?.status, 'FAILED');
+    assert.strictEqual(missingOrderRes?.error_code, 'SECURITY_VIOLATION');
+    console.log('  PASS: PostgreSQL caught missing order entity and returned SECURITY_VIOLATION');
 
-    // 2d. In PostgreSQL, RAISE rolls back the transaction completely (fail-closed atomicity).
-    // Verify that the invalid event aborted transaction left no uncommitted row:
-    const { data: rolledBackRows, error: rollbackCheckErr } = await adminClient
+    // 2d. Under Brief 5, failed webhook events persist in public.provider_events with status FAILED
+    // so administrators and audit logs have visibility into bad requests.
+    const { data: failedRows, error: failedCheckErr } = await adminClient
       .from('provider_events')
-      .select('id')
+      .select('id, status, error_code')
       .eq('provider_event_id', invalidEventId);
-    assert.ifError(rollbackCheckErr);
-    assert.strictEqual(rolledBackRows?.length, 0, 'Atomic rollback: aborted transaction must leave zero rows');
-    console.log('  PASS: PostgreSQL atomic transaction rollback verified on security violation');
+    assert.ifError(failedCheckErr);
+    assert.strictEqual(failedRows?.length, 1, 'Brief 5: Failed webhook must persist exactly one audit row');
+    assert.strictEqual(failedRows[0].status, 'FAILED');
+    assert.strictEqual(failedRows[0].error_code, 'SECURITY_VIOLATION');
+    console.log('  PASS: Failed event audit persistence verified with status FAILED');
 
     // 2e. Check successful event persistence and audit logging in public.provider_events
     const validAuditId = `${FIXTURE_PREFIX}_evt_audit_valid`;

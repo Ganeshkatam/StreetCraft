@@ -239,13 +239,14 @@ async function run() {
 
     console.log('\n--- Test 4: APP_MISMATCH rejects foreign application events as FAILED ---');
     const foreignEventId = `evt_foreign_${crypto.randomBytes(6).toString('hex')}`;
+    const foreignOrderId = `order_foreign_${crypto.randomBytes(4).toString('hex')}`;
     const foreignPayload = {
       event: 'payment.captured',
       payload: {
         payment: {
           entity: {
             id: `pay_foreign_${crypto.randomBytes(4).toString('hex')}`,
-            order_id: `order_foreign_${crypto.randomBytes(4).toString('hex')}`,
+            order_id: foreignOrderId,
             status: 'captured',
             captured: true,
             currency: 'INR',
@@ -260,7 +261,7 @@ async function run() {
         },
         order: {
           entity: {
-            id: `order_foreign_${crypto.randomBytes(4).toString('hex')}`,
+            id: foreignOrderId,
             status: 'paid',
             currency: 'INR',
             amount: 39900,

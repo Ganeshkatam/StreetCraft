@@ -7,6 +7,10 @@ ALTER TABLE public.provider_events
   ADD COLUMN IF NOT EXISTS needs_review boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS entity_id text;
 
+ALTER TABLE public.provider_events DROP CONSTRAINT IF EXISTS provider_events_status_check;
+ALTER TABLE public.provider_events ADD CONSTRAINT provider_events_status_check 
+  CHECK (status = ANY (ARRAY['RECEIVED'::text, 'PROCESSING'::text, 'PROCESSED'::text, 'FAILED'::text, 'NEEDS_REVIEW'::text, 'REFUNDED_RESOLVED'::text]));
+
 -- 2. Add unique index on (provider, event_type, entity_id) for signed entity deduplication
 -- This ensures that replaying a signed payload with an alternate provider_event_id is an idempotent no-op.
 CREATE UNIQUE INDEX IF NOT EXISTS provider_events_provider_event_type_entity_id_idx 
@@ -67,9 +71,9 @@ DECLARE
   v_expected_amount bigint;
   v_period_start date;
   v_period_end date;
-  v_existing_sub record;
+  v_existing_sub public.subscriptions%ROWTYPE;
   v_confirm_res jsonb;
-  v_existing_event record;
+  v_existing_event public.provider_events%ROWTYPE;
   v_today date := (now() at time zone 'Asia/Kolkata')::date;
   
   -- Exception handling variables

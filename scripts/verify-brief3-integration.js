@@ -435,6 +435,15 @@ async function run() {
     if (cBiz1Err) throw new Error(`Failed to create User C business 1: ${cBiz1Err.message}`);
     trackedBusinessIds.add(cBiz1.business_id);
 
+    const { data: cBiz2, error: cBiz2Err } = await actorC.client.rpc('create_business_atomically', {
+      p_name: 'User C Store Two',
+      p_category: 'Cafe',
+      p_city: 'Delhi',
+      p_neighborhood: 'Hauz Khas',
+    });
+    if (cBiz2Err) throw new Error(`Failed to create User C business 2: ${cBiz2Err.message}`);
+    trackedBusinessIds.add(cBiz2.business_id);
+
     // Add User C as a member to testBusinessId
     const { error: addCMemErr } = await actorB.client
       .from('business_members')
